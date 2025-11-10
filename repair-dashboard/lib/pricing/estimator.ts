@@ -1,5 +1,4 @@
-import { prisma } from '@/lib/db'
-import { PartsQuality } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
 export interface PriceEstimate {
   price: number
@@ -11,25 +10,26 @@ export interface PriceEstimate {
 
 /**
  * Estimates price for a device repair using smart interpolation
- * Based on nearby models, release dates, and tier levels
+ * Based on nearby models, release dates, and part types
  */
 export async function estimatePrice(
   deviceModelId: number,
   repairTypeId: number,
-  partsQuality: PartsQuality
+  partTypeId: number
 ): Promise<PriceEstimate> {
   // 1. Check if exact price exists
-  const exactPrice = await prisma.price.findFirst({
+  const exactPrice = await prisma.pricing.findFirst({
     where: {
       deviceModelId,
       repairTypeId,
-      partsQuality,
+      partTypeId,
+      isActive: true,
     },
   })
 
   if (exactPrice && !exactPrice.isEstimated) {
     return {
-      price: Number(exactPrice.totalPrice),
+      price: Number(exactPrice.price),
       confidence: 1.0,
       references: [deviceModelId],
       isEstimated: false,
@@ -48,17 +48,20 @@ export async function estimatePrice(
   }
 
   // 3. Find reference prices from same brand
-  const referencePrices = await prisma.price.findMany({
+  const referencePrices = await prisma.pricing.findMany({
     where: {
       repairTypeId,
-      partsQuality,
+      partTypeId,
       isEstimated: false, // Only use confirmed prices for estimation
+      isActive: true,
       deviceModel: {
         brandId: targetDevice.brandId,
-        releaseYear: {
-          gte: targetDevice.releaseYear - 2,
-          lte: targetDevice.releaseYear + 2,
-        },
+        ...(targetDevice.releaseYear && {
+          releaseYear: {
+            gte: targetDevice.releaseYear - 2,
+            lte: targetDevice.releaseYear + 2,
+          },
+        }),
       },
     },
     include: {
@@ -78,10 +81,10 @@ export async function estimatePrice(
 
   // 4. Find bracketing models (older and newer)
   const older = referencePrices.filter(
-    (p) => p.deviceModel.releaseYear < targetDevice.releaseYear
+    (p) => p.deviceModel.releaseYear && targetDevice.releaseYear && p.deviceModel.releaseYear < targetDevice.releaseYear
   )
   const newer = referencePrices.filter(
-    (p) => p.deviceModel.releaseYear > targetDevice.releaseYear
+    (p) => p.deviceModel.releaseYear && targetDevice.releaseYear && p.deviceModel.releaseYear > targetDevice.releaseYear
   )
 
   let estimatedPrice: number
@@ -93,14 +96,14 @@ export async function estimatePrice(
     const closestOlder = older[older.length - 1]
     const closestNewer = newer[0]
 
-    const olderPrice = Number(closestOlder.totalPrice)
-    const newerPrice = Number(closestNewer.totalPrice)
-    const olderYear = closestOlder.deviceModel.releaseYear
-    const newerYear = closestNewer.deviceModel.releaseYear
+    const olderPrice = Number(closestOlder.price)
+    const newerPrice = Number(closestNewer.price)
+    const olderYear = closestOlder.deviceModel.releaseYear!
+    const newerYear = closestNewer.deviceModel.releaseYear!
 
     // Linear interpolation
     const yearDiff = newerYear - olderYear
-    const targetYearDiff = targetDevice.releaseYear - olderYear
+    const targetYearDiff = targetDevice.releaseYear! - olderYear
     const priceDiff = newerPrice - olderPrice
 
     estimatedPrice = olderPrice + (priceDiff * targetYearDiff) / yearDiff
@@ -109,7 +112,7 @@ export async function estimatePrice(
   } else if (referencePrices.length > 0) {
     // Extrapolation (less confident)
     const nearest = referencePrices[referencePrices.length - 1]
-    estimatedPrice = Number(nearest.totalPrice)
+    estimatedPrice = Number(nearest.price)
     confidence = 0.60
     source = 'extrapolation'
   } else {
@@ -117,11 +120,7 @@ export async function estimatePrice(
     return estimateFromCategoryAverage(repairTypeId, partsQuality)
   }
 
-  // 5. Adjust for tier level
-  const tierAdjustment = getTierAdjustment(targetDevice.tierLevel)
-  estimatedPrice *= tierAdjustment
-
-  // 6. Round to nearest $5 or $9 ending
+  // 5. Round to nearest $5 or $9 ending
   estimatedPrice = roundToNiceNumber(estimatedPrice)
 
   return {
@@ -133,15 +132,6 @@ export async function estimatePrice(
   }
 }
 
-function getTierAdjustment(tierLevel: number): number {
-  const adjustments: Record<number, number> = {
-    1: 1.15, // Flagship (Pro, Pro Max)
-    2: 1.0, // Standard
-    3: 0.85, // Budget (SE, Mini)
-  }
-  return adjustments[tierLevel] || 1.0
-}
-
 function roundToNiceNumber(price: number): number {
   // Round to nearest $10 and make it end in 9
   const rounded = Math.round(price / 10) * 10
@@ -150,26 +140,27 @@ function roundToNiceNumber(price: number): number {
 
 async function estimateFromCategoryAverage(
   repairTypeId: number,
-  partsQuality: PartsQuality
+  partTypeId: number
 ): Promise<PriceEstimate> {
-  const avgResult = await prisma.price.aggregate({
+  const avgResult = await prisma.pricing.aggregate({
     where: {
       repairTypeId,
-      partsQuality,
+      partTypeId,
       isEstimated: false,
+      isActive: true,
     },
     _avg: {
-      totalPrice: true,
+      price: true,
     },
     _count: true,
   })
 
-  if (!avgResult._avg.totalPrice || avgResult._count === 0) {
+  if (!avgResult._avg.price || avgResult._count === 0) {
     throw new Error('No reference prices available for estimation')
   }
 
   return {
-    price: roundToNiceNumber(Number(avgResult._avg.totalPrice)),
+    price: roundToNiceNumber(Number(avgResult._avg.price)),
     confidence: 0.40,
     references: [],
     isEstimated: true,
@@ -183,10 +174,10 @@ async function estimateFromCategoryAverage(
 export async function getPrice(
   deviceModelId: number,
   repairTypeId: number,
-  partsQuality: PartsQuality
+  partTypeId: number
 ): Promise<PriceEstimate> {
   try {
-    return await estimatePrice(deviceModelId, repairTypeId, partsQuality)
+    return await estimatePrice(deviceModelId, repairTypeId, partTypeId)
   } catch (error) {
     console.error('Price estimation failed:', error)
     throw error
