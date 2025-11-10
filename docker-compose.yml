@@ -1,0 +1,246 @@
+# =============================================================================
+# MOBILE REPAIR DASHBOARD - DOCKER COMPOSE
+# =============================================================================
+# Quick start development environment with all services
+# 
+# Usage:
+#   docker-compose up -d          # Start all services
+#   docker-compose down           # Stop all services
+#   docker-compose logs -f api    # View API logs
+#   docker-compose ps             # View running services
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: repair_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: repair_admin
+      POSTGRES_PASSWORD: dev_password_change_in_production
+      POSTGRES_DB: mobile_repair_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d  # Initial SQL scripts
+    networks:
+      - repair_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repair_admin -d mobile_repair_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis (Caching & Sessions)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: repair_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass dev_redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - repair_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Backend API (Node.js)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: repair_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://repair_admin:dev_password_change_in_production@postgres:5432/mobile_repair_db
+      REDIS_URL: redis://:dev_redis_password@redis:6379
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      SESSION_SECRET: dev_session_secret_change_in_production
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - repair_network
+    command: npm run dev
+
+  # ---------------------------------------------------------------------------
+  # Frontend (React)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: repair_frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+      REACT_APP_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - repair_network
+    command: npm start
+
+  # ---------------------------------------------------------------------------
+  # Nginx (Reverse Proxy - Production)
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: repair_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./uploads:/var/www/uploads:ro
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - repair_network
+    profiles:
+      - production  # Only run in production
+
+  # ---------------------------------------------------------------------------
+  # pgAdmin (Database Management UI)
+  # ---------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: repair_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@repairshop.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 5050
+    ports:
+      - "5050:5050"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - repair_network
+    profiles:
+      - tools  # Optional tool, run with: docker-compose --profile tools up
+
+  # ---------------------------------------------------------------------------
+  # Redis Commander (Redis Management UI)
+  # ---------------------------------------------------------------------------
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: repair_redis_commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:dev_redis_password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - repair_network
+    profiles:
+      - tools  # Optional tool
+
+  # ---------------------------------------------------------------------------
+  # Backup Service (Automated Database Backups)
+  # ---------------------------------------------------------------------------
+  backup:
+    image: postgres:15-alpine
+    container_name: repair_backup
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: dev_password_change_in_production
+      BACKUP_SCHEDULE: "0 2 * * *"  # Daily at 2 AM
+      BACKUP_RETENTION_DAYS: 30
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - repair_network
+    command: sh -c "chmod +x /backup.sh && crond -f"
+    profiles:
+      - production
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  repair_network:
+    driver: bridge
+
+# =============================================================================
+# USAGE EXAMPLES
+# =============================================================================
+# 
+# Development (start only core services):
+#   docker-compose up -d postgres redis api frontend
+#
+# Development with tools (includes pgAdmin, Redis Commander):
+#   docker-compose --profile tools up -d
+#
+# Production (includes Nginx, Backup):
+#   docker-compose --profile production up -d
+#
+# View logs:
+#   docker-compose logs -f api
+#   docker-compose logs -f postgres
+#
+# Execute commands in containers:
+#   docker-compose exec api npm run prisma:migrate
+#   docker-compose exec postgres psql -U repair_admin -d mobile_repair_db
+#
+# Rebuild after code changes:
+#   docker-compose up -d --build api
+#
+# Database backup (manual):
+#   docker-compose exec postgres pg_dump -U repair_admin mobile_repair_db > backup.sql
+#
+# Database restore:
+#   docker-compose exec -T postgres psql -U repair_admin mobile_repair_db < backup.sql
+#
+# =============================================================================
