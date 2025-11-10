@@ -272,7 +272,7 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
         </div>
 
         {repairItems.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No repairs added yet. Click "Add Repair" to get started.</p>
+          <p className="text-gray-500 text-center py-8">No repairs added yet. Click &quot;Add Repair&quot; to get started.</p>
         ) : (
           <div className="space-y-4">
             {repairItems.map((item, index) => (
