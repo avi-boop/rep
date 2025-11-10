@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   try {
     const settings = {
       lightspeed: {
-        configured: !!(process.env.LIGHTSPEED_ACCOUNT_ID && process.env.LIGHTSPEED_PERSONAL_TOKEN),
-        accountId: process.env.LIGHTSPEED_ACCOUNT_ID ? '***' + process.env.LIGHTSPEED_ACCOUNT_ID.slice(-4) : null,
+        configured: !!(process.env.LIGHTSPEED_DOMAIN_PREFIX && process.env.LIGHTSPEED_PERSONAL_TOKEN),
+        domainPrefix: process.env.LIGHTSPEED_DOMAIN_PREFIX || null,
       },
       gemini: {
         configured: !!process.env.GEMINI_API_KEY,
@@ -37,20 +37,20 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { lightspeedAccountId, lightspeedPersonalToken, geminiApiKey } = body;
+    const { lightspeedDomainPrefix, lightspeedPersonalToken, geminiApiKey } = body;
 
     const envPath = path.join(process.cwd(), '.env');
     let envContent = await fs.readFile(envPath, 'utf-8');
 
     // Update or add Lightspeed settings
-    if (lightspeedAccountId !== undefined) {
-      if (envContent.includes('LIGHTSPEED_ACCOUNT_ID=')) {
+    if (lightspeedDomainPrefix !== undefined) {
+      if (envContent.includes('LIGHTSPEED_DOMAIN_PREFIX=')) {
         envContent = envContent.replace(
-          /LIGHTSPEED_ACCOUNT_ID=.*/,
-          `LIGHTSPEED_ACCOUNT_ID="${lightspeedAccountId}"`
+          /LIGHTSPEED_DOMAIN_PREFIX=.*/,
+          `LIGHTSPEED_DOMAIN_PREFIX="${lightspeedDomainPrefix}"`
         );
       } else {
-        envContent += `\nLIGHTSPEED_ACCOUNT_ID="${lightspeedAccountId}"`;
+        envContent += `\nLIGHTSPEED_DOMAIN_PREFIX="${lightspeedDomainPrefix}"`;
       }
     }
 
