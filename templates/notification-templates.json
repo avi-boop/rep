@@ -1,0 +1,253 @@
+{
+  "templates": [
+    {
+      "id": "REPAIR_RECEIVED",
+      "name": "Repair Received Confirmation",
+      "type": ["sms", "email"],
+      "trigger": "order_created",
+      "auto_send": true,
+      "sms": {
+        "message": "Hi {customer_name}, we've received your {device_brand} {device_model} for repair. Order #{order_number}. Estimated completion: {estimated_completion_date}. Track your repair: {tracking_url}"
+      },
+      "email": {
+        "subject": "Repair Received - Order #{order_number}",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#1976d2}.order-details{background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0}.button{background:#1976d2;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin-top:20px}</style></head><body><h1>Thanks for choosing {business_name}!</h1><p>Hi {customer_name},</p><p>We've successfully received your device and it's now in our care.</p><div class='order-details'><h3>Order Details:</h3><p><strong>Order Number:</strong> {order_number}</p><p><strong>Device:</strong> {device_brand} {device_model}</p><p><strong>Issues:</strong> {repair_items}</p><p><strong>Estimated Completion:</strong> {estimated_completion_date}</p><p><strong>Priority:</strong> {priority}</p></div><p>We'll keep you updated on the progress of your repair.</p><a href='{tracking_url}' class='button'>Track Your Repair</a><p>If you have any questions, feel free to contact us at {business_phone}.</p><p>Best regards,<br>{business_name}</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "estimated_completion_date",
+        "repair_items",
+        "priority",
+        "tracking_url",
+        "business_name",
+        "business_phone"
+      ]
+    },
+    {
+      "id": "DIAGNOSIS_COMPLETE",
+      "name": "Diagnosis Complete - Quote Sent",
+      "type": ["sms", "email"],
+      "trigger": "diagnosis_complete",
+      "auto_send": false,
+      "require_approval": true,
+      "sms": {
+        "message": "Diagnosis complete for your {device_brand} {device_model}. Total repair cost: ${total_price}. Reply YES to approve or call {business_phone} to discuss."
+      },
+      "email": {
+        "subject": "Diagnosis Complete - Order #{order_number}",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#1976d2}.quote-box{background:#e3f2fd;padding:20px;border-left:4px solid #1976d2;margin:20px 0}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:12px;border-bottom:1px solid #ddd}th{background:#f5f5f5}.total-row{font-size:1.2em;font-weight:bold}.button{background:#4caf50;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin:10px 10px 10px 0}.button.decline{background:#f44336}</style></head><body><h1>Diagnosis Complete</h1><p>Hi {customer_name},</p><p>We've completed the diagnosis of your {device_brand} {device_model}.</p><div class='quote-box'><h3>Diagnostic Findings:</h3><p>{diagnosis_notes}</p></div><h3>Repair Quote:</h3><table><thead><tr><th>Repair Item</th><th>Part Quality</th><th>Price</th></tr></thead><tbody>{repair_items_table}</tbody><tfoot><tr class='total-row'><td colspan='2'>Total</td><td>${total_price}</td></tr></tfoot></table><p><strong>Estimated Completion Time:</strong> {estimated_completion_time}</p><h3>Approve or Decline:</h3><a href='{approval_url}' class='button'>Approve Repair</a><a href='{decline_url}' class='button decline'>Decline & Discuss</a><p>If you have questions or would like to modify the repairs, please call us at {business_phone}.</p><p>This quote is valid for 7 days.</p><p>Best regards,<br>{business_name}</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "diagnosis_notes",
+        "repair_items_table",
+        "total_price",
+        "estimated_completion_time",
+        "approval_url",
+        "decline_url",
+        "business_name",
+        "business_phone"
+      ]
+    },
+    {
+      "id": "REPAIR_IN_PROGRESS",
+      "name": "Repair Started",
+      "type": ["sms"],
+      "trigger": "status_in_progress",
+      "auto_send": true,
+      "sms": {
+        "message": "Good news! We've started repairing your {device_brand} {device_model}. Order #{order_number}. You'll be notified when it's ready. {business_name}"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "business_name"
+      ]
+    },
+    {
+      "id": "PARTS_DELAYED",
+      "name": "Parts Delay Notification",
+      "type": ["sms", "email"],
+      "trigger": "manual",
+      "auto_send": false,
+      "sms": {
+        "message": "Update on Order #{order_number}: We're waiting for parts to arrive. New estimated completion: {new_estimated_date}. We apologize for the delay. {business_name}"
+      },
+      "email": {
+        "subject": "Delay Update - Order #{order_number}",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#ff9800}.notice{background:#fff3e0;padding:20px;border-left:4px solid #ff9800;margin:20px 0}</style></head><body><h1>Repair Delay Update</h1><p>Hi {customer_name},</p><div class='notice'><p>We wanted to keep you informed about your {device_brand} {device_model} repair (Order #{order_number}).</p><p>We're currently waiting for parts to arrive from our supplier. The new estimated completion date is <strong>{new_estimated_date}</strong>.</p></div><p>We sincerely apologize for this delay. We're doing everything we can to expedite the process.</p><p><strong>Reason:</strong> {delay_reason}</p><p>You can contact us anytime at {business_phone} for more information.</p><p>Thank you for your patience.</p><p>Best regards,<br>{business_name}</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "new_estimated_date",
+        "delay_reason",
+        "business_name",
+        "business_phone"
+      ]
+    },
+    {
+      "id": "READY_FOR_PICKUP",
+      "name": "Repair Complete - Ready for Pickup",
+      "type": ["sms", "email"],
+      "trigger": "status_completed",
+      "auto_send": true,
+      "sms": {
+        "message": "Great news! Your {device_brand} {device_model} is ready for pickup! 🎉 Order #{order_number}. Balance due: ${balance_due}. {business_address}. Hours: {business_hours}. {business_name}"
+      },
+      "email": {
+        "subject": "Your Device is Ready! - Order #{order_number}",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#4caf50}.success-box{background:#e8f5e9;padding:20px;border-left:4px solid #4caf50;margin:20px 0}.info-box{background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0}.highlight{font-size:1.2em;color:#4caf50;font-weight:bold}img{max-width:100%;height:auto;border-radius:8px;margin:20px 0}.button{background:#4caf50;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin-top:20px}</style></head><body><h1>Your Device is Ready! 🎉</h1><p>Hi {customer_name},</p><div class='success-box'><p class='highlight'>Your {device_brand} {device_model} has been successfully repaired and is ready for pickup!</p><p>Order #{order_number}</p></div><h3>Completed Repairs:</h3><ul>{completed_repairs_list}</ul><img src='{device_photo_url}' alt='Repaired Device' /><div class='info-box'><h3>Pickup Information:</h3><p><strong>Location:</strong> {business_address}<br><strong>Phone:</strong> {business_phone}<br><strong>Hours:</strong> {business_hours}</p><p><strong>Balance Due:</strong> ${balance_due}<br><strong>Warranty:</strong> {warranty_period}</p></div><a href='{directions_url}' class='button'>Get Directions</a><p>Please bring your order number and a valid ID when picking up.</p><p><strong>Important:</strong> Devices not picked up within 30 days may incur storage fees.</p><p>Thank you for choosing {business_name}!</p><p>Best regards,<br>{business_name} Team</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "completed_repairs_list",
+        "device_photo_url",
+        "balance_due",
+        "warranty_period",
+        "business_name",
+        "business_address",
+        "business_phone",
+        "business_hours",
+        "directions_url"
+      ]
+    },
+    {
+      "id": "PICKUP_REMINDER_1",
+      "name": "Pickup Reminder (24 hours)",
+      "type": ["sms"],
+      "trigger": "scheduled_24h",
+      "auto_send": true,
+      "sms": {
+        "message": "Reminder: Your {device_brand} {device_model} is ready for pickup at {business_name}. Order #{order_number}. {business_address}. Call {business_phone} with questions."
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "business_name",
+        "business_address",
+        "business_phone"
+      ]
+    },
+    {
+      "id": "PICKUP_REMINDER_2",
+      "name": "Pickup Reminder (3 days)",
+      "type": ["sms", "email"],
+      "trigger": "scheduled_72h",
+      "auto_send": true,
+      "sms": {
+        "message": "Your {device_brand} {device_model} has been ready for 3 days. Please collect at your earliest convenience. Order #{order_number}. {business_name} - {business_phone}"
+      },
+      "email": {
+        "subject": "Please Pick Up Your Device - Order #{order_number}",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#ff9800}.reminder-box{background:#fff3e0;padding:20px;border-left:4px solid #ff9800;margin:20px 0}</style></head><body><h1>Pickup Reminder</h1><p>Hi {customer_name},</p><div class='reminder-box'><p>Your {device_brand} {device_model} has been ready for pickup for 3 days now.</p><p><strong>Order #{order_number}</strong></p></div><p>Please collect your device at your earliest convenience to avoid storage fees (after 30 days).</p><p><strong>Pickup Location:</strong> {business_address}<br><strong>Hours:</strong> {business_hours}<br><strong>Phone:</strong> {business_phone}</p><p>If you're unable to pick up, please let us know.</p><p>Best regards,<br>{business_name}</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "business_name",
+        "business_address",
+        "business_hours",
+        "business_phone"
+      ]
+    },
+    {
+      "id": "PICKUP_REMINDER_3",
+      "name": "Final Pickup Reminder (7 days)",
+      "type": ["email"],
+      "trigger": "scheduled_168h",
+      "auto_send": true,
+      "email": {
+        "subject": "FINAL REMINDER: Please Pick Up Your Device - Order #{order_number}",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#f44336}.urgent-box{background:#ffebee;padding:20px;border-left:4px solid #f44336;margin:20px 0}</style></head><body><h1>Final Pickup Reminder</h1><p>Hi {customer_name},</p><div class='urgent-box'><p><strong>URGENT:</strong> Your {device_brand} {device_model} has been ready for pickup for <strong>7 days</strong>.</p><p><strong>Order #{order_number}</strong></p></div><p>Please arrange pickup within the next 23 days to avoid storage fees.</p><p><strong>Storage Fee:</strong> $5 per day after 30 days from completion</p><p><strong>Pickup Location:</strong> {business_address}<br><strong>Hours:</strong> {business_hours}<br><strong>Phone:</strong> {business_phone}</p><p>If you no longer need the device or are unable to pick up, please contact us immediately.</p><p>Best regards,<br>{business_name}</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "order_number",
+        "business_name",
+        "business_address",
+        "business_hours",
+        "business_phone"
+      ]
+    },
+    {
+      "id": "PAYMENT_RECEIPT",
+      "name": "Payment Receipt",
+      "type": ["email"],
+      "trigger": "payment_received",
+      "auto_send": true,
+      "email": {
+        "subject": "Payment Receipt - Order #{order_number}",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#1976d2}.receipt-box{background:#f5f5f5;padding:20px;border-radius:8px;margin:20px 0}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:12px;border-bottom:1px solid #ddd}th{background:#e3f2fd}.total-row{font-size:1.2em;font-weight:bold;background:#e3f2fd}</style></head><body><h1>Payment Receipt</h1><p>Hi {customer_name},</p><p>Thank you for your payment!</p><div class='receipt-box'><p><strong>Receipt Number:</strong> {receipt_number}<br><strong>Payment Date:</strong> {payment_date}<br><strong>Payment Method:</strong> {payment_method}</p></div><h3>Order Summary:</h3><table><thead><tr><th>Description</th><th>Quantity</th><th>Amount</th></tr></thead><tbody>{line_items_table}</tbody><tfoot><tr><td><strong>Subtotal</strong></td><td></td><td>${subtotal}</td></tr><tr><td><strong>Tax ({tax_rate}%)</strong></td><td></td><td>${tax_amount}</td></tr><tr class='total-row'><td><strong>Total Paid</strong></td><td></td><td>${total_paid}</td></tr></tfoot></table><p><strong>Order Number:</strong> {order_number}<br><strong>Device:</strong> {device_brand} {device_model}<br><strong>Warranty:</strong> {warranty_period}</p><p>Please keep this receipt for your records.</p><p>Thank you for choosing {business_name}!</p><p>Best regards,<br>{business_name}</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "receipt_number",
+        "payment_date",
+        "payment_method",
+        "order_number",
+        "device_brand",
+        "device_model",
+        "line_items_table",
+        "subtotal",
+        "tax_rate",
+        "tax_amount",
+        "total_paid",
+        "warranty_period",
+        "business_name"
+      ]
+    },
+    {
+      "id": "REVIEW_REQUEST",
+      "name": "Request Customer Review",
+      "type": ["sms", "email"],
+      "trigger": "manual",
+      "auto_send": false,
+      "delay_hours": 24,
+      "sms": {
+        "message": "Hi {customer_name}! How was your experience with {business_name}? We'd love your feedback: {review_url}. Thank you! 😊"
+      },
+      "email": {
+        "subject": "How Was Your Experience?",
+        "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}h1{color:#1976d2}.review-box{background:#e8f5e9;padding:30px;text-align:center;border-radius:8px;margin:20px 0}.stars{font-size:2em;margin:20px 0}.button{background:#4caf50;color:white;padding:15px 30px;text-decoration:none;border-radius:4px;display:inline-block;margin-top:20px;font-size:1.1em}</style></head><body><h1>We'd Love Your Feedback!</h1><p>Hi {customer_name},</p><p>Thank you for choosing {business_name} for your {device_brand} {device_model} repair.</p><div class='review-box'><p>How would you rate your experience?</p><div class='stars'>⭐⭐⭐⭐⭐</div><a href='{review_url}' class='button'>Leave a Review</a></div><p>Your feedback helps us improve and helps others make informed decisions.</p><p>Reviews take less than 2 minutes and we truly appreciate your time!</p><p>Thank you again for your business.</p><p>Best regards,<br>{business_name} Team</p></body></html>"
+      },
+      "variables": [
+        "customer_name",
+        "device_brand",
+        "device_model",
+        "review_url",
+        "business_name"
+      ]
+    }
+  ],
+  "usage_notes": {
+    "variable_formatting": "Use {variable_name} format. Variables will be replaced at send time.",
+    "html_emails": "Use inline CSS for best email client compatibility",
+    "character_limits": {
+      "sms": 160,
+      "sms_with_unicode": 70,
+      "email_subject": 78
+    },
+    "testing": "Always test templates with real data before enabling auto-send",
+    "customization": "Templates can be edited via admin panel after launch"
+  }
+}

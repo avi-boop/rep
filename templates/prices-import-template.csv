@@ -1,0 +1,121 @@
+brand,model,repair_type,part_quality,price,cost,notes
+Apple,iPhone 11,Front Screen,Aftermarket,120.00,45.00,LCD display
+Apple,iPhone 11,Front Screen,Original,180.00,85.00,OEM LCD display
+Apple,iPhone 11,Battery,Aftermarket,60.00,18.00,Standard capacity
+Apple,iPhone 11,Battery,Original,80.00,35.00,OEM battery
+Apple,iPhone 11,Back Glass,Aftermarket,90.00,30.00,Standard glass
+Apple,iPhone 11,Back Glass,Original,120.00,55.00,OEM glass with Apple logo
+Apple,iPhone 11,Charging Port,Aftermarket,70.00,20.00,Includes labor
+Apple,iPhone 11,Camera,Aftermarket,65.00,22.00,Rear camera
+Apple,iPhone 11,Camera,Original,95.00,45.00,OEM rear camera
+Apple,iPhone 11,Speaker,Aftermarket,50.00,12.00,Loudspeaker
+Apple,iPhone 12,Front Screen,Aftermarket,150.00,60.00,OLED display
+Apple,iPhone 12,Front Screen,Original,220.00,110.00,OEM OLED display
+Apple,iPhone 12,Battery,Aftermarket,70.00,20.00,Standard capacity
+Apple,iPhone 12,Battery,Original,90.00,40.00,OEM battery
+Apple,iPhone 12,Back Glass,Aftermarket,100.00,35.00,Standard glass
+Apple,iPhone 12,Back Glass,Original,140.00,65.00,OEM glass with Apple logo
+Apple,iPhone 12,Charging Port,Aftermarket,75.00,22.00,Includes labor
+Apple,iPhone 12,Camera,Aftermarket,75.00,28.00,Rear camera
+Apple,iPhone 12,Camera,Original,110.00,55.00,OEM rear camera
+Apple,iPhone 13,Front Screen,Aftermarket,180.00,75.00,OLED display
+Apple,iPhone 13,Front Screen,Original,250.00,125.00,OEM OLED display
+Apple,iPhone 13,Battery,Aftermarket,75.00,22.00,Standard capacity
+Apple,iPhone 13,Battery,Original,95.00,42.00,OEM battery
+Apple,iPhone 13,Back Glass,Aftermarket,110.00,38.00,Standard glass
+Apple,iPhone 13,Back Glass,Original,150.00,70.00,OEM glass with Apple logo
+Apple,iPhone 13,Charging Port,Aftermarket,80.00,24.00,Includes labor
+Apple,iPhone 13,Camera,Aftermarket,85.00,32.00,Rear camera
+Apple,iPhone 13,Camera,Original,125.00,62.00,OEM rear camera
+Apple,iPhone 13 Pro,Front Screen,Aftermarket,220.00,95.00,ProMotion OLED 120Hz
+Apple,iPhone 13 Pro,Front Screen,Original,320.00,160.00,OEM ProMotion OLED 120Hz
+Apple,iPhone 13 Pro,Battery,Aftermarket,80.00,24.00,Standard capacity
+Apple,iPhone 13 Pro,Battery,Original,100.00,45.00,OEM battery
+Apple,iPhone 13 Pro,Back Glass,Aftermarket,120.00,42.00,Standard glass
+Apple,iPhone 13 Pro,Back Glass,Original,165.00,78.00,OEM glass with Apple logo
+Apple,iPhone 13 Pro,Camera,Aftermarket,110.00,45.00,Triple camera system
+Apple,iPhone 13 Pro,Camera,Original,180.00,90.00,OEM triple camera
+Apple,iPhone 14,Front Screen,Aftermarket,200.00,85.00,OLED display
+Apple,iPhone 14,Front Screen,Original,280.00,140.00,OEM OLED display
+Apple,iPhone 14,Battery,Aftermarket,80.00,24.00,Standard capacity
+Apple,iPhone 14,Battery,Original,100.00,45.00,OEM battery
+Apple,iPhone 14,Back Glass,Aftermarket,115.00,40.00,Standard glass
+Apple,iPhone 14,Back Glass,Original,160.00,75.00,OEM glass with Apple logo
+Apple,iPhone 14,Charging Port,Aftermarket,85.00,26.00,Includes labor
+Apple,iPhone 14 Pro,Front Screen,Aftermarket,250.00,110.00,Dynamic Island ProMotion OLED
+Apple,iPhone 14 Pro,Front Screen,Original,380.00,190.00,OEM Dynamic Island ProMotion
+Apple,iPhone 14 Pro,Battery,Aftermarket,85.00,26.00,Standard capacity
+Apple,iPhone 14 Pro,Battery,Original,110.00,50.00,OEM battery
+Apple,iPhone 14 Pro,Back Glass,Aftermarket,130.00,45.00,Standard glass
+Apple,iPhone 14 Pro,Back Glass,Original,180.00,85.00,OEM glass with Apple logo
+Apple,iPhone 15,Front Screen,Aftermarket,220.00,95.00,OLED display USB-C
+Apple,iPhone 15,Front Screen,Original,310.00,155.00,OEM OLED display USB-C
+Apple,iPhone 15,Battery,Aftermarket,85.00,26.00,Standard capacity
+Apple,iPhone 15,Battery,Original,110.00,50.00,OEM battery
+Apple,iPhone 15,Back Glass,Aftermarket,120.00,42.00,Standard glass
+Apple,iPhone 15,Back Glass,Original,170.00,80.00,OEM glass with Apple logo
+Apple,iPhone 15,Charging Port,Aftermarket,95.00,30.00,USB-C port
+Apple,iPhone 15 Pro,Front Screen,Aftermarket,280.00,125.00,Titanium ProMotion OLED
+Apple,iPhone 15 Pro,Front Screen,Original,420.00,210.00,OEM Titanium ProMotion
+Apple,iPhone 15 Pro,Battery,Aftermarket,90.00,28.00,Standard capacity
+Apple,iPhone 15 Pro,Battery,Original,120.00,55.00,OEM battery
+Apple,iPhone 15 Pro,Back Glass,Aftermarket,140.00,50.00,Titanium back
+Apple,iPhone 15 Pro,Back Glass,Original,200.00,95.00,OEM Titanium back
+Samsung,Galaxy S21,Front Screen,Aftermarket,140.00,55.00,Dynamic AMOLED
+Samsung,Galaxy S21,Front Screen,Original,200.00,95.00,OEM Dynamic AMOLED
+Samsung,Galaxy S21,Battery,Aftermarket,60.00,18.00,Standard capacity
+Samsung,Galaxy S21,Battery,Original,80.00,35.00,OEM battery
+Samsung,Galaxy S21,Back Glass,Aftermarket,70.00,22.00,Standard glass
+Samsung,Galaxy S21,Back Glass,Original,100.00,45.00,OEM glass with Samsung logo
+Samsung,Galaxy S21,Charging Port,Aftermarket,65.00,20.00,USB-C port
+Samsung,Galaxy S21,Camera,Aftermarket,70.00,25.00,Rear camera
+Samsung,Galaxy S22,Front Screen,Aftermarket,160.00,65.00,Dynamic AMOLED 120Hz
+Samsung,Galaxy S22,Front Screen,Original,230.00,110.00,OEM Dynamic AMOLED 120Hz
+Samsung,Galaxy S22,Battery,Aftermarket,65.00,20.00,Standard capacity
+Samsung,Galaxy S22,Battery,Original,85.00,38.00,OEM battery
+Samsung,Galaxy S22,Back Glass,Aftermarket,75.00,24.00,Standard glass
+Samsung,Galaxy S22,Back Glass,Original,110.00,50.00,OEM glass with Samsung logo
+Samsung,Galaxy S22,Charging Port,Aftermarket,70.00,22.00,USB-C port
+Samsung,Galaxy S23,Front Screen,Aftermarket,180.00,75.00,Dynamic AMOLED 120Hz
+Samsung,Galaxy S23,Front Screen,Original,260.00,125.00,OEM Dynamic AMOLED 120Hz
+Samsung,Galaxy S23,Battery,Aftermarket,70.00,22.00,Standard capacity
+Samsung,Galaxy S23,Battery,Original,90.00,40.00,OEM battery
+Samsung,Galaxy S23,Back Glass,Aftermarket,80.00,26.00,Standard glass
+Samsung,Galaxy S23,Back Glass,Original,120.00,55.00,OEM glass with Samsung logo
+Samsung,Galaxy S23,Charging Port,Aftermarket,75.00,24.00,USB-C port
+Samsung,Galaxy S23 Ultra,Front Screen,Aftermarket,240.00,105.00,Dynamic AMOLED 120Hz Curved
+Samsung,Galaxy S23 Ultra,Front Screen,Original,360.00,180.00,OEM Dynamic AMOLED 120Hz
+Samsung,Galaxy S23 Ultra,Battery,Aftermarket,80.00,26.00,Large capacity
+Samsung,Galaxy S23 Ultra,Battery,Original,110.00,50.00,OEM battery
+Samsung,Galaxy S23 Ultra,Back Glass,Aftermarket,95.00,32.00,Standard glass
+Samsung,Galaxy S23 Ultra,Back Glass,Original,140.00,65.00,OEM glass with Samsung logo
+Samsung,Galaxy S23 Ultra,Camera,Aftermarket,120.00,50.00,Quad camera system
+Samsung,Galaxy S24,Front Screen,Aftermarket,200.00,85.00,Dynamic AMOLED 120Hz
+Samsung,Galaxy S24,Front Screen,Original,290.00,145.00,OEM Dynamic AMOLED 120Hz
+Samsung,Galaxy S24,Battery,Aftermarket,75.00,24.00,Standard capacity
+Samsung,Galaxy S24,Battery,Original,100.00,45.00,OEM battery
+Samsung,Galaxy S24 Ultra,Front Screen,Aftermarket,280.00,125.00,Titanium Dynamic AMOLED
+Samsung,Galaxy S24 Ultra,Front Screen,Original,410.00,205.00,OEM Titanium Display
+Samsung,Galaxy S24 Ultra,Battery,Aftermarket,85.00,28.00,Large capacity
+Samsung,Galaxy S24 Ultra,Battery,Original,120.00,55.00,OEM battery
+Samsung,Galaxy S24 Ultra,Back Glass,Aftermarket,110.00,38.00,Titanium back
+Samsung,Galaxy S24 Ultra,Back Glass,Original,165.00,78.00,OEM Titanium back
+iPad,iPad 9th Gen,Front Screen,Aftermarket,120.00,45.00,Glass + digitizer
+iPad,iPad 9th Gen,Front Screen,Original,170.00,80.00,OEM glass + digitizer
+iPad,iPad 9th Gen,Battery,Aftermarket,90.00,30.00,Large capacity
+iPad,iPad 9th Gen,Battery,Original,120.00,55.00,OEM battery
+iPad,iPad Air 5th Gen,Front Screen,Aftermarket,180.00,75.00,Liquid Retina
+iPad,iPad Air 5th Gen,Front Screen,Original,260.00,125.00,OEM Liquid Retina
+iPad,iPad Air 5th Gen,Battery,Aftermarket,110.00,38.00,Large capacity
+iPad,iPad Pro 11,Front Screen,Aftermarket,250.00,110.00,Liquid Retina ProMotion
+iPad,iPad Pro 11,Front Screen,Original,380.00,190.00,OEM Liquid Retina ProMotion
+iPad,iPad Pro 11,Battery,Aftermarket,130.00,45.00,Large capacity
+iPad,iPad Pro 12.9,Front Screen,Aftermarket,320.00,145.00,XDR Display
+iPad,iPad Pro 12.9,Front Screen,Original,480.00,240.00,OEM XDR Display
+iPad,iPad Pro 12.9,Battery,Aftermarket,150.00,52.00,Large capacity
+Samsung,Galaxy Tab S8,Front Screen,Aftermarket,150.00,60.00,11 inch LCD
+Samsung,Galaxy Tab S8,Front Screen,Original,220.00,105.00,OEM 11 inch LCD
+Samsung,Galaxy Tab S8,Battery,Aftermarket,95.00,32.00,Large capacity
+Samsung,Galaxy Tab S9,Front Screen,Aftermarket,180.00,75.00,Dynamic AMOLED
+Samsung,Galaxy Tab S9,Front Screen,Original,270.00,130.00,OEM Dynamic AMOLED
+Samsung,Galaxy Tab S9,Battery,Aftermarket,105.00,36.00,Large capacity
