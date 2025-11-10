@@ -92,7 +92,7 @@ export async function estimatePrice(
       p => p.deviceModel.releaseYear && p.deviceModel.releaseYear > targetYear
     )
 
-    if (older.length > 0 && newer.length > 0) {
+    if (older.length > 0 && newer.length > 0 && targetDevice.releaseYear) {
       // Interpolation possible
       const closestOlder = older[older.length - 1]
       const closestNewer = newer[0]

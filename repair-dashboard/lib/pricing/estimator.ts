@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 
 export interface PriceEstimate {
   price: number
@@ -10,7 +10,7 @@ export interface PriceEstimate {
 
 /**
  * Estimates price for a device repair using smart interpolation
- * Based on nearby models, release dates, and tier levels
+ * Based on nearby models, release dates, and part types
  */
 export async function estimatePrice(
   deviceModelId: number,
@@ -23,6 +23,7 @@ export async function estimatePrice(
       deviceModelId,
       repairTypeId,
       partTypeId,
+      isActive: true,
     },
   })
 
@@ -46,22 +47,21 @@ export async function estimatePrice(
     throw new Error('Device not found')
   }
 
-  // 3. Find reference prices from same brand (handle null releaseYear)
-  if (!targetDevice.releaseYear) {
-    return estimateFromCategoryAverage(repairTypeId, partTypeId)
-  }
-
+  // 3. Find reference prices from same brand
   const referencePrices = await prisma.pricing.findMany({
     where: {
       repairTypeId,
       partTypeId,
       isEstimated: false, // Only use confirmed prices for estimation
+      isActive: true,
       deviceModel: {
         brandId: targetDevice.brandId,
-        releaseYear: {
-          gte: targetDevice.releaseYear - 2,
-          lte: targetDevice.releaseYear + 2,
-        },
+        ...(targetDevice.releaseYear && {
+          releaseYear: {
+            gte: targetDevice.releaseYear - 2,
+            lte: targetDevice.releaseYear + 2,
+          },
+        }),
       },
     },
     include: {
@@ -80,12 +80,11 @@ export async function estimatePrice(
   }
 
   // 4. Find bracketing models (older and newer)
-  const targetYear = targetDevice.releaseYear
   const older = referencePrices.filter(
-    (p) => p.deviceModel.releaseYear && p.deviceModel.releaseYear < targetYear
+    (p) => p.deviceModel.releaseYear && targetDevice.releaseYear && p.deviceModel.releaseYear < targetDevice.releaseYear
   )
   const newer = referencePrices.filter(
-    (p) => p.deviceModel.releaseYear && p.deviceModel.releaseYear > targetYear
+    (p) => p.deviceModel.releaseYear && targetDevice.releaseYear && p.deviceModel.releaseYear > targetDevice.releaseYear
   )
 
   let estimatedPrice: number
@@ -104,7 +103,7 @@ export async function estimatePrice(
 
     // Linear interpolation
     const yearDiff = newerYear - olderYear
-    const targetYearDiff = targetYear - olderYear
+    const targetYearDiff = targetDevice.releaseYear! - olderYear
     const priceDiff = newerPrice - olderPrice
 
     estimatedPrice = olderPrice + (priceDiff * targetYearDiff) / yearDiff
@@ -121,14 +120,7 @@ export async function estimatePrice(
     return estimateFromCategoryAverage(repairTypeId, partTypeId)
   }
 
-  // 5. Adjust for device name (premium/budget models)
-  if (targetDevice.name.includes('Pro') || targetDevice.name.includes('Ultra')) {
-    estimatedPrice *= 1.15 // Premium tier
-  } else if (targetDevice.name.includes('SE') || targetDevice.name.includes('Mini')) {
-    estimatedPrice *= 0.85 // Budget tier
-  }
-
-  // 6. Round to nearest $5 or $9 ending
+  // 5. Round to nearest $5 or $9 ending
   estimatedPrice = roundToNiceNumber(estimatedPrice)
 
   return {
@@ -155,6 +147,7 @@ async function estimateFromCategoryAverage(
       repairTypeId,
       partTypeId,
       isEstimated: false,
+      isActive: true,
     },
     _avg: {
       price: true,
