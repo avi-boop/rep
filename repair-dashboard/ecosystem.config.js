@@ -28,8 +28,8 @@ module.exports = {
     },
     {
       name: 'lightspeed-sync',
-      script: './scripts/sync-lightspeed-customers.ts',
-      interpreter: 'tsx',
+      script: 'npx',
+      args: 'tsx ./scripts/sync-lightspeed-customers.ts',
       cwd: __dirname,
       instances: 1,
       autorestart: true,
