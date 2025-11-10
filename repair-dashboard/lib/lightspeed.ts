@@ -34,6 +34,26 @@ interface LightspeedProduct {
   variant_name?: string;
 }
 
+interface LightspeedSale {
+  id?: string;
+  customer_id?: string;
+  sale_date?: string;
+  status?: string;
+  note?: string;
+  line_items?: Array<{
+    product_id?: string;
+    variant_id?: string;
+    quantity: number;
+    price: number;
+    note?: string;
+  }>;
+  payments?: Array<{
+    amount: number;
+    payment_type_id: string;
+    payment_date?: string;
+  }>;
+}
+
 export class LightspeedService {
   private config: LightspeedConfig;
   private baseUrl: string;
@@ -279,6 +299,94 @@ export class LightspeedService {
     } catch (error) {
       console.error('Error syncing pricing to Lightspeed:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Create a sale in Lightspeed from a completed repair
+   */
+  async createSale(sale: {
+    customerId?: string;
+    items: Array<{
+      name: string;
+      price: number;
+      quantity: number;
+      sku?: string;
+    }>;
+    totalPaid: number;
+    paymentType?: string;
+    note?: string;
+  }): Promise<LightspeedSale> {
+    if (!this.isConfigured()) {
+      throw new Error('Lightspeed not configured');
+    }
+
+    try {
+      // First, create/find products for each repair item
+      const lineItems = []
+
+      for (const item of sale.items) {
+        // Try to find existing product by SKU
+        let product = null
+        if (item.sku) {
+          try {
+            const products = await this.getItems()
+            product = products.find(p => p.sku === item.sku)
+          } catch (e) {
+            console.log('Could not search for existing product:', e)
+          }
+        }
+
+        // Create product if it doesn't exist
+        if (!product) {
+          product = await this.syncPricing({
+            description: item.name,
+            price: item.price,
+            cost: Math.round(item.price * 0.5), // Estimate 50% cost
+          })
+        }
+
+        lineItems.push({
+          product_id: product.id,
+          quantity: item.quantity,
+          price: item.price,
+          note: item.name,
+        })
+      }
+
+      // Create the sale
+      const lightspeedSale: Partial<LightspeedSale> = {
+        customer_id: sale.customerId,
+        sale_date: new Date().toISOString(),
+        status: 'complete',
+        note: sale.note || 'Repair order synced from dashboard',
+        line_items: lineItems,
+        payments: [{
+          amount: sale.totalPaid,
+          payment_type_id: '1', // Cash/default payment type
+          payment_date: new Date().toISOString(),
+        }],
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/sales`,
+        {
+          method: 'POST',
+          headers: this.getAuthHeader(),
+          body: JSON.stringify(lightspeedSale),
+        }
+      )
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Lightspeed API error: ${response.statusText} - ${errorText}`)
+      }
+
+      const data = await response.json()
+      return data.data
+    } catch (error) {
+      console.error('Error creating Lightspeed sale:', error)
+      throw error
     }
   }
 }
