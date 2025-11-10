@@ -1,0 +1,188 @@
+# docker-compose.yml
+# Docker Compose configuration for Mobile Repair Shop Dashboard
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: repair-shop-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: repair_shop_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - repair-shop-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d repair_shop_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: repair-shop-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - repair-shop-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: repair-shop-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://admin:${DB_PASSWORD:-changeme}@postgres:5432/repair_shop_db
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE: 7d
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}
+      LIGHTSPEED_API_KEY: ${LIGHTSPEED_API_KEY}
+      LIGHTSPEED_ACCOUNT_ID: ${LIGHTSPEED_ACCOUNT_ID}
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - uploads:/app/uploads
+    ports:
+      - "5000:5000"
+    networks:
+      - repair-shop-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React App
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:5000/api/v1}
+        REACT_APP_WS_URL: ${REACT_APP_WS_URL:-ws://localhost:5000}
+    container_name: repair-shop-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - repair-shop-network
+    depends_on:
+      - backend
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    container_name: repair-shop-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - uploads:/usr/share/nginx/html/uploads:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - repair-shop-network
+    depends_on:
+      - backend
+      - frontend
+    profiles:
+      - production
+
+  # pgAdmin (Development only)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: repair-shop-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@repairshop.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - repair-shop-network
+    depends_on:
+      - postgres
+    profiles:
+      - development
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  pgadmin-data:
+    driver: local
+  uploads:
+    driver: local
+
+networks:
+  repair-shop-network:
+    driver: bridge
+
+# ===========================================
+# Usage Instructions:
+# ===========================================
+#
+# Development (with pgAdmin):
+#   docker-compose --profile development up -d
+#
+# Production (with Nginx):
+#   docker-compose --profile production up -d
+#
+# Basic (without optional services):
+#   docker-compose up -d
+#
+# View logs:
+#   docker-compose logs -f [service-name]
+#
+# Stop all services:
+#   docker-compose down
+#
+# Stop and remove volumes (WARNING: deletes data):
+#   docker-compose down -v
+#
+# Rebuild after code changes:
+#   docker-compose up -d --build
+#
+# Scale backend (multiple instances):
+#   docker-compose up -d --scale backend=3
+#
+# ===========================================
