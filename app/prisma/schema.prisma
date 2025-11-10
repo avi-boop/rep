@@ -1,0 +1,217 @@
+// This is your Prisma schema file for the Mobile Repair Shop Dashboard
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+  devices   DeviceModel[]
+  
+  @@map("brands")
+}
+
+model DeviceModel {
+  id          Int      @id @default(autoincrement())
+  brandId     Int      @map("brand_id")
+  name        String   @db.VarChar(100)
+  variant     String?  @db.VarChar(100)
+  releaseYear Int      @map("release_year")
+  releaseMonth Int?    @map("release_month")
+  tierLevel   Int      @map("tier_level")
+  isPhone     Boolean  @default(true) @map("is_phone")
+  isTablet    Boolean  @default(false) @map("is_tablet")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  brand       Brand    @relation(fields: [brandId], references: [id])
+  repairs     Repair[]
+  prices      Price[]
+  
+  @@map("device_models")
+}
+
+model RepairType {
+  id               Int      @id @default(autoincrement())
+  name             String   @db.VarChar(100)
+  category         String   @db.VarChar(50)
+  complexityLevel  Int      @map("complexity_level")
+  avgTimeMinutes   Int      @map("avg_time_minutes")
+  createdAt        DateTime @default(now()) @map("created_at")
+  
+  prices           Price[]
+  repairItems      RepairItem[]
+  
+  @@map("repair_types")
+}
+
+enum PartsQuality {
+  original
+  aftermarket_premium
+  aftermarket_standard
+  aftermarket_economy
+}
+
+model Price {
+  id             Int           @id @default(autoincrement())
+  deviceModelId  Int           @map("device_model_id")
+  repairTypeId   Int           @map("repair_type_id")
+  partsQuality   PartsQuality  @map("parts_quality")
+  partsCost      Decimal       @db.Decimal(10, 2) @map("parts_cost")
+  laborCost      Decimal       @db.Decimal(10, 2) @map("labor_cost")
+  totalPrice     Decimal       @db.Decimal(10, 2) @map("total_price")
+  isEstimated    Boolean       @default(false) @map("is_estimated")
+  confidenceScore Decimal?     @db.Decimal(3, 2) @map("confidence_score")
+  lastUpdated    DateTime      @default(now()) @updatedAt @map("last_updated")
+  
+  deviceModel    DeviceModel   @relation(fields: [deviceModelId], references: [id])
+  repairType     RepairType    @relation(fields: [repairTypeId], references: [id])
+  repairItems    RepairItem[]
+  
+  @@unique([deviceModelId, repairTypeId, partsQuality])
+  @@map("prices")
+}
+
+model Customer {
+  id                     Int      @id @default(autoincrement())
+  lightspeedCustomerId   String?  @unique @db.VarChar(100) @map("lightspeed_customer_id")
+  firstName              String   @db.VarChar(100) @map("first_name")
+  lastName               String   @db.VarChar(100) @map("last_name")
+  phone                  String   @db.VarChar(20)
+  email                  String?  @db.VarChar(100)
+  notificationPreference String   @default("sms") @map("notification_preference")
+  lastSynced             DateTime? @map("last_synced")
+  createdAt              DateTime @default(now()) @map("created_at")
+  
+  repairs                Repair[]
+  notifications          Notification[]
+  
+  @@map("customers")
+}
+
+enum RepairStatus {
+  new
+  diagnosed
+  awaiting_approval
+  approved
+  awaiting_parts
+  in_progress
+  testing
+  ready
+  completed
+  cancelled
+}
+
+enum Priority {
+  standard
+  urgent
+  express
+}
+
+model Repair {
+  id                  Int           @id @default(autoincrement())
+  repairNumber        String        @unique @db.VarChar(50) @map("repair_number")
+  customerId          Int           @map("customer_id")
+  deviceModelId       Int           @map("device_model_id")
+  deviceImei          String?       @db.VarChar(50) @map("device_imei")
+  deviceCondition     String?       @db.Text @map("device_condition")
+  status              RepairStatus  @default(new)
+  priority            Priority      @default(standard)
+  technicianId        Int?          @map("technician_id")
+  estimatedCompletion DateTime?     @map("estimated_completion")
+  actualCompletion    DateTime?     @map("actual_completion")
+  totalCost           Decimal       @db.Decimal(10, 2) @map("total_cost")
+  depositPaid         Decimal       @default(0) @db.Decimal(10, 2) @map("deposit_paid")
+  notes               String?       @db.Text
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  
+  customer            Customer      @relation(fields: [customerId], references: [id])
+  deviceModel         DeviceModel   @relation(fields: [deviceModelId], references: [id])
+  repairItems         RepairItem[]
+  notifications       Notification[]
+  
+  @@map("repairs")
+}
+
+model RepairItem {
+  id              Int           @id @default(autoincrement())
+  repairId        Int           @map("repair_id")
+  repairTypeId    Int           @map("repair_type_id")
+  partsQuality    PartsQuality  @map("parts_quality")
+  priceId         Int?          @map("price_id")
+  finalPrice      Decimal       @db.Decimal(10, 2) @map("final_price")
+  priceOverridden Boolean       @default(false) @map("price_overridden")
+  status          String        @default("pending")
+  notes           String?       @db.Text
+  
+  repair          Repair        @relation(fields: [repairId], references: [id])
+  repairType      RepairType    @relation(fields: [repairTypeId], references: [id])
+  price           Price?        @relation(fields: [priceId], references: [id])
+  
+  @@map("repair_items")
+}
+
+model Notification {
+  id              Int      @id @default(autoincrement())
+  repairId        Int      @map("repair_id")
+  customerId      Int      @map("customer_id")
+  type            String   @db.VarChar(50)
+  channel         String   @db.VarChar(20)
+  message         String   @db.Text
+  sentAt          DateTime @default(now()) @map("sent_at")
+  deliveredStatus String   @default("pending") @map("delivered_status")
+  readAt          DateTime? @map("read_at")
+  
+  repair          Repair   @relation(fields: [repairId], references: [id])
+  customer        Customer @relation(fields: [customerId], references: [id])
+  
+  @@map("notifications")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(100)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  name         String   @db.VarChar(100)
+  role         String   @db.VarChar(20)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  @@map("users")
+}
+
+model PriceEstimationLog {
+  id              Int      @id @default(autoincrement())
+  deviceModelId   Int      @map("device_model_id")
+  repairTypeId    Int      @map("repair_type_id")
+  partsQuality    String   @db.VarChar(50) @map("parts_quality")
+  estimatedPrice  Decimal  @db.Decimal(10, 2) @map("estimated_price")
+  confidenceScore Decimal  @db.Decimal(3, 2) @map("confidence_score")
+  referenceModels String?  @db.Text @map("reference_models")
+  algorithmVersion String  @db.VarChar(20) @map("algorithm_version")
+  createdAt       DateTime @default(now()) @map("created_at")
+  
+  @@map("price_estimation_log")
+}
+
+model LightspeedSyncLog {
+  id             Int      @id @default(autoincrement())
+  syncType       String   @db.VarChar(20) @map("sync_type")
+  entityId       Int?     @map("entity_id")
+  lightspeedId   String?  @db.VarChar(100) @map("lightspeed_id")
+  syncStatus     String   @db.VarChar(20) @map("sync_status")
+  syncDirection  String   @db.VarChar(20) @map("sync_direction")
+  errorMessage   String?  @db.Text @map("error_message")
+  syncedAt       DateTime @default(now()) @map("synced_at")
+  
+  @@map("lightspeed_sync_log")
+}
