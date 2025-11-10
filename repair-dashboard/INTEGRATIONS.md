@@ -290,6 +290,237 @@ Brand, Device, Repair, Part Quality, Suggested Price, Min Price, Max Price, Conf
 
 ---
 
+## Bi-directional Lightspeed Sync
+
+### Overview
+
+Completed repair orders can now be synced to Lightspeed POS as sales transactions, closing the integration loop.
+
+### Features
+
+- ✅ Converts repair orders to Lightspeed sales
+- ✅ Automatically creates products for repair line items
+- ✅ Tracks sync status to prevent duplicates
+- ✅ Links customer records between systems
+- ✅ Generates SKUs for repair items
+
+### How It Works
+
+**1. Sync Trigger**
+
+```bash
+curl -X POST http://localhost:3000/api/integrations/lightspeed/sales \
+  -H "Content-Type: application/json" \
+  -d '{"repairOrderId": 123}'
+```
+
+**2. Process Flow**
+
+1. Validates repair order exists and is not already synced
+2. Retrieves repair details with customer, device, and repair items
+3. Creates line items from repair items:
+   - Format: `{Brand} {Model} - {Repair Type} ({Part Quality})`
+   - SKU: `REPAIR-{deviceModelId}-{repairTypeId}-{partTypeId}`
+   - Searches for existing products by SKU or creates new ones
+4. Creates sale in Lightspeed with:
+   - Customer linkage (if customer has Lightspeed ID)
+   - Complete line items with quantities and prices
+   - Payment record (default: cash)
+   - Order notes with repair order reference
+5. Updates repair order with:
+   - `lightspeedSaleId`: Lightspeed sale ID
+   - `syncedToLightspeed`: true
+   - `syncedAt`: timestamp
+
+**3. Example Response**
+
+```json
+{
+  "success": true,
+  "saleId": "12345",
+  "message": "Repair order successfully synced to Lightspeed POS"
+}
+```
+
+### Database Schema Changes
+
+New fields in `RepairOrder` model:
+
+```prisma
+model RepairOrder {
+  // ... existing fields
+  lightspeedSaleId     String?   // Lightspeed sale ID
+  syncedToLightspeed   Boolean   @default(false)
+  syncedAt             DateTime? // When sync occurred
+}
+```
+
+### Error Handling
+
+- **404**: Repair order not found
+- **400**: Already synced (returns existing sale ID)
+- **400**: Lightspeed not configured
+- **500**: Sync failed (returns error details)
+
+---
+
+## Notification System
+
+### Overview
+
+Foundation for automated customer notifications via email and SMS.
+
+### Configuration
+
+**Environment Variables** (`.env`):
+```bash
+# Email (Resend)
+RESEND_API_KEY="re_..."
+NOTIFICATION_FROM_EMAIL="repairs@metrowireless.com.au"
+NOTIFICATION_FROM_NAME="Metro Wireless"
+
+# SMS (Twilio)
+TWILIO_ACCOUNT_SID="AC..."
+TWILIO_AUTH_TOKEN="..."
+TWILIO_FROM_NUMBER="+61..."
+```
+
+### Notification Events
+
+The system supports 6 repair lifecycle events:
+
+1. **repair_created** - When repair order is first created
+2. **repair_approved** - When customer approves the quote
+3. **repair_in_progress** - When technician starts work
+4. **repair_completed** - When repair work is finished
+5. **repair_ready_pickup** - When device is ready for customer pickup
+6. **payment_received** - When final payment is processed
+
+### Usage
+
+```typescript
+import { notificationService } from '@/lib/notifications'
+
+// Check if configured
+if (notificationService.isEmailConfigured()) {
+  console.log('Email notifications ready')
+}
+
+if (notificationService.isSMSConfigured()) {
+  console.log('SMS notifications ready')
+}
+
+// Send notification (implementation pending)
+await notificationService.sendRepairNotification(
+  repairOrderId,
+  'repair_completed'
+)
+```
+
+### Implementation Status
+
+- ✅ Service class architecture
+- ✅ Configuration management
+- ✅ Event type definitions
+- ✅ Provider abstraction (Resend, Twilio)
+- ⏳ Email template rendering
+- ⏳ SMS message formatting
+- ⏳ Automatic trigger on status changes
+
+---
+
+## Analytics Dashboard
+
+### Overview
+
+Comprehensive business intelligence dashboard at `/dashboard/analytics`.
+
+### Metrics Tracked
+
+**Revenue Analytics**
+- Daily revenue
+- Weekly revenue (last 7 days)
+- Monthly revenue (current month)
+- All-time total revenue
+- Average order value
+
+**Repair Operations**
+- Total repair count
+- Recent repairs (last 30 days)
+- Completion rate percentage
+- Active orders count
+- Repairs by status breakdown
+
+**Customer Metrics**
+- Total customer count
+- New customers this month
+- Active customers count
+
+**Business Intelligence**
+- Top 5 most popular repair types
+- Revenue distribution by order status
+- Recent activity feed
+
+### Access
+
+URL: `http://31.97.222.218:3000/dashboard/analytics`
+
+---
+
+## Device Catalog
+
+### Overview
+
+Comprehensive device database with 64+ models across major brands.
+
+### Seeding Script
+
+Run the device seeding script to populate or update the catalog:
+
+```bash
+npx tsx scripts/seed-devices.ts
+```
+
+**Features:**
+- ✅ Checks for existing devices (won't create duplicates)
+- ✅ Comprehensive device specs (model numbers, release years, screen sizes)
+- ✅ Organized by brand and device type
+
+### Device Coverage
+
+**Apple (30 models)**
+- iPhone: 15 series, 14 series, 13 series, 12 series, 11 series, SE, X/XS/XR
+- iPad: Pro 12.9"/11", Air, standard iPad, mini
+
+**Samsung (16 models)**
+- Galaxy S: S24, S23, S22, S21, S20 series
+- Galaxy A: A54, A34, A24, A14
+- Galaxy Z: Z Flip 5/4, Z Fold 5/4
+
+**Google Pixel (8 models)**
+- Flagship: 8 Pro, 8, 7 Pro, 7, 6 Pro, 6
+- Mid-range: 7a, 6a
+
+### Adding Custom Devices
+
+Add devices to `scripts/seed-devices.ts`:
+
+```typescript
+const devices = [
+  {
+    brandName: 'Apple',
+    name: 'iPhone 16 Pro',
+    modelNumber: 'A3294',
+    releaseYear: 2024,
+    screenSize: 6.3,
+    deviceType: 'phone'
+  },
+  // ... more devices
+]
+```
+
+---
+
 ## API Endpoints
 
 ### Lightspeed Integration
@@ -297,6 +528,7 @@ Brand, Device, Repair, Part Quality, Suggested Price, Min Price, Max Price, Conf
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/integrations/lightspeed/customers?action=sync` | Sync customers from Lightspeed |
+| POST | `/api/integrations/lightspeed/sales` | Sync completed repair to Lightspeed as sale |
 
 ### Gemini AI Integration
 
@@ -408,26 +640,61 @@ tail -50 logs/sync-error.log
 
 ## Next Steps
 
-### Recommended Enhancements
+### ✅ Recently Completed (v1.1.0 - 2025-11-10)
 
-1. **Bi-directional Sync**
-   - Push repairs back to Lightspeed as sales
-   - Sync pricing from dashboard to Lightspeed
+1. **✅ Bi-directional Sync** (Phase 2.1)
+   - Push completed repairs to Lightspeed as sales
+   - Sync tracking with `lightspeedSaleId`, `syncedToLightspeed`, `syncedAt` fields
+   - Automatic product creation for repair line items
+   - API endpoint: `POST /api/integrations/lightspeed/sales`
 
-2. **Enhanced AI Features**
+2. **✅ Notification System Foundation** (Phase 3.1)
+   - NotificationService class with Resend (email) and Twilio (SMS) support
+   - 6 notification events: repair_created, repair_approved, repair_in_progress, repair_completed, repair_ready_pickup, payment_received
+   - Configuration-driven with environment variable detection
+   - Ready for provider API key integration
+
+3. **✅ Analytics Dashboard** (Phase 4.1)
+   - Revenue metrics (daily/weekly/monthly/total)
+   - Repair volume tracking by status
+   - Customer acquisition metrics
+   - Popular repair types ranking
+   - Average order value calculation
+   - Recent activity feed
+   - Access: `/dashboard/analytics`
+
+4. **✅ Device Catalog Expansion** (Phase 1.3)
+   - 64 device models (up from 10)
+   - Comprehensive Apple lineup: iPhone 14/13/12/11/SE/X series, iPad Pro/Air/mini
+   - Samsung Galaxy: S24/S23/S22/S21/S20, A-series, Z Flip/Fold
+   - Google Pixel: 8/7/6 series
+   - Seeding script: `scripts/seed-devices.ts`
+
+### Recommended Future Enhancements
+
+1. **Enhanced AI Features**
    - Price trend analysis over time
    - Competitor price monitoring
    - Seasonal pricing adjustments
+   - Market demand forecasting
 
-3. **Notifications**
-   - Email/SMS when sync completes
-   - Alerts for sync failures
-   - Low confidence pricing warnings
+2. **Advanced Notifications**
+   - Automated customer notifications on status changes
+   - Email templates for each repair event
+   - SMS reminders for pickup
+   - Low confidence pricing alerts
 
-4. **Analytics**
-   - Customer acquisition metrics
-   - Popular repair tracking
-   - Revenue forecasting
+3. **Workflow Automation**
+   - Auto-approve low-value repairs
+   - Smart technician assignment based on workload
+   - Automated parts ordering
+   - Warranty claim processing
+
+4. **Customer & Technician Portals**
+   - Customer self-service portal for tracking repairs
+   - Technician mobile app for job management
+   - Photo upload and documentation
+   - Digital signatures for pickup
 
 ---
 
@@ -442,6 +709,13 @@ For questions or issues:
 5. **Documentation**: Review this guide
 
 ## Version History
+
+- **v1.1.0** (2025-11-10)
+  - ✅ Bi-directional Lightspeed sync (repairs → sales)
+  - ✅ Notification system foundation (Resend + Twilio ready)
+  - ✅ Analytics dashboard with comprehensive metrics
+  - ✅ Device catalog expansion to 64 models
+  - ✅ 4 major phases completed
 
 - **v1.0.0** (2025-11-10)
   - ✅ Lightspeed X Series integration
