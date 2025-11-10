@@ -1,33 +1,37 @@
 /**
- * Lightspeed POS Integration Service
+ * Lightspeed X Series POS Integration Service
  * Handles customer sync and pricing integration
  */
 
 interface LightspeedConfig {
-  accountId: string;
+  domainPrefix: string;
   personalToken: string;
-  apiUrl?: string;
 }
 
 interface LightspeedCustomer {
-  customerID?: string;
-  firstName: string;
-  lastName: string;
-  emailAddress?: string;
-  primaryPhone?: string;
-  customFieldValues?: any;
+  id?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  company_name?: string;
+  custom_field_1?: string;
+  custom_field_2?: string;
+  custom_field_3?: string;
+  custom_field_4?: string;
 }
 
-interface LightspeedItem {
-  itemID?: string;
-  description: string;
-  defaultCost?: number;
-  Prices?: {
-    ItemPrice: Array<{
-      amount: number;
-      useType: string;
-    }>;
-  };
+interface LightspeedProduct {
+  id?: string;
+  name?: string;
+  description?: string;
+  sku?: string;
+  handle?: string;
+  supply_price?: number;
+  retail_price?: number;
+  variant_parent_id?: string;
+  variant_name?: string;
 }
 
 export class LightspeedService {
@@ -36,33 +40,31 @@ export class LightspeedService {
 
   constructor() {
     this.config = {
-      accountId: process.env.LIGHTSPEED_ACCOUNT_ID || '',
+      domainPrefix: process.env.LIGHTSPEED_DOMAIN_PREFIX || '',
       personalToken: process.env.LIGHTSPEED_PERSONAL_TOKEN || '',
-      apiUrl: process.env.LIGHTSPEED_API_URL || 'https://api.lightspeedapp.com/API/V3/Account',
     };
-    this.baseUrl = `${this.config.apiUrl}/${this.config.accountId}`;
+    this.baseUrl = `https://${this.config.domainPrefix}.retail.lightspeed.app/api/2.0`;
   }
 
   /**
    * Check if Lightspeed is configured
    */
   isConfigured(): boolean {
-    return !!(this.config.accountId && this.config.personalToken);
+    return !!(this.config.domainPrefix && this.config.personalToken);
   }
 
   /**
    * Get authorization header
    */
   private getAuthHeader(): HeadersInit {
-    const token = Buffer.from(`:${this.config.personalToken}`).toString('base64');
     return {
-      'Authorization': `Basic ${token}`,
+      'Authorization': `Bearer ${this.config.personalToken}`,
       'Content-Type': 'application/json',
     };
   }
 
   /**
-   * Fetch all customers from Lightspeed
+   * Fetch all customers from Lightspeed X Series
    */
   async getCustomers(limit = 100, offset = 0): Promise<LightspeedCustomer[]> {
     if (!this.isConfigured()) {
@@ -71,18 +73,19 @@ export class LightspeedService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/Customer.json?limit=${limit}&offset=${offset}`,
+        `${this.baseUrl}/customers`,
         {
           headers: this.getAuthHeader(),
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Lightspeed API error: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Lightspeed API error: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      return data.Customer || [];
+      return data.data || [];
     } catch (error) {
       console.error('Error fetching Lightspeed customers:', error);
       throw error;
@@ -99,7 +102,7 @@ export class LightspeedService {
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/Customer/${customerId}.json`,
+        `${this.baseUrl}/customers/${customerId}`,
         {
           headers: this.getAuthHeader(),
         }
@@ -107,11 +110,12 @@ export class LightspeedService {
 
       if (!response.ok) {
         if (response.status === 404) return null;
-        throw new Error(`Lightspeed API error: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Lightspeed API error: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      return data.Customer || null;
+      return data.data || null;
     } catch (error) {
       console.error('Error fetching Lightspeed customer:', error);
       throw error;
@@ -119,7 +123,7 @@ export class LightspeedService {
   }
 
   /**
-   * Create a new customer in Lightspeed
+   * Create a new customer in Lightspeed X Series
    */
   async createCustomer(customer: {
     firstName: string;
@@ -132,28 +136,29 @@ export class LightspeedService {
     }
 
     try {
-      const lightspeedCustomer: LightspeedCustomer = {
-        firstName: customer.firstName,
-        lastName: customer.lastName,
-        emailAddress: customer.email,
-        primaryPhone: customer.phone,
+      const lightspeedCustomer: Partial<LightspeedCustomer> = {
+        first_name: customer.firstName,
+        last_name: customer.lastName,
+        email: customer.email,
+        phone: customer.phone,
       };
 
       const response = await fetch(
-        `${this.baseUrl}/Customer.json`,
+        `${this.baseUrl}/customers`,
         {
           method: 'POST',
           headers: this.getAuthHeader(),
-          body: JSON.stringify({ Customer: lightspeedCustomer }),
+          body: JSON.stringify(lightspeedCustomer),
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Lightspeed API error: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Lightspeed API error: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      return data.Customer;
+      return data.data;
     } catch (error) {
       console.error('Error creating Lightspeed customer:', error);
       throw error;
@@ -161,7 +166,7 @@ export class LightspeedService {
   }
 
   /**
-   * Update a customer in Lightspeed
+   * Update a customer in Lightspeed X Series
    */
   async updateCustomer(customerId: string, updates: {
     firstName?: string;
@@ -176,26 +181,27 @@ export class LightspeedService {
     try {
       const lightspeedCustomer: Partial<LightspeedCustomer> = {};
 
-      if (updates.firstName) lightspeedCustomer.firstName = updates.firstName;
-      if (updates.lastName) lightspeedCustomer.lastName = updates.lastName;
-      if (updates.email) lightspeedCustomer.emailAddress = updates.email;
-      if (updates.phone) lightspeedCustomer.primaryPhone = updates.phone;
+      if (updates.firstName) lightspeedCustomer.first_name = updates.firstName;
+      if (updates.lastName) lightspeedCustomer.last_name = updates.lastName;
+      if (updates.email) lightspeedCustomer.email = updates.email;
+      if (updates.phone) lightspeedCustomer.phone = updates.phone;
 
       const response = await fetch(
-        `${this.baseUrl}/Customer/${customerId}.json`,
+        `${this.baseUrl}/customers/${customerId}`,
         {
           method: 'PUT',
           headers: this.getAuthHeader(),
-          body: JSON.stringify({ Customer: lightspeedCustomer }),
+          body: JSON.stringify(lightspeedCustomer),
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Lightspeed API error: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Lightspeed API error: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      return data.Customer;
+      return data.data;
     } catch (error) {
       console.error('Error updating Lightspeed customer:', error);
       throw error;
@@ -203,75 +209,73 @@ export class LightspeedService {
   }
 
   /**
-   * Get items (for pricing sync)
+   * Get products (for pricing sync)
    */
-  async getItems(limit = 100, offset = 0): Promise<LightspeedItem[]> {
+  async getItems(limit = 100, offset = 0): Promise<LightspeedProduct[]> {
     if (!this.isConfigured()) {
       throw new Error('Lightspeed not configured');
     }
 
     try {
       const response = await fetch(
-        `${this.baseUrl}/Item.json?limit=${limit}&offset=${offset}&load_relations=["Prices"]`,
+        `${this.baseUrl}/products`,
         {
           headers: this.getAuthHeader(),
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Lightspeed API error: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Lightspeed API error: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      return data.Item || [];
+      return data.data || [];
     } catch (error) {
-      console.error('Error fetching Lightspeed items:', error);
+      console.error('Error fetching Lightspeed products:', error);
       throw error;
     }
   }
 
   /**
-   * Create or update an item in Lightspeed (for pricing sync)
+   * Create or update a product in Lightspeed X Series (for pricing sync)
    */
   async syncPricing(repair: {
     description: string;
     price: number;
     cost?: number;
     lightspeedItemId?: string;
-  }): Promise<LightspeedItem> {
+  }): Promise<LightspeedProduct> {
     if (!this.isConfigured()) {
       throw new Error('Lightspeed not configured');
     }
 
     try {
-      const item: Partial<LightspeedItem> = {
+      const product: Partial<LightspeedProduct> = {
+        name: repair.description,
         description: repair.description,
-        defaultCost: repair.cost,
-        Prices: {
-          ItemPrice: [{
-            amount: repair.price,
-            useType: 'Default',
-          }],
-        },
+        supply_price: repair.cost,
+        retail_price: repair.price,
       };
 
       const method = repair.lightspeedItemId ? 'PUT' : 'POST';
       const url = repair.lightspeedItemId
-        ? `${this.baseUrl}/Item/${repair.lightspeedItemId}.json`
-        : `${this.baseUrl}/Item.json`;
+        ? `${this.baseUrl}/products/${repair.lightspeedItemId}`
+        : `${this.baseUrl}/products`;
 
       const response = await fetch(url, {
         method,
         headers: this.getAuthHeader(),
-        body: JSON.stringify({ Item: item }),
+        body: JSON.stringify(product),
       });
 
       if (!response.ok) {
-        throw new Error(`Lightspeed API error: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Lightspeed API error: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
-      return data.Item;
+      return data.data;
     } catch (error) {
       console.error('Error syncing pricing to Lightspeed:', error);
       throw error;
