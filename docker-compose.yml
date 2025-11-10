@@ -22,11 +22,11 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: repair_admin
-      POSTGRES_PASSWORD: dev_password_change_in_production
+      POSTGRES_PASSWORD: SecurePassword2024!
       POSTGRES_DB: mobile_repair_db
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d  # Initial SQL scripts
@@ -45,9 +45,9 @@ services:
     image: redis:7-alpine
     container_name: repair_redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass dev_redis_password
+    command: redis-server --appendonly yes --requirepass RedisPass2024!
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -68,14 +68,14 @@ services:
     container_name: repair_api
     restart: unless-stopped
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgresql://repair_admin:dev_password_change_in_production@postgres:5432/mobile_repair_db
-      REDIS_URL: redis://:dev_redis_password@redis:6379
-      JWT_SECRET: dev_jwt_secret_change_in_production
-      SESSION_SECRET: dev_session_secret_change_in_production
+      DATABASE_URL: postgresql://repair_admin:SecurePassword2024!@postgres:5432/mobile_repair_db
+      REDIS_URL: redis://:RedisPass2024!@redis:6379
+      JWT_SECRET: 4bdf2b4e86627b0fde36603465fe7f5333f5012852b8a04448b5301a5eeeba80252710d68389314603eecea322b5d22b3e43de04b9d6278b4890f70b610063a8
+      SESSION_SECRET: f2d71aed59dfce217f0ec62e8fbce4ad89dc95c057d0d95e2b44a6c7217fa1449a80d0f8e17b2d9bf267f2380aa0601408dbe3c7e90ca6d44ccff13271be37b3
     ports:
-      - "3001:3001"
+      - "3002:3001"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -99,8 +99,8 @@ services:
     container_name: repair_frontend
     restart: unless-stopped
     environment:
-      REACT_APP_API_URL: http://localhost:3001
-      REACT_APP_ENV: development
+      NEXT_PUBLIC_API_URL: http://repair_api:3001
+      NODE_ENV: production
     ports:
       - "3000:3000"
     volumes:
@@ -180,7 +180,7 @@ services:
     container_name: repair_backup
     restart: unless-stopped
     environment:
-      PGPASSWORD: dev_password_change_in_production
+      PGPASSWORD: SecurePassword2024!
       BACKUP_SCHEDULE: "0 2 * * *"  # Daily at 2 AM
       BACKUP_RETENTION_DAYS: 30
     volumes:

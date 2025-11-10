@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Settings, ExternalLink, Check, X, Loader2 } from 'lucide-react';
 
 export default function SettingsPage() {
-  const [lightspeedAccountId, setLightspeedAccountId] = useState('');
+  const [lightspeedDomainPrefix, setLightspeedDomainPrefix] = useState('');
   const [lightspeedToken, setLightspeedToken] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,7 +35,7 @@ export default function SettingsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lightspeedAccountId,
+          lightspeedDomainPrefix,
           lightspeedPersonalToken: lightspeedToken,
         }),
       });
@@ -125,24 +125,24 @@ export default function SettingsPage() {
           </div>
 
           <p className="text-sm text-gray-600 mb-4">
-            Connect to Lightspeed POS to sync customers and pricing automatically.
+            Connect to Lightspeed X Series POS to sync customers and pricing automatically.
           </p>
 
           <form onSubmit={handleSaveLightspeed} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Account ID
+                Domain Prefix
               </label>
               <input
                 type="text"
-                value={lightspeedAccountId}
-                onChange={(e) => setLightspeedAccountId(e.target.value)}
-                placeholder="Enter your Lightspeed Account ID"
+                value={lightspeedDomainPrefix}
+                onChange={(e) => setLightspeedDomainPrefix(e.target.value)}
+                placeholder="your-store-name"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Find this in your Lightspeed account settings
+                From your Lightspeed URL: https://<strong>your-store-name</strong>.retail.lightspeed.app
               </p>
             </div>
 
@@ -159,7 +159,7 @@ export default function SettingsPage() {
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Generate a personal token in Lightspeed
+                Generate in Setup → Personal Tokens in Lightspeed X Series
               </p>
             </div>
 
@@ -173,7 +173,7 @@ export default function SettingsPage() {
                 Save Lightspeed Settings
               </button>
               <a
-                href="https://www.lightspeedhq.com/pos/retail/"
+                href="https://x-series-api.lightspeedhq.com/docs/authorization"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
@@ -263,7 +263,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Restart Application */}
-        {(lightspeedAccountId || geminiApiKey) && (
+        {(lightspeedDomainPrefix || geminiApiKey) && (
           <div className="lg:col-span-2 bg-yellow-50 rounded-lg p-6">
             <div className="flex items-center gap-2 mb-2">
               <Settings className="w-5 h-5 text-yellow-700" />
