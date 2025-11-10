@@ -76,7 +76,7 @@ export async function estimatePrice(
 
   if (referencePrices.length === 0) {
     // Fallback to category average
-    return estimateFromCategoryAverage(repairTypeId, partsQuality)
+    return estimateFromCategoryAverage(repairTypeId, partTypeId)
   }
 
   // 4. Find bracketing models (older and newer)
@@ -117,7 +117,7 @@ export async function estimatePrice(
     source = 'extrapolation'
   } else {
     // Fallback
-    return estimateFromCategoryAverage(repairTypeId, partsQuality)
+    return estimateFromCategoryAverage(repairTypeId, partTypeId)
   }
 
   // 5. Round to nearest $5 or $9 ending
