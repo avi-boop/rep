@@ -1,222 +1,245 @@
-# 🚀 Deployment Guide
+# Deployment Guide - Mobile Repair Dashboard
 
-Complete guide to deploy RepairHub to production.
+## 🚀 Quick Deploy to Vercel (Recommended)
 
-## Deployment Options
+### Prerequisites
+- GitHub account
+- Vercel account (free tier available)
+- PostgreSQL database (Supabase recommended)
 
-### Option 1: Vercel + Supabase (Recommended - Easiest)
+### Step 1: Database Setup
 
-**Best for:**
-- Quick deployment
-- Free tier available
-- Automatic HTTPS
-- Zero DevOps
+#### Option A: Supabase (Recommended)
+1. Go to [supabase.com](https://supabase.com) and create account
+2. Create new project
+3. Go to Settings → Database → Connection string
+4. Copy the `Connection pooling` URL (transaction mode)
+5. Save for later use
 
-**Cost:** ~$0-20/month
+#### Option B: Railway
+1. Go to [railway.app](https://railway.app)
+2. Create new project → Add PostgreSQL
+3. Copy the `DATABASE_URL` from Variables tab
 
-#### Step 1: Deploy Database (Supabase)
+#### Option C: Neon
+1. Go to [neon.tech](https://neon.tech)
+2. Create new project
+3. Copy connection string
 
-1. Go to https://supabase.com
-2. Create new project: `repair-shop-production`
-3. Set strong database password
-4. Wait for provisioning (2 minutes)
-5. Go to Settings → Database → Connection String
-6. Copy the URI (starts with `postgresql://`)
+### Step 2: Push to GitHub
 
-#### Step 2: Deploy Application (Vercel)
-
-1. Push code to GitHub:
 ```bash
+cd /workspace/repair-dashboard
 git init
 git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/yourusername/repair-dashboard.git
+git commit -m "Initial commit - Mobile Repair Dashboard"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/repair-dashboard.git
 git push -u origin main
 ```
 
-2. Go to https://vercel.com
+### Step 3: Deploy to Vercel
+
+1. Go to [vercel.com](https://vercel.com) and sign in
+2. Click "Add New..." → "Project"
 3. Import your GitHub repository
-4. Configure:
-   - Framework Preset: Next.js
-   - Root Directory: ./
-   - Build Command: `npm run build`
-   - Output Directory: .next
+4. Configure project:
+   - **Framework Preset:** Next.js
+   - **Root Directory:** `./` (or leave default)
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `.next`
 
 5. Add Environment Variables:
 ```
-DATABASE_URL=your_supabase_connection_string
-NEXT_PUBLIC_APP_NAME=RepairHub
-NEXT_PUBLIC_API_URL=https://your-domain.vercel.app/api
-JWT_SECRET=generate_random_string_minimum_32_chars
+DATABASE_URL=postgresql://...
+NEXTAUTH_SECRET=your-random-32-char-string
+NEXTAUTH_URL=https://your-app.vercel.app
 ```
 
 6. Click "Deploy"
-7. Wait 2-3 minutes
-8. Your app is live! 🎉
 
-#### Step 3: Run Migrations
+### Step 4: Initialize Database
 
 ```bash
 # Install Vercel CLI
-npm install -g vercel
+npm i -g vercel
 
 # Login
 vercel login
 
-# Run migrations in production
-vercel env pull .env.production
-npm run prisma:migrate deploy
+# Link your project
+vercel link
 
-# Seed data (optional)
-npm run prisma:seed
+# Push database schema
+npx prisma db push
+
+# Seed database
+npx prisma db seed
 ```
 
-#### Step 4: Custom Domain (Optional)
+Alternatively, use Vercel's terminal:
+1. Go to your project → Settings → Functions
+2. Use the Vercel CLI in the online terminal
 
-1. In Vercel → Your Project → Settings → Domains
-2. Add your domain (e.g., repairs.yourshop.com)
-3. Update DNS records as instructed
-4. Wait for SSL certificate (automatic, 5-10 minutes)
+### Step 5: Configure Domain (Optional)
+
+1. Go to Project Settings → Domains
+2. Add custom domain
+3. Follow DNS instructions
 
 ---
 
-### Option 2: DigitalOcean App Platform
+## 🐳 Docker Deployment
 
-**Best for:**
-- Full control
-- Affordable ($12-30/month)
-- Managed database included
+### Build and Run
 
-#### Step 1: Create Database
+```bash
+# Build image
+docker build -t repair-dashboard .
 
-1. Go to https://cloud.digitalocean.com
-2. Create → Databases → PostgreSQL
-3. Choose:
-   - Plan: Basic ($15/month)
-   - Datacenter: Closest to you
-   - Database name: `repair-shop-db`
-4. Wait for creation (5 minutes)
-5. Go to Settings → Connection Details
-6. Copy connection string
+# Run container
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e NEXTAUTH_SECRET="your-secret" \
+  repair-dashboard
+```
 
-#### Step 2: Deploy App
+### Docker Compose
 
-1. Create → Apps
-2. Connect GitHub repository
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/repair_db
+      - NEXTAUTH_SECRET=your-secret
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=repair_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+Run with:
+```bash
+docker-compose up -d
+```
+
+---
+
+## ☁️ AWS Deployment
+
+### Using AWS Amplify
+
+1. Go to AWS Amplify Console
+2. Connect repository
+3. Set build settings:
+```yaml
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+```
+4. Add environment variables
+5. Deploy
+
+### Using AWS ECS (Advanced)
+
+See AWS ECS documentation for containerized deployment.
+
+---
+
+## 🔧 DigitalOcean App Platform
+
+1. Go to [DigitalOcean App Platform](https://cloud.digitalocean.com/apps)
+2. Create new app → GitHub repository
 3. Configure:
-   - Resource Type: Web Service
-   - Build Command: `npm run build && npm run prisma:generate`
-   - Run Command: `npm start`
-
-4. Add environment variables (same as Vercel)
-
-5. Click "Create Resources"
-
-#### Step 3: Run Migrations
-
-```bash
-# Connect via DO console or:
-doctl apps create-deployment <app-id>
-
-# Or via connection string:
-DATABASE_URL="your_do_connection_string" npm run prisma:migrate deploy
-```
+   - **Type:** Web Service
+   - **Build Command:** `npm run build`
+   - **Run Command:** `npm start`
+4. Add PostgreSQL database (managed)
+5. Set environment variables
+6. Deploy
 
 ---
 
-### Option 3: Self-Hosted (VPS)
+## 📦 Manual VPS Deployment
 
-**Best for:**
-- Maximum control
-- Custom requirements
-- Cost optimization for scale
+### Requirements
+- Ubuntu 20.04+ or similar
+- Node.js 18+
+- PostgreSQL 12+
+- Nginx
+- PM2
 
-**Cost:** ~$5-40/month (VPS + DB)
-
-#### Prerequisites
-- Ubuntu 22.04 VPS
-- Domain name
-- SSH access
-
-#### Step 1: Server Setup
+### Setup Steps
 
 ```bash
-# SSH into server
-ssh root@your-server-ip
+# 1. Install Node.js
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-# Update system
-apt update && apt upgrade -y
+# 2. Install PostgreSQL
+sudo apt update
+sudo apt install postgresql postgresql-contrib
 
-# Install Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt install -y nodejs
-
-# Install PM2
-npm install -g pm2
-
-# Install PostgreSQL
-apt install postgresql postgresql-contrib -y
-
-# Install Nginx
-apt install nginx -y
-```
-
-#### Step 2: Database Setup
-
-```bash
-# Create database
+# 3. Create database
 sudo -u postgres psql
-CREATE DATABASE repair_shop_db;
-CREATE USER repair_admin WITH PASSWORD 'your_secure_password';
-GRANT ALL PRIVILEGES ON DATABASE repair_shop_db TO repair_admin;
+CREATE DATABASE repair_db;
+CREATE USER repair_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE repair_db TO repair_user;
 \q
-```
 
-#### Step 3: Deploy Application
+# 4. Install PM2
+sudo npm install -g pm2
 
-```bash
-# Create app directory
-mkdir -p /var/www/repair-dashboard
-cd /var/www/repair-dashboard
-
-# Clone repository
-git clone https://github.com/yourusername/repair-dashboard.git .
-
-# Install dependencies
+# 5. Clone and setup project
+git clone https://github.com/YOUR_USERNAME/repair-dashboard.git
+cd repair-dashboard
 npm install
-
-# Create .env
-nano .env
-# Paste production environment variables
-
-# Generate Prisma client
-npm run prisma:generate
-
-# Run migrations
-npm run prisma:migrate deploy
-
-# Seed data (optional)
-npm run prisma:seed
-
-# Build application
+npx prisma db push
+npx prisma db seed
 npm run build
 
-# Start with PM2
+# 6. Start with PM2
 pm2 start npm --name "repair-dashboard" -- start
 pm2 save
 pm2 startup
+
+# 7. Install and configure Nginx
+sudo apt install nginx
+sudo nano /etc/nginx/sites-available/repair-dashboard
 ```
 
-#### Step 4: Configure Nginx
-
-```bash
-nano /etc/nginx/sites-available/repair-dashboard
-```
-
+Nginx configuration:
 ```nginx
 server {
     listen 80;
-    server_name repairs.yourshop.com;
+    server_name your-domain.com;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -231,265 +254,178 @@ server {
 
 ```bash
 # Enable site
-ln -s /etc/nginx/sites-available/repair-dashboard /etc/nginx/sites-enabled/
-nginx -t
-systemctl restart nginx
-```
+sudo ln -s /etc/nginx/sites-available/repair-dashboard /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
 
-#### Step 5: SSL Certificate (Free)
-
-```bash
-# Install Certbot
-apt install certbot python3-certbot-nginx -y
-
-# Get certificate
-certbot --nginx -d repairs.yourshop.com
-
-# Auto-renewal is set up automatically
+# Setup SSL with Let's Encrypt
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
 ```
 
 ---
 
-## Environment Variables for Production
+## 🔒 Security Checklist
 
-### Required
+- [ ] Change default `NEXTAUTH_SECRET` to random 32+ character string
+- [ ] Use PostgreSQL in production (not SQLite)
+- [ ] Enable SSL/HTTPS
+- [ ] Set up firewall rules
+- [ ] Configure CORS properly
+- [ ] Enable rate limiting
+- [ ] Set up database backups
+- [ ] Use environment variables for all secrets
+- [ ] Enable Sentry or error tracking
+- [ ] Set up monitoring (UptimeRobot, etc.)
+
+---
+
+## 🔄 Post-Deployment
+
+### 1. Verify Deployment
 ```bash
-DATABASE_URL="postgresql://user:password@host:5432/database"
-NEXT_PUBLIC_APP_NAME="RepairHub"
-NEXT_PUBLIC_API_URL="https://your-domain.com/api"
-JWT_SECRET="minimum-32-character-random-string"
+curl https://your-domain.com/api/brands
 ```
 
-### Optional (Notifications)
+### 2. Run Database Migrations
 ```bash
-TWILIO_ACCOUNT_SID="ACxxxxxxxxxxxxx"
-TWILIO_AUTH_TOKEN="your_token"
-TWILIO_PHONE_NUMBER="+1234567890"
-SENDGRID_API_KEY="SG.xxxxxxxxx"
-FROM_EMAIL="noreply@yourshop.com"
+npx prisma migrate deploy
 ```
 
-### Optional (Lightspeed)
+### 3. Seed Initial Data
 ```bash
-LIGHTSPEED_API_KEY="your_key"
-LIGHTSPEED_ACCOUNT_ID="123456"
-LIGHTSPEED_API_URL="https://api.lightspeedapp.com"
+npx prisma db seed
 ```
 
-## Security Checklist
+### 4. Test Features
+- [ ] Create repair order
+- [ ] Update status
+- [ ] View dashboard
+- [ ] Check pricing matrix
+- [ ] Test customer search
 
-Before going live:
+### 5. Set Up Monitoring
+- Configure Sentry for error tracking
+- Set up UptimeRobot for uptime monitoring
+- Configure analytics (Google Analytics)
 
-- [ ] Change all default passwords
-- [ ] Generate strong JWT_SECRET (32+ chars)
-- [ ] Enable HTTPS/SSL
-- [ ] Set up firewall (UFW or provider firewall)
-- [ ] Restrict database access to application server only
-- [ ] Set up automated backups
-- [ ] Enable fail2ban (self-hosted only)
-- [ ] Set NODE_ENV=production
-- [ ] Remove test users from database
-- [ ] Review and remove unnecessary API endpoints
-- [ ] Set up monitoring (Sentry, etc.)
+---
 
-## Database Backup
+## 🐛 Troubleshooting
 
-### Automated (Recommended)
+### Build Errors
 
-**Supabase:**
-- Automatic daily backups (paid plans)
-- Point-in-time recovery available
-
-**DigitalOcean:**
-- Automatic daily backups included
-- Configure in DB settings
-
-**Self-Hosted:**
+**Issue:** Module not found
 ```bash
-# Create backup script
-nano /root/backup-db.sh
+# Solution
+rm -rf node_modules package-lock.json
+npm install
 ```
 
+**Issue:** Prisma client not generated
 ```bash
-#!/bin/bash
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/backups/repair-shop"
-mkdir -p $BACKUP_DIR
-
-pg_dump -U repair_admin -d repair_shop_db | gzip > $BACKUP_DIR/backup_$DATE.sql.gz
-
-# Keep only last 30 days
-find $BACKUP_DIR -name "backup_*.sql.gz" -mtime +30 -delete
+# Solution
+npx prisma generate
+npm run build
 ```
 
+### Runtime Errors
+
+**Issue:** Database connection failed
+- Check `DATABASE_URL` in environment variables
+- Verify database is accessible from deployment platform
+- Check firewall rules
+
+**Issue:** 500 Internal Server Error
+- Check application logs
+- Verify all environment variables are set
+- Check Prisma schema matches database
+
+### Performance Issues
+
+**Issue:** Slow page loads
+- Enable Next.js caching
+- Use CDN for static assets
+- Optimize database queries with indexes
+- Consider read replicas for database
+
+---
+
+## 📊 Monitoring & Maintenance
+
+### Recommended Tools
+
+**Error Tracking:**
+- Sentry (recommended)
+- Rollbar
+- Bugsnag
+
+**Uptime Monitoring:**
+- UptimeRobot (free)
+- Pingdom
+- StatusCake
+
+**Analytics:**
+- Google Analytics
+- Plausible
+- PostHog
+
+**Database Monitoring:**
+- Datadog
+- New Relic
+- PostgreSQL built-in monitoring
+
+### Backup Strategy
+
+**Database Backups:**
 ```bash
-# Make executable
-chmod +x /root/backup-db.sh
-
-# Schedule daily at 2 AM
-crontab -e
-0 2 * * * /root/backup-db.sh
+# Daily automated backup
+0 2 * * * pg_dump -U repair_user repair_db > /backups/repair_db_$(date +\%Y\%m\%d).sql
 ```
 
-## Monitoring & Maintenance
+**Application Backups:**
+- Use Git for code
+- Regular database dumps
+- Store in S3 or similar
 
-### Error Tracking
+---
 
-**Sentry (Recommended):**
-1. Sign up at https://sentry.io
-2. Create project
-3. Install SDK:
-```bash
-npm install @sentry/nextjs
-npx @sentry/wizard -i nextjs
-```
+## 🚀 Performance Optimization
 
-4. Add environment variable:
-```
-NEXT_PUBLIC_SENTRY_DSN="your_dsn_here"
-```
+### Next.js Optimizations
 
-### Uptime Monitoring
-
-**UptimeRobot (Free):**
-1. Go to https://uptimerobot.com
-2. Add monitor:
-   - URL: https://your-domain.com
-   - Interval: 5 minutes
-3. Set up email alerts
-
-### Performance Monitoring
-
-**Vercel Analytics:**
-- Automatically included with Vercel
-- View in dashboard
-
-**Google Analytics:**
-Add to `app/layout.tsx`:
-```typescript
-// Add Google Analytics tracking code
-```
-
-## Scaling Considerations
-
-### When to Scale
-
-Scale when you experience:
-- Response times > 2 seconds
-- Database CPU > 80%
-- Memory usage > 80%
-- 1000+ repairs/month
-- 50+ concurrent users
-
-### Scaling Options
-
-**Database:**
-- Increase connection pool
-- Add read replicas
-- Enable query caching
-- Optimize indexes
-
-**Application:**
-- Enable CDN (Vercel automatically does this)
-- Add Redis caching
-- Horizontal scaling (multiple instances)
-- Enable compression
-
-**Example Redis Setup:**
-```bash
-# Install Redis
-npm install redis
-
-# Add to .env
-REDIS_URL="redis://localhost:6379"
-```
-
-```typescript
-// lib/cache.ts
-import { createClient } from 'redis'
-
-const client = createClient({ url: process.env.REDIS_URL })
-await client.connect()
-
-export async function cached<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  ttl: number = 3600
-): Promise<T> {
-  const cached = await client.get(key)
-  if (cached) return JSON.parse(cached)
-
-  const data = await fetcher()
-  await client.setEx(key, ttl, JSON.stringify(data))
-  return data
+1. **Enable Image Optimization**
+```js
+// next.config.js
+module.exports = {
+  images: {
+    domains: ['your-domain.com'],
+  },
 }
 ```
 
-## Rollback Procedure
-
-If deployment fails:
-
-**Vercel:**
-1. Go to Deployments
-2. Find previous working deployment
-3. Click "..." → Promote to Production
-
-**DigitalOcean:**
-1. Redeploy previous commit from GitHub
-
-**Self-Hosted:**
+2. **Enable Compression**
 ```bash
-pm2 stop repair-dashboard
-git checkout <previous-commit-hash>
-npm install
-npm run build
-pm2 restart repair-dashboard
+npm install compression
 ```
 
-## Production Checklist
+3. **Database Connection Pooling**
+Already configured in Prisma
 
-Before launch:
+### CDN Setup
 
-- [ ] Database is backed up
-- [ ] SSL certificate is active
-- [ ] Environment variables are set
-- [ ] Domain is configured
-- [ ] Migrations are run
-- [ ] Sample data is seeded (or real data imported)
-- [ ] Admin user is created
-- [ ] Test all core workflows:
-  - [ ] Create repair
-  - [ ] Update status
-  - [ ] View customer
-  - [ ] Check pricing
-- [ ] Error monitoring is set up
-- [ ] Uptime monitoring is active
-- [ ] Backups are automated
-- [ ] Team is trained
-- [ ] Documentation is accessible
-
-## Post-Deployment
-
-### Day 1
-- Monitor error logs
-- Watch for slow queries
-- Check uptime
-- Verify notifications work
-
-### Week 1
-- Gather user feedback
-- Fix critical bugs
-- Optimize slow pages
-- Adjust pricing if needed
-
-### Month 1
-- Review analytics
-- Plan feature improvements
-- Optimize database queries
-- Scale if needed
+Use Vercel Edge Network (automatic) or configure CloudFlare
 
 ---
 
-**Congratulations! Your RepairHub is now live! 🎉**
+## 📞 Support
 
-Need help? Check the comprehensive documentation or the troubleshooting guides.
+For deployment issues:
+1. Check application logs
+2. Review this deployment guide
+3. Check Next.js deployment docs
+4. Check Prisma deployment docs
+
+---
+
+**Deployment Complete! Your Mobile Repair Dashboard is now live! 🎉**
