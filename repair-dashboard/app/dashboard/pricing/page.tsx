@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { formatCurrency } from '@/lib/utils'
 import { PricingMatrix } from '@/components/pricing/PricingMatrix'
+import Link from 'next/link'
 
 async function getPricingData() {
   const [brands, repairTypes, partTypes, pricing] = await Promise.all([
@@ -41,6 +42,12 @@ export default async function PricingPage() {
           <p className="text-gray-600 mt-1">Manage repair pricing and view smart estimates</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/dashboard/pricing/ai-bulk" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 font-medium shadow-sm flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            AI Bulk Pricing
+          </Link>
           <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
             Import CSV
           </button>

@@ -48,18 +48,32 @@ export async function GET(request: NextRequest) {
           syncedCustomers.push({ action: 'updated', customer: updated });
         } else {
           // Create new customer (only if phone number provided)
-          if (lsCustomer.phone || lsCustomer.mobile) {
-            const created = await prisma.customer.create({
-              data: {
-                lightspeedId: lsCustomer.id,
-                firstName: lsCustomer.first_name || 'Unknown',
-                lastName: lsCustomer.last_name || 'Customer',
-                email: lsCustomer.email || null,
-                phone: lsCustomer.phone || lsCustomer.mobile || '',
-                lastSyncedAt: new Date(),
-              },
-            });
-            syncedCustomers.push({ action: 'created', customer: created });
+          const phoneNumber = lsCustomer.phone || lsCustomer.mobile;
+          if (phoneNumber && phoneNumber.trim().length > 0) {
+            try {
+              const created = await prisma.customer.create({
+                data: {
+                  lightspeedId: lsCustomer.id,
+                  firstName: lsCustomer.first_name || 'Unknown',
+                  lastName: lsCustomer.last_name || 'Customer',
+                  email: lsCustomer.email || null,
+                  phone: phoneNumber.trim(),
+                  lastSyncedAt: new Date(),
+                },
+              });
+              syncedCustomers.push({ action: 'created', customer: created });
+            } catch (error: any) {
+              // Skip if duplicate phone number
+              if (error.code === 'P2002') {
+                console.log(`Skipping duplicate phone: ${phoneNumber}`);
+                syncedCustomers.push({ action: 'skipped_duplicate', phone: phoneNumber });
+              } else {
+                throw error;
+              }
+            }
+          } else {
+            // Skip customers without phone numbers
+            syncedCustomers.push({ action: 'skipped_no_phone', name: `${lsCustomer.first_name || ''} ${lsCustomer.last_name || ''}`.trim() });
           }
         }
       }
