@@ -1,0 +1,114 @@
+brand,model,variant,release_year,device_category,notes
+Apple,iPhone 11,,2019,Phone,6.1 inch LCD display
+Apple,iPhone 11 Pro,,2019,Phone,5.8 inch OLED display
+Apple,iPhone 11 Pro Max,,2019,Phone,6.5 inch OLED display
+Apple,iPhone 12,64GB,2020,Phone,6.1 inch OLED display
+Apple,iPhone 12,128GB,2020,Phone,6.1 inch OLED display
+Apple,iPhone 12,256GB,2020,Phone,6.1 inch OLED display
+Apple,iPhone 12 Pro,128GB,2020,Phone,6.1 inch OLED display
+Apple,iPhone 12 Pro,256GB,2020,Phone,6.1 inch OLED display
+Apple,iPhone 12 Pro,512GB,2020,Phone,6.1 inch OLED display
+Apple,iPhone 12 Pro Max,128GB,2020,Phone,6.7 inch OLED display
+Apple,iPhone 12 Pro Max,256GB,2020,Phone,6.7 inch OLED display
+Apple,iPhone 12 Pro Max,512GB,2020,Phone,6.7 inch OLED display
+Apple,iPhone 13,128GB,2021,Phone,6.1 inch OLED display
+Apple,iPhone 13,256GB,2021,Phone,6.1 inch OLED display
+Apple,iPhone 13,512GB,2021,Phone,6.1 inch OLED display
+Apple,iPhone 13 Pro,128GB,2021,Phone,6.1 inch OLED ProMotion 120Hz
+Apple,iPhone 13 Pro,256GB,2021,Phone,6.1 inch OLED ProMotion 120Hz
+Apple,iPhone 13 Pro,512GB,2021,Phone,6.1 inch OLED ProMotion 120Hz
+Apple,iPhone 13 Pro,1TB,2021,Phone,6.1 inch OLED ProMotion 120Hz
+Apple,iPhone 13 Pro Max,128GB,2021,Phone,6.7 inch OLED ProMotion 120Hz
+Apple,iPhone 13 Pro Max,256GB,2021,Phone,6.7 inch OLED ProMotion 120Hz
+Apple,iPhone 13 Pro Max,512GB,2021,Phone,6.7 inch OLED ProMotion 120Hz
+Apple,iPhone 13 Pro Max,1TB,2021,Phone,6.7 inch OLED ProMotion 120Hz
+Apple,iPhone 14,128GB,2022,Phone,6.1 inch OLED display
+Apple,iPhone 14,256GB,2022,Phone,6.1 inch OLED display
+Apple,iPhone 14,512GB,2022,Phone,6.1 inch OLED display
+Apple,iPhone 14 Plus,128GB,2022,Phone,6.7 inch OLED display
+Apple,iPhone 14 Plus,256GB,2022,Phone,6.7 inch OLED display
+Apple,iPhone 14 Plus,512GB,2022,Phone,6.7 inch OLED display
+Apple,iPhone 14 Pro,128GB,2022,Phone,6.1 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 14 Pro,256GB,2022,Phone,6.1 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 14 Pro,512GB,2022,Phone,6.1 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 14 Pro,1TB,2022,Phone,6.1 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 14 Pro Max,128GB,2022,Phone,6.7 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 14 Pro Max,256GB,2022,Phone,6.7 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 14 Pro Max,512GB,2022,Phone,6.7 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 14 Pro Max,1TB,2022,Phone,6.7 inch OLED ProMotion 120Hz Dynamic Island
+Apple,iPhone 15,128GB,2023,Phone,6.1 inch OLED display USB-C
+Apple,iPhone 15,256GB,2023,Phone,6.1 inch OLED display USB-C
+Apple,iPhone 15,512GB,2023,Phone,6.1 inch OLED display USB-C
+Apple,iPhone 15 Plus,128GB,2023,Phone,6.7 inch OLED display USB-C
+Apple,iPhone 15 Plus,256GB,2023,Phone,6.7 inch OLED display USB-C
+Apple,iPhone 15 Plus,512GB,2023,Phone,6.7 inch OLED display USB-C
+Apple,iPhone 15 Pro,128GB,2023,Phone,6.1 inch OLED ProMotion 120Hz Titanium
+Apple,iPhone 15 Pro,256GB,2023,Phone,6.1 inch OLED ProMotion 120Hz Titanium
+Apple,iPhone 15 Pro,512GB,2023,Phone,6.1 inch OLED ProMotion 120Hz Titanium
+Apple,iPhone 15 Pro,1TB,2023,Phone,6.1 inch OLED ProMotion 120Hz Titanium
+Apple,iPhone 15 Pro Max,256GB,2023,Phone,6.7 inch OLED ProMotion 120Hz Titanium
+Apple,iPhone 15 Pro Max,512GB,2023,Phone,6.7 inch OLED ProMotion 120Hz Titanium
+Apple,iPhone 15 Pro Max,1TB,2023,Phone,6.7 inch OLED ProMotion 120Hz Titanium
+Apple,iPad 9th Gen,64GB,2021,Tablet,10.2 inch Retina display
+Apple,iPad 9th Gen,256GB,2021,Tablet,10.2 inch Retina display
+Apple,iPad 10th Gen,64GB,2022,Tablet,10.9 inch Liquid Retina USB-C
+Apple,iPad 10th Gen,256GB,2022,Tablet,10.9 inch Liquid Retina USB-C
+Apple,iPad Air 4th Gen,64GB,2020,Tablet,10.9 inch Liquid Retina
+Apple,iPad Air 4th Gen,256GB,2020,Tablet,10.9 inch Liquid Retina
+Apple,iPad Air 5th Gen,64GB,2022,Tablet,10.9 inch Liquid Retina M1 chip
+Apple,iPad Air 5th Gen,256GB,2022,Tablet,10.9 inch Liquid Retina M1 chip
+Apple,iPad Pro 11 (2021),128GB,2021,Tablet,11 inch Liquid Retina M1 chip
+Apple,iPad Pro 11 (2021),256GB,2021,Tablet,11 inch Liquid Retina M1 chip
+Apple,iPad Pro 11 (2021),512GB,2021,Tablet,11 inch Liquid Retina M1 chip
+Apple,iPad Pro 12.9 (2021),128GB,2021,Tablet,12.9 inch Liquid Retina XDR M1 chip
+Apple,iPad Pro 12.9 (2021),256GB,2021,Tablet,12.9 inch Liquid Retina XDR M1 chip
+Apple,iPad Pro 12.9 (2021),512GB,2021,Tablet,12.9 inch Liquid Retina XDR M1 chip
+Samsung,Galaxy S21,128GB,2021,Phone,6.2 inch Dynamic AMOLED
+Samsung,Galaxy S21,256GB,2021,Phone,6.2 inch Dynamic AMOLED
+Samsung,Galaxy S21+,128GB,2021,Phone,6.7 inch Dynamic AMOLED
+Samsung,Galaxy S21+,256GB,2021,Phone,6.7 inch Dynamic AMOLED
+Samsung,Galaxy S21 Ultra,128GB,2021,Phone,6.8 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S21 Ultra,256GB,2021,Phone,6.8 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S21 Ultra,512GB,2021,Phone,6.8 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S22,128GB,2022,Phone,6.1 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S22,256GB,2022,Phone,6.1 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S22+,128GB,2022,Phone,6.6 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S22+,256GB,2022,Phone,6.6 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S22 Ultra,128GB,2022,Phone,6.8 inch Dynamic AMOLED 120Hz S Pen
+Samsung,Galaxy S22 Ultra,256GB,2022,Phone,6.8 inch Dynamic AMOLED 120Hz S Pen
+Samsung,Galaxy S22 Ultra,512GB,2022,Phone,6.8 inch Dynamic AMOLED 120Hz S Pen
+Samsung,Galaxy S23,128GB,2023,Phone,6.1 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S23,256GB,2023,Phone,6.1 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S23+,256GB,2023,Phone,6.6 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S23+,512GB,2023,Phone,6.6 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy S23 Ultra,256GB,2023,Phone,6.8 inch Dynamic AMOLED 120Hz S Pen
+Samsung,Galaxy S23 Ultra,512GB,2023,Phone,6.8 inch Dynamic AMOLED 120Hz S Pen
+Samsung,Galaxy S23 Ultra,1TB,2023,Phone,6.8 inch Dynamic AMOLED 120Hz S Pen
+Samsung,Galaxy S24,128GB,2024,Phone,6.2 inch Dynamic AMOLED 120Hz AI features
+Samsung,Galaxy S24,256GB,2024,Phone,6.2 inch Dynamic AMOLED 120Hz AI features
+Samsung,Galaxy S24+,256GB,2024,Phone,6.7 inch Dynamic AMOLED 120Hz AI features
+Samsung,Galaxy S24+,512GB,2024,Phone,6.7 inch Dynamic AMOLED 120Hz AI features
+Samsung,Galaxy S24 Ultra,256GB,2024,Phone,6.8 inch Dynamic AMOLED 120Hz Titanium S Pen
+Samsung,Galaxy S24 Ultra,512GB,2024,Phone,6.8 inch Dynamic AMOLED 120Hz Titanium S Pen
+Samsung,Galaxy S24 Ultra,1TB,2024,Phone,6.8 inch Dynamic AMOLED 120Hz Titanium S Pen
+Samsung,Galaxy Tab S8,128GB,2022,Tablet,11 inch LCD 120Hz
+Samsung,Galaxy Tab S8,256GB,2022,Tablet,11 inch LCD 120Hz
+Samsung,Galaxy Tab S8+,128GB,2022,Tablet,12.4 inch AMOLED 120Hz
+Samsung,Galaxy Tab S8+,256GB,2022,Tablet,12.4 inch AMOLED 120Hz
+Samsung,Galaxy Tab S8 Ultra,128GB,2022,Tablet,14.6 inch AMOLED 120Hz
+Samsung,Galaxy Tab S8 Ultra,256GB,2022,Tablet,14.6 inch AMOLED 120Hz
+Samsung,Galaxy Tab S9,128GB,2023,Tablet,11 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy Tab S9,256GB,2023,Tablet,11 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy Tab S9+,256GB,2023,Tablet,12.4 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy Tab S9+,512GB,2023,Tablet,12.4 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy Tab S9 Ultra,256GB,2023,Tablet,14.6 inch Dynamic AMOLED 120Hz
+Samsung,Galaxy Tab S9 Ultra,512GB,2023,Tablet,14.6 inch Dynamic AMOLED 120Hz
+Google,Pixel 7,128GB,2022,Phone,6.3 inch OLED 90Hz
+Google,Pixel 7,256GB,2022,Phone,6.3 inch OLED 90Hz
+Google,Pixel 7 Pro,128GB,2022,Phone,6.7 inch LTPO OLED 120Hz
+Google,Pixel 7 Pro,256GB,2022,Phone,6.7 inch LTPO OLED 120Hz
+Google,Pixel 8,128GB,2023,Phone,6.2 inch OLED 120Hz
+Google,Pixel 8,256GB,2023,Phone,6.2 inch OLED 120Hz
+Google,Pixel 8 Pro,128GB,2023,Phone,6.7 inch LTPO OLED 120Hz
+Google,Pixel 8 Pro,256GB,2023,Phone,6.7 inch LTPO OLED 120Hz
+Google,Pixel 8 Pro,512GB,2023,Phone,6.7 inch LTPO OLED 120Hz
