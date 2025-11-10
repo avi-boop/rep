@@ -1,835 +1,867 @@
 # Mobile Repair Shop Dashboard - Comprehensive Plan
 
-## 📋 Executive Summary
-
-A modern, intuitive dashboard system for managing mobile device repairs with integrated pricing intelligence, customer notifications, and Lightspeed POS integration.
-
----
-
-## 🎯 Core Requirements
-
-### Business Needs
-- **Primary Devices**: iPhones, Samsung phones and tablets
-- **Secondary Devices**: Other brands (occasional)
-- **Repair Types**: Front screen, back panel, battery, audio, charging port, motherboard, camera, etc.
-- **Part Types**: Original (OEM) and Aftermarket
-- **Integration**: Lightspeed POS system for customer data
-- **Notifications**: Automated customer communication
+## Executive Summary
+A comprehensive dashboard system for managing mobile device repairs with smart pricing, customer notifications, and Lightspeed POS integration. Focus on simplicity, efficiency, and automation.
 
 ---
 
-## 🏗️ System Architecture
+## 1. Core Features & Modules
 
-### High-Level Architecture
+### 1.1 Dashboard Overview (Home)
+- **Quick Stats Cards**
+  - Today's repairs (in progress, completed, pending)
+  - Revenue (daily, weekly, monthly)
+  - Pending customer pickups
+  - Low stock alerts (parts inventory)
+  
+- **Activity Feed**
+  - Recent repair orders
+  - Customer check-ins
+  - Completed repairs awaiting pickup
+  - Urgent repairs or escalations
+
+- **Quick Actions**
+  - Create new repair order
+  - Check device in
+  - Search customer/order
+  - Add walk-in customer
+
+### 1.2 Repair Order Management
+- **Create/Edit Repair Orders**
+  - Customer selection (search existing or create new)
+  - Device selection (brand, model, IMEI/serial)
+  - Issue description with photos
+  - Multiple repair items per order
+  - Part quality selection (Original/Aftermarket)
+  - Priority levels (Standard, Express, Urgent)
+  - Estimated completion date/time
+  - Price calculation (automatic with smart pricing)
+  
+- **Repair Status Workflow**
+  1. Received/Checked-in
+  2. Diagnosis in progress
+  3. Awaiting parts
+  4. Repair in progress
+  5. Quality check
+  6. Completed - awaiting pickup
+  7. Delivered/Closed
+  
+- **Technician Assignment**
+  - Assign repairs to specific technicians
+  - Track technician workload
+  - Performance metrics per technician
+
+### 1.3 Smart Pricing System
+**Intelligent Price Estimation Algorithm**
+
+- **Database Structure**
+  - Brand → Model → Repair Type → Part Quality → Price
+  - Historical pricing data
+  - Market price trends
+  
+- **Smart Estimation Logic**
+  ```
+  Example:
+  If iPhone 11 screen = $150
+  And iPhone 13 screen = $210
+  Then iPhone 12 screen ≈ $180 (linear interpolation)
+  
+  Factors:
+  - Release date proximity
+  - Component similarity
+  - Market positioning
+  - Historical repair costs
+  ```
+
+- **Price Calculation Features**
+  - Manual override capability
+  - Bulk pricing rules (e.g., 10% discount for multiple repairs)
+  - Seasonal adjustments
+  - Competitor price tracking
+  - Profit margin calculator
+  - Labor + Parts breakdown
+
+- **Missing Price Alerts**
+  - Flag repairs with estimated prices
+  - Review queue for price confirmation
+  - Learning from confirmed estimates
+
+### 1.4 Device & Parts Management
+
+**Supported Devices:**
+- **Primary Focus:**
+  - iPhones (all models)
+  - Samsung Galaxy phones
+  - Samsung Galaxy tablets
+  - iPads
+  
+- **Secondary:**
+  - Other Android brands (Google, OnePlus, Xiaomi, etc.)
+  - Generic "Other" category
+
+**Repair Types:**
+- Front screen (LCD/OLED)
+- Back glass
+- Battery replacement
+- Charging port
+- Audio (speaker, microphone, earpiece)
+- Camera (front, rear, lens)
+- Motherboard repair
+- Water damage treatment
+- Software issues
+- Other repairs (custom entry)
+
+**Parts Inventory:**
+- Stock tracking per part type/model
+- Original vs Aftermarket distinction
+- Reorder alerts (low stock threshold)
+- Supplier information
+- Cost tracking
+- Serial number tracking (for high-value parts)
+
+### 1.5 Customer Management
+- **Customer Database**
+  - Name, phone, email, address
+  - Repair history
+  - Device history
+  - Notes/preferences
+  - Marketing consent
+  
+- **Lightspeed Integration** (Phase 2)
+  - Sync customer data
+  - Pull transaction history
+  - Unified customer view
+  - Avoid duplicate entries
+
+### 1.6 Notification System
+
+**Customer Notifications:**
+- **SMS & Email Support**
+  - Repair received confirmation
+  - Diagnosis complete (with quote)
+  - Parts arrived notification
+  - Repair in progress update
+  - Ready for pickup (with photo)
+  - Pickup reminder (if not collected)
+  - Payment receipt
+  
+- **Notification Settings**
+  - Customer preference (SMS/Email/Both)
+  - Auto-send vs manual review
+  - Template customization
+  - Automated triggers
+  
+- **Integration Options**
+  - Twilio (SMS)
+  - SendGrid/AWS SES (Email)
+  - WhatsApp Business API (future)
+
+**Internal Notifications:**
+- Staff alerts for urgent repairs
+- Technician task assignments
+- Parts arrival notifications
+- Quality check failures
+
+### 1.7 Pricing & Catalog Management
+- **Price List Management**
+  - Search and filter (brand, model, repair type)
+  - Bulk import/export (CSV/Excel)
+  - Version history
+  - Effective date ranges
+  - Competition tracking notes
+  
+- **Price Strategies**
+  - Standard pricing
+  - Express service markup (e.g., +30%)
+  - Weekend/holiday rates
+  - Warranty repair pricing
+  - Insurance claim pricing
+
+### 1.8 Reporting & Analytics
+- **Financial Reports**
+  - Daily/weekly/monthly revenue
+  - Revenue by repair type
+  - Revenue by device brand
+  - Original vs Aftermarket parts split
+  - Profit margins
+  
+- **Operational Reports**
+  - Average repair time
+  - Technician performance
+  - Popular repairs
+  - Device breakdown statistics
+  - Customer satisfaction trends
+  
+- **Inventory Reports**
+  - Stock levels
+  - Part usage trends
+  - Slow-moving inventory
+  - Reorder recommendations
+
+### 1.9 Settings & Configuration
+- **Business Settings**
+  - Shop name, logo, contact info
+  - Operating hours
+  - Tax rates
+  - Currency settings
+  
+- **User Management**
+  - Role-based access (Admin, Manager, Technician, Front Desk)
+  - Permissions matrix
+  - Activity logging
+  
+- **Integration Settings**
+  - Lightspeed API credentials
+  - Notification service configs
+  - Payment gateway settings
+  
+---
+
+## 2. Database Schema Design
+
+### 2.1 Core Tables
+
+```sql
+-- Customers
+customers
+  - id (PK)
+  - lightspeed_customer_id (nullable, for future integration)
+  - first_name
+  - last_name
+  - phone
+  - email
+  - address
+  - city, state, zip
+  - marketing_consent
+  - preferred_contact_method (SMS/Email/Both)
+  - notes
+  - created_at
+  - updated_at
+
+-- Devices
+devices
+  - id (PK)
+  - brand (iPhone, Samsung, Other)
+  - model (e.g., "iPhone 13 Pro")
+  - variant (e.g., "128GB", "256GB")
+  - release_year
+  - device_category (Phone, Tablet)
+  - created_at
+  - updated_at
+
+-- Customer Devices (for tracking specific devices)
+customer_devices
+  - id (PK)
+  - customer_id (FK)
+  - device_id (FK)
+  - imei_serial
+  - color
+  - condition_notes
+  - first_seen_at
+  - created_at
+  - updated_at
+
+-- Repair Types
+repair_types
+  - id (PK)
+  - name (e.g., "Front Screen", "Battery")
+  - category (Display, Power, Audio, etc.)
+  - description
+  - typical_duration_minutes
+  - active (boolean)
+  - created_at
+  - updated_at
+
+-- Price List
+price_list
+  - id (PK)
+  - device_id (FK)
+  - repair_type_id (FK)
+  - part_quality (Original/Aftermarket)
+  - price
+  - cost (for profit calculation)
+  - is_estimated (boolean, for smart pricing)
+  - confidence_score (0-100, for smart pricing)
+  - effective_from
+  - effective_until (nullable)
+  - notes
+  - created_at
+  - updated_at
+
+-- Repair Orders
+repair_orders
+  - id (PK)
+  - order_number (unique, e.g., "RO-2025-00123")
+  - customer_id (FK)
+  - customer_device_id (FK)
+  - status (received, diagnosis, awaiting_parts, in_progress, qc, completed, delivered)
+  - priority (standard, express, urgent)
+  - checked_in_at
+  - estimated_completion_at
+  - completed_at
+  - delivered_at
+  - assigned_technician_id (FK to users)
+  - customer_issue_description
+  - technician_diagnosis
+  - device_passcode (encrypted)
+  - device_condition_notes
+  - backup_confirmed (boolean)
+  - total_price
+  - deposit_paid
+  - final_payment_status (unpaid, partial, paid)
+  - created_at
+  - updated_at
+
+-- Repair Order Items (multiple repairs per order)
+repair_order_items
+  - id (PK)
+  - repair_order_id (FK)
+  - repair_type_id (FK)
+  - part_quality (Original/Aftermarket)
+  - price
+  - cost
+  - status (pending, completed, failed)
+  - notes
+  - created_at
+  - updated_at
+
+-- Parts Inventory
+parts_inventory
+  - id (PK)
+  - device_id (FK, nullable for generic parts)
+  - repair_type_id (FK)
+  - part_quality (Original/Aftermarket)
+  - sku
+  - quantity_in_stock
+  - reorder_threshold
+  - unit_cost
+  - supplier_name
+  - supplier_contact
+  - location (shelf/bin location)
+  - created_at
+  - updated_at
+
+-- Inventory Transactions
+inventory_transactions
+  - id (PK)
+  - part_id (FK)
+  - transaction_type (in, out, adjustment)
+  - quantity
+  - repair_order_item_id (FK, nullable)
+  - notes
+  - created_at_by (FK to users)
+  - created_at
+
+-- Notifications
+notifications
+  - id (PK)
+  - repair_order_id (FK)
+  - customer_id (FK)
+  - type (sms, email)
+  - template_name
+  - recipient
+  - subject
+  - message
+  - status (pending, sent, failed)
+  - sent_at
+  - error_message (if failed)
+  - created_at
+
+-- Users (Staff)
+users
+  - id (PK)
+  - username
+  - email
+  - password_hash
+  - first_name
+  - last_name
+  - role (admin, manager, technician, front_desk)
+  - active (boolean)
+  - created_at
+  - updated_at
+
+-- Activity Log (audit trail)
+activity_log
+  - id (PK)
+  - user_id (FK)
+  - action (create, update, delete, login, etc.)
+  - entity_type (repair_order, customer, etc.)
+  - entity_id
+  - changes (JSON)
+  - ip_address
+  - created_at
+
+-- Smart Pricing History (for learning)
+pricing_history
+  - id (PK)
+  - device_id (FK)
+  - repair_type_id (FK)
+  - part_quality
+  - estimated_price
+  - actual_price_used
+  - was_estimated (boolean)
+  - created_at
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Frontend Dashboard                       │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │  Repair  │  │  Pricing │  │Customers │  │Analytics │   │
-│  │Management│  │ Manager  │  │& Notifs  │  │Dashboard │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                              ↕
-┌─────────────────────────────────────────────────────────────┐
-│                      Backend API Layer                       │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
-│  │  Repair  │  │  Smart   │  │  Notif   │  │Lightspeed│   │
-│  │  Service │  │  Pricing │  │  Service │  │Connector │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                              ↕
-┌─────────────────────────────────────────────────────────────┐
-│                      Data Layer                              │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
-│  │ Internal │  │  Queue   │  │Lightspeed│                  │
-│  │ Database │  │(Redis)   │  │   API    │                  │
-│  └──────────┘  └──────────┘  └──────────┘                  │
-└─────────────────────────────────────────────────────────────┘
+
+### 2.2 Indexes
+```sql
+-- Performance optimization
+CREATE INDEX idx_customers_phone ON customers(phone);
+CREATE INDEX idx_customers_email ON customers(email);
+CREATE INDEX idx_repair_orders_status ON repair_orders(status);
+CREATE INDEX idx_repair_orders_customer ON repair_orders(customer_id);
+CREATE INDEX idx_repair_orders_order_number ON repair_orders(order_number);
+CREATE INDEX idx_notifications_status ON notifications(status);
+CREATE INDEX idx_price_list_device_repair ON price_list(device_id, repair_type_id);
 ```
-
-### Technology Stack Recommendations
-
-#### Frontend
-- **Framework**: React with Next.js (SEO, SSR capabilities)
-- **UI Library**: Tailwind CSS + Shadcn/ui or Material-UI
-- **State Management**: Zustand or Redux Toolkit
-- **Charts/Analytics**: Recharts or Chart.js
-- **Forms**: React Hook Form with Zod validation
-
-#### Backend
-- **Runtime**: Node.js with Express.js or NestJS
-- **Alternative**: Python with FastAPI (excellent for ML/pricing algorithms)
-- **API**: RESTful API with OpenAPI documentation
-
-#### Database
-- **Primary DB**: PostgreSQL (robust, relational, great for pricing queries)
-- **Cache/Queue**: Redis (for notifications and caching)
-- **Alternative**: MySQL/MariaDB
-
-#### Notification Services
-- **SMS**: Twilio, AWS SNS, or Vonage
-- **Email**: SendGrid, AWS SES, or Mailgun
-- **Push**: Firebase Cloud Messaging (for mobile app)
-
-#### Integration
-- **Lightspeed**: REST API integration
-- **Authentication**: JWT tokens with refresh mechanism
 
 ---
 
-## 📊 Database Schema
+## 3. Smart Pricing Algorithm Details
 
-### Core Tables
+### 3.1 Interpolation Strategy
 
-#### 1. Brands
-```sql
-CREATE TABLE brands (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    is_primary BOOLEAN DEFAULT false, -- iPhone, Samsung
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### 2. Device Models
-```sql
-CREATE TABLE device_models (
-    id SERIAL PRIMARY KEY,
-    brand_id INTEGER REFERENCES brands(id),
-    name VARCHAR(100) NOT NULL, -- "iPhone 11", "Galaxy S21"
-    model_number VARCHAR(50),
-    release_year INTEGER,
-    device_type ENUM('phone', 'tablet') NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(brand_id, name)
-);
-```
-
-#### 3. Repair Types
-```sql
-CREATE TABLE repair_types (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    category VARCHAR(50), -- 'screen', 'battery', 'port', 'camera', 'board'
-    description TEXT,
-    estimated_duration INTEGER, -- minutes
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
--- Examples: Front Screen, Back Panel, Battery, Audio, Charging Port, Motherboard, Camera
-```
-
-#### 4. Part Types
-```sql
-CREATE TABLE part_types (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE, -- 'original', 'aftermarket'
-    quality_level INTEGER, -- 1-5 rating
-    warranty_months INTEGER DEFAULT 3,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### 5. Pricing (Core Table)
-```sql
-CREATE TABLE pricing (
-    id SERIAL PRIMARY KEY,
-    device_model_id INTEGER REFERENCES device_models(id),
-    repair_type_id INTEGER REFERENCES repair_types(id),
-    part_type_id INTEGER REFERENCES part_types(id),
-    price DECIMAL(10, 2) NOT NULL,
-    cost DECIMAL(10, 2), -- Your cost (for margin calculation)
-    is_active BOOLEAN DEFAULT true,
-    is_estimated BOOLEAN DEFAULT false, -- Smart pricing flag
-    confidence_score DECIMAL(3, 2), -- For smart pricing (0.00-1.00)
-    valid_from DATE DEFAULT CURRENT_DATE,
-    valid_until DATE,
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(device_model_id, repair_type_id, part_type_id, valid_from)
-);
-```
-
-#### 6. Customers (Synced from Lightspeed)
-```sql
-CREATE TABLE customers (
-    id SERIAL PRIMARY KEY,
-    lightspeed_id VARCHAR(100) UNIQUE,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    email VARCHAR(255),
-    phone VARCHAR(20),
-    notification_preferences JSONB, -- {sms: true, email: true, push: false}
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_synced_at TIMESTAMP
-);
-```
-
-#### 7. Repair Orders
-```sql
-CREATE TABLE repair_orders (
-    id SERIAL PRIMARY KEY,
-    order_number VARCHAR(50) UNIQUE NOT NULL,
-    customer_id INTEGER REFERENCES customers(id),
-    device_model_id INTEGER REFERENCES device_models(id),
-    device_imei VARCHAR(50),
-    device_password VARCHAR(100), -- Encrypted
-    status ENUM('pending', 'in_progress', 'waiting_parts', 'completed', 'ready_pickup', 'delivered', 'cancelled') NOT NULL,
-    priority ENUM('normal', 'urgent', 'express') DEFAULT 'normal',
-    issue_description TEXT,
-    cosmetic_condition TEXT,
-    estimated_completion TIMESTAMP,
-    actual_completion TIMESTAMP,
-    total_price DECIMAL(10, 2),
-    deposit_paid DECIMAL(10, 2) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### 8. Repair Order Items
-```sql
-CREATE TABLE repair_order_items (
-    id SERIAL PRIMARY KEY,
-    repair_order_id INTEGER REFERENCES repair_orders(id) ON DELETE CASCADE,
-    repair_type_id INTEGER REFERENCES repair_types(id),
-    part_type_id INTEGER REFERENCES part_types(id),
-    pricing_id INTEGER REFERENCES pricing(id),
-    quantity INTEGER DEFAULT 1,
-    unit_price DECIMAL(10, 2) NOT NULL,
-    discount DECIMAL(10, 2) DEFAULT 0,
-    total_price DECIMAL(10, 2) NOT NULL,
-    status ENUM('pending', 'in_progress', 'completed') DEFAULT 'pending',
-    technician_notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### 9. Notifications
-```sql
-CREATE TABLE notifications (
-    id SERIAL PRIMARY KEY,
-    repair_order_id INTEGER REFERENCES repair_orders(id),
-    customer_id INTEGER REFERENCES customers(id),
-    type ENUM('sms', 'email', 'push') NOT NULL,
-    event_type VARCHAR(50), -- 'order_created', 'in_progress', 'completed', 'ready_pickup'
-    message TEXT NOT NULL,
-    status ENUM('pending', 'sent', 'failed', 'delivered') DEFAULT 'pending',
-    sent_at TIMESTAMP,
-    delivered_at TIMESTAMP,
-    error_message TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### 10. Price History (For Smart Pricing Training)
-```sql
-CREATE TABLE price_history (
-    id SERIAL PRIMARY KEY,
-    pricing_id INTEGER REFERENCES pricing(id),
-    old_price DECIMAL(10, 2),
-    new_price DECIMAL(10, 2),
-    reason VARCHAR(255),
-    changed_by INTEGER, -- User ID
-    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
----
-
-## 🧠 Smart Pricing System
-
-### Algorithm Overview
-
-The smart pricing system uses interpolation and pattern matching to estimate prices for device models without explicit pricing.
-
-### Strategy 1: Linear Interpolation by Release Year
-
-For devices in the same brand/series:
-```
-Example: iPhone pricing
-- iPhone 11 (2019): $150 screen repair
-- iPhone 13 (2021): $180 screen repair
-- iPhone 12 (2020): Estimated = $150 + ((2020-2019)/(2021-2019)) * ($180-$150)
-                                = $150 + (0.5 * $30) = $165
-```
-
-### Strategy 2: Similar Device Matching
-
-Match by specifications:
-- Screen size
-- Device tier (Pro, Plus, Standard, etc.)
-- Technology generation
-
-### Strategy 3: Market Price Adjustment
-
-Consider:
-- Device popularity (common devices = competitive pricing)
-- Part availability
-- Device age depreciation curve
-
-### Implementation Logic
-
+**Linear Interpolation (Basic)**
 ```python
-def estimate_price(device_model, repair_type, part_type):
-    # 1. Check for exact match
-    exact_price = get_exact_price(device_model, repair_type, part_type)
-    if exact_price:
-        return exact_price, confidence=1.0
+def estimate_price(target_model, repair_type, part_quality):
+    # Get known prices for same repair type and part quality
+    known_prices = get_known_prices(repair_type, part_quality)
     
-    # 2. Find similar devices in same brand/series
-    similar_devices = find_similar_devices(device_model)
+    # Sort by model release date/number
+    sorted_prices = sort_by_model_sequence(known_prices)
     
-    # 3. Apply interpolation
-    if len(similar_devices) >= 2:
-        price = interpolate_price(
-            device_model, 
-            similar_devices, 
-            repair_type, 
-            part_type
-        )
-        confidence = calculate_confidence(similar_devices)
-        return price, confidence
+    # Find surrounding models
+    lower_model = find_lower_bound(sorted_prices, target_model)
+    upper_model = find_upper_bound(sorted_prices, target_model)
     
-    # 4. Fallback to category average
-    avg_price = get_category_average(
-        device_model.brand, 
-        repair_type, 
-        part_type
-    )
-    return avg_price, confidence=0.5
-
-def interpolate_price(target_device, similar_devices, repair_type, part_type):
-    # Sort by release year
-    devices = sorted(similar_devices, key=lambda d: d.release_year)
-    
-    # Find surrounding devices
-    lower = [d for d in devices if d.release_year < target_device.release_year]
-    upper = [d for d in devices if d.release_year > target_device.release_year]
-    
-    if lower and upper:
-        lower_device = lower[-1]
-        upper_device = upper[0]
-        
-        lower_price = get_price(lower_device, repair_type, part_type)
-        upper_price = get_price(upper_device, repair_type, part_type)
-        
+    if lower_model and upper_model:
         # Linear interpolation
-        year_ratio = (target_device.release_year - lower_device.release_year) / \
-                     (upper_device.release_year - lower_device.release_year)
-        
-        estimated_price = lower_price + (year_ratio * (upper_price - lower_price))
-        
-        return round(estimated_price, 2)
+        position = calculate_relative_position(target_model, lower_model, upper_model)
+        estimated_price = lower_model.price + (upper_model.price - lower_model.price) * position
+        confidence = 85  # High confidence with bounded data
+    elif lower_model or upper_model:
+        # Extrapolation (less confident)
+        estimated_price = extrapolate(lower_model or upper_model)
+        confidence = 60  # Lower confidence
+    else:
+        # Use category average
+        estimated_price = get_category_average(repair_type, part_quality)
+        confidence = 40  # Low confidence
     
-    # Use nearest neighbor if only one side available
-    elif lower:
-        return get_price(lower[-1], repair_type, part_type) * 1.05  # 5% premium
-    elif upper:
-        return get_price(upper[0], repair_type, part_type) * 0.95  # 5% discount
-```
-
-### Confidence Score Calculation
-
-```python
-def calculate_confidence(similar_devices, match_quality):
-    factors = {
-        'exact_series_match': 0.4,      # iPhone 11 -> iPhone 12
-        'release_year_proximity': 0.3,   # Within 1-2 years
-        'price_data_recency': 0.2,       # Price updated recently
-        'number_of_comparisons': 0.1     # More data points = higher confidence
+    return {
+        'price': round(estimated_price, 2),
+        'confidence': confidence,
+        'is_estimated': True
     }
-    
-    confidence = sum(factors.values() * respective_scores)
-    return min(confidence, 1.0)
 ```
 
-### Price Display Rules
+**Advanced Factors:**
+- Screen size similarity
+- Technology similarity (LCD vs OLED)
+- Market segment (budget, mid-range, flagship)
+- Historical price trends
+- Seasonal patterns
 
-- **Confidence > 0.85**: Show as regular price
-- **Confidence 0.70-0.85**: Show with "(Estimated)" badge
-- **Confidence < 0.70**: Show "Contact for Quote" or price range
+### 3.2 Confidence Scoring
+- **90-100%**: Price exists in database (not estimated)
+- **80-89%**: Interpolated between two close models
+- **60-79%**: Extrapolated from one model or similar device
+- **40-59%**: Based on category average
+- **Below 40%**: Requires manual pricing
+
+### 3.3 Learning & Improvement
+- Track estimated vs actual prices used
+- Admin review queue for low-confidence estimates
+- Automatically update price list when patterns emerge
+- Quarterly price review reports
 
 ---
 
-## 🔔 Notification System
+## 4. Lightspeed POS Integration Strategy
 
-### Notification Events & Templates
+### 4.1 Integration Approach
+**Phase 1: Read-Only Integration**
+- Fetch customer data from Lightspeed
+- Import customer purchase history
+- One-way sync (Lightspeed → Dashboard)
 
-#### 1. Order Created
-```
-SMS: "Hi {first_name}, we've received your {device_model} for {repair_type}. Order #{order_number}. Est. completion: {date}. Track: {link}"
+**Phase 2: Bi-Directional Sync**
+- Push repair orders to Lightspeed as sales
+- Sync inventory (if managing accessories in Lightspeed)
+- Real-time updates
 
-Email: Detailed order summary with itemized repairs and costs
+### 4.2 API Integration Points
 ```
-
-#### 2. Diagnosis Complete
-```
-SMS: "Diagnosis complete for your {device_model}. Additional repairs needed. Total: ${total}. Approve: {link}"
-```
-
-#### 3. In Progress
-```
-SMS: "Good news! We've started working on your {device_model}. Est. completion: {date}."
-```
-
-#### 4. Repair Completed / Ready for Pickup
-```
-SMS: "Your {device_model} is ready for pickup! Balance due: ${balance}. Hours: {business_hours}. Location: {address}"
-
-Email: Include before/after photos, warranty info, care instructions
+Lightspeed Retail API Endpoints:
+- GET /customers - Fetch customer list
+- GET /customers/{id} - Get customer details
+- POST /customers - Create new customer (if needed)
+- GET /sales - Fetch sales history
+- POST /sales - Create sale (for completed repairs)
 ```
 
-#### 5. Delayed
-```
-SMS: "Update on your {device_model}: Repair delayed due to {reason}. New est. completion: {date}. Sorry for inconvenience!"
-```
-
-### Notification Preferences
-
-Allow customers to choose:
-- ✅ SMS (default: ON)
-- ✅ Email (default: ON)
-- ✅ Push notifications if mobile app exists
-- Frequency: All updates vs. Critical only
-
-### Implementation Architecture
-
-```
-┌─────────────────┐
-│  Event Trigger  │ (Order status change)
-└────────┬────────┘
-         │
-         ↓
-┌─────────────────┐
-│ Notification    │ Check customer preferences
-│ Service         │ Load template, populate data
-└────────┬────────┘
-         │
-         ↓
-┌─────────────────┐
-│  Message Queue  │ Redis Queue (retry logic)
-└────────┬────────┘
-         │
-         ↓
-┌─────────────────┐
-│   Provider      │ Twilio (SMS), SendGrid (Email)
-│   Integration   │
-└────────┬────────┘
-         │
-         ↓
-┌─────────────────┐
-│  Log & Track    │ Update notification status
-│  Delivery       │ Store delivery confirmation
-└─────────────────┘
-```
-
----
-
-## 🎨 Dashboard UI/UX Design
-
-### Main Dashboard Layout
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  🔧 RepairHub                   🔍 Search    🔔 Notifs  👤 Admin  │
-├────────┬────────────────────────────────────────────────────────┤
-│        │                                                          │
-│  📊    │   📈 Today's Overview                                   │
-│  Home  │   ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐                 │
-│        │   │  12  │ │   8  │ │  4   │ │ $850 │                 │
-│  🔧    │   │Active│ │ Ready│ │Urgent│ │Today │                 │
-│Repairs │   └──────┘ └──────┘ └──────┘ └──────┘                 │
-│        │                                                          │
-│  💰    │   📋 Active Repairs                                     │
-│Pricing │   ┌────────────────────────────────────────────────┐   │
-│        │   │ #R001 │ John Doe │ iPhone 13 │ Screen │ 2h ⏰│   │
-│  👥    │   │ #R002 │ Jane S.  │ Galaxy S21│ Battery│ Done✓│   │
-│Customer│   │ #R003 │ Mike T.  │ iPad Pro  │ Screen │ 4h ⏰│   │
-│        │   └────────────────────────────────────────────────┘   │
-│  📊    │                                                          │
-│Reports │   🔔 Recent Notifications                               │
-│        │   • SMS sent to John Doe - Order #R001 in progress     │
-│  ⚙️    │   • Email sent to Jane S. - Repair completed           │
-│Settings│                                                          │
-└────────┴────────────────────────────────────────────────────────┘
-```
-
-### Key Screens
-
-#### 1. Repairs Management
-- **List View**: Sortable, filterable table
-  - Quick filters: Status, Priority, Date, Device Type
-  - Search: Order number, customer name, phone, IMEI
-- **Kanban View**: Drag-and-drop status updates
-  - Columns: Pending | In Progress | Completed | Ready for Pickup
-- **Details View**: 
-  - Device info, customer details
-  - Repair items with individual status
-  - Photo upload (before/after)
-  - Technician notes
-  - Time tracking
-  - Status timeline
-
-#### 2. Pricing Manager
-- **Grid View**: 
-  ```
-  Device Model | Front Screen (OEM) | Front Screen (AM) | Battery (OEM) | ...
-  iPhone 15    | $299 ✓            | $199 ✓           | $89 ✓        | ...
-  iPhone 14    | $249 ✓            | $179 ✓           | $79 ✓        | ...
-  iPhone 13    | $199 ✓            | $149 ✓           | $69 ✓        | ...
-  iPhone 12    | $165 🤖 Est       | $119 🤖 Est      | $59 ✓        | ...
-  ```
-  - ✓ = Manual price set
-  - 🤖 = Smart pricing estimate
-  - Color coding: High confidence (green), Medium (yellow), Low (red)
-
-- **Bulk Import**: CSV upload for pricing
-- **Smart Pricing Panel**: 
-  - Review estimated prices
-  - Approve/adjust/reject suggestions
-  - Train algorithm with corrections
-
-#### 3. Customer Portal
-- Synced from Lightspeed
-- Repair history
-- Notification preferences
-- Outstanding balances
-- Quick create repair order
-
-#### 4. Analytics Dashboard
-- Revenue trends (daily, weekly, monthly)
-- Popular repairs breakdown
-- Device brand distribution
-- Average repair time
-- Customer satisfaction (if surveys added)
-- Technician performance
-
----
-
-## 🔌 Lightspeed POS Integration
-
-### Integration Points
-
-#### 1. Customer Sync (Bi-directional)
+### 4.3 Data Mapping
 ```
 Lightspeed Customer → Dashboard Customer
-- Automatic sync on order creation
-- Periodic batch sync (hourly/daily)
-- Webhook for real-time updates
+- customer_id → lightspeed_customer_id
+- firstName + lastName → first_name, last_name
+- contact.phone → phone
+- contact.email → email
+- contact.addresses → address fields
 ```
 
-#### 2. Inventory Sync (Parts Management)
-```
-Dashboard Part Usage → Lightspeed Inventory
-- Deduct parts when repair completed
-- Alert on low stock
-```
+### 4.4 Sync Strategy
+- **Initial Sync**: Import all existing customers (one-time)
+- **Incremental Sync**: Poll for updates every 15 minutes
+- **Conflict Resolution**: Lightspeed as source of truth for customer info
+- **Webhook Support**: If available, use webhooks for real-time updates
 
-#### 3. Payment Processing
-```
-Dashboard → Lightspeed Sale
-- Create sale in Lightspeed when payment received
-- Sync payment status
-- Handle deposits vs. full payments
-```
-
-#### 4. Reporting Integration
-```
-Combine repair data with POS sales data for:
-- Complete revenue picture
-- Customer lifetime value
-- Cross-sell opportunities
-```
-
-### API Integration Flow
-
-```javascript
-// Customer Lookup
-GET /lightspeed/customers?phone={phone}
-→ Import to local DB if not exists
-
-// Create Sale on Payment
-POST /lightspeed/sales
-{
-  customer_id: "LS_12345",
-  items: [
-    {sku: "REPAIR_SCREEN_IP13", price: 199, qty: 1}
-  ],
-  payment: {method: "cash", amount: 199}
-}
-
-// Inventory Update
-POST /lightspeed/inventory/adjust
-{
-  item_id: "PART_IP13_SCREEN",
-  quantity: -1,
-  reason: "Used in repair #R001"
-}
-```
+### 4.5 Fallback Mechanism
+- System should work fully offline from Lightspeed
+- Manual customer entry always available
+- Queue sync operations if API unavailable
 
 ---
 
-## 🚀 Implementation Phases
+## 5. Notification System Architecture
 
-### Phase 1: Foundation (Week 1-2)
-- [ ] Set up project structure
-- [ ] Initialize database with core schema
-- [ ] Basic authentication & authorization
-- [ ] Create brand & device model management
-- [ ] Repair types & part types setup
+### 5.1 Notification Templates
+```
+1. REPAIR_RECEIVED
+   Subject: "Repair Received - Order #{order_number}"
+   Message: "Hi {customer_name}, we've received your {device_model} for {repair_type}. 
+            Estimated completion: {est_date}. Track: {tracking_link}"
 
-### Phase 2: Core Repair Management (Week 3-4)
-- [ ] Repair order creation UI
-- [ ] Order listing & filtering
-- [ ] Status management workflow
-- [ ] Customer management (without Lightspeed)
-- [ ] Basic pricing table (manual entry)
+2. DIAGNOSIS_COMPLETE
+   Subject: "Diagnosis Complete - Order #{order_number}"
+   Message: "Diagnosis for your {device_model} is complete. 
+            Repair cost: ${total}. Reply YES to approve or call us."
 
-### Phase 3: Pricing System (Week 5-6)
-- [ ] Pricing management UI (grid view)
-- [ ] Manual price entry
-- [ ] CSV import/export
-- [ ] Smart pricing algorithm v1 (interpolation)
-- [ ] Estimated price indicators
-- [ ] Confidence scoring
+3. REPAIR_IN_PROGRESS
+   Subject: "Repair Started - Order #{order_number}"
+   Message: "Good news! We've started repairing your {device_model}."
 
-### Phase 4: Notifications (Week 7)
-- [ ] Notification template system
-- [ ] SMS integration (Twilio)
-- [ ] Email integration (SendGrid)
-- [ ] Event triggers on status changes
-- [ ] Customer preference management
-- [ ] Notification history & logs
+4. READY_FOR_PICKUP
+   Subject: "Ready for Pickup! - Order #{order_number}"
+   Message: "Your {device_model} is ready! Please collect from {shop_address}. 
+            Hours: {business_hours}. Amount due: ${balance}"
 
-### Phase 5: Dashboard & Analytics (Week 8)
-- [ ] Main dashboard with KPIs
-- [ ] Charts & visualizations
-- [ ] Repair analytics
-- [ ] Revenue reports
-- [ ] Performance metrics
+5. PICKUP_REMINDER
+   Subject: "Pickup Reminder - Order #{order_number}"
+   Message: "Reminder: Your {device_model} has been ready since {date}. 
+            Please collect at your earliest convenience."
+```
 
-### Phase 6: Lightspeed Integration (Week 9-10)
-- [ ] Lightspeed API authentication
-- [ ] Customer sync mechanism
-- [ ] Payment integration
-- [ ] Inventory sync
-- [ ] Error handling & retry logic
+### 5.2 Notification Triggers
+- **Automatic Triggers**:
+  - Status changes (checked-in → diagnosis → etc.)
+  - Delay alerts (if repair takes longer than estimated)
+  - Pickup reminders (24 hours, 3 days, 7 days after completion)
 
-### Phase 7: Enhancement & Polish (Week 11-12)
-- [ ] Smart pricing v2 (ML improvements)
-- [ ] Mobile responsive design
-- [ ] Advanced search & filters
-- [ ] Keyboard shortcuts
-- [ ] Performance optimization
-- [ ] User documentation
-- [ ] Training materials
+- **Manual Triggers**:
+  - Custom messages from staff
+  - Quote approval requests
+  - Additional issue discovered
+
+### 5.3 Implementation
+**Recommended Services:**
+- **SMS**: Twilio (reliable, global, good pricing)
+- **Email**: SendGrid or AWS SES
+- **Future**: WhatsApp Business API
+
+**Rate Limiting & Cost Control:**
+- Batch notifications where possible
+- Respect customer contact preferences
+- Track notification costs per order
+- Monthly spending alerts
 
 ---
 
-## 💡 Additional Feature Ideas
+## 6. User Interface & Experience
 
-### 1. **Warranty Management**
+### 6.1 Dashboard Layout
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [Logo]  Mobile Repair Dashboard        [User ▼] [Logout]  │
+├─────────────────────────────────────────────────────────────┤
+│  [Dashboard] [Repairs] [Customers] [Pricing] [Inventory]    │
+│  [Reports] [Settings]                                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐      │
+│  │ In Prog. │ │ Ready    │ │ Today's  │ │ Low      │      │
+│  │    12    │ │ Pickup 5 │ │ Rev $850 │ │ Stock 3  │      │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘      │
+│                                                               │
+│  Recent Activity                    Quick Actions            │
+│  ┌─────────────────────────┐       ┌──────────────┐        │
+│  │ RO-123: iPhone 13       │       │ + New Repair │        │
+│  │ Status: In Progress     │       └──────────────┘        │
+│  │ Customer: John Doe      │       ┌──────────────┐        │
+│  └─────────────────────────┘       │ Search Order │        │
+│  ┌─────────────────────────┐       └──────────────┘        │
+│  │ RO-122: Samsung S21     │                                │
+│  │ Status: Ready           │                                │
+│  └─────────────────────────┘                                │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 6.2 Repair Order Flow (UI)
+```
+Step 1: Customer Selection
+  - Search box (phone/name/email)
+  - Quick create customer button
+  - Recent customers list
+
+Step 2: Device Selection
+  - Brand dropdown (iPhone, Samsung, Other)
+  - Model dropdown (smart search)
+  - IMEI/Serial input
+  - Device condition photo upload
+
+Step 3: Issue Selection
+  - Checkboxes for common repairs
+  - "+ Add Another Repair" button
+  - Custom issue description
+  - Priority selector
+
+Step 4: Parts & Pricing
+  - Original vs Aftermarket toggle per repair
+  - Auto-calculated prices (highlight estimated ones)
+  - Manual price override option
+  - Discount field
+  - Total calculation
+
+Step 5: Confirmation
+  - Review summary
+  - Estimated completion date picker
+  - Technician assignment
+  - Customer notification preference
+  - Save & Print ticket button
+```
+
+### 6.3 Design Principles
+- **Clean & Minimal**: Focus on essential information
+- **Mobile Responsive**: Works on tablets for front desk
+- **Color Coding**: Status colors (red=urgent, yellow=in-progress, green=ready)
+- **Search First**: Prominent search bars everywhere
+- **One-Click Actions**: Common tasks should be quick
+- **Real-time Updates**: Use WebSockets for live status updates
+
+### 6.4 Technology Recommendations
+
+**Frontend:**
+- **React.js** or **Vue.js** - Modern, component-based
+- **Tailwind CSS** - Fast UI development
+- **Material-UI** or **Ant Design** - Pre-built components
+- **Chart.js** or **Recharts** - For analytics
+
+**Backend:**
+- **Node.js (Express)** or **Python (FastAPI/Django)**
+- **PostgreSQL** - Reliable relational database
+- **Redis** - Caching and real-time features
+
+**Hosting:**
+- **Frontend**: Vercel, Netlify, or AWS S3+CloudFront
+- **Backend**: AWS EC2, Digital Ocean, or Railway
+- **Database**: AWS RDS, Digital Ocean Managed DB, or Supabase
+
+**Mobile App (Future):**
+- React Native or Flutter
+- Customer-facing app for tracking repairs
+
+---
+
+## 7. Additional Feature Suggestions
+
+### 7.1 Warranty Management
 - Track warranty periods for repairs
+- Warranty claim processing
+- Warranty repair history
 - Automated warranty expiration reminders
-- Warranty claim tracking
-- Different warranties for OEM vs. Aftermarket
 
-### 2. **Customer Self-Service Portal**
-- Customers can check repair status online
-- Upload photos of device issues
-- Approve additional repairs
-- Rate completed repairs
+### 7.2 Customer Portal
+- Online repair booking
+- Real-time repair tracking
+- Digital receipt access
+- Repair history view
+- Online payment option
 
-### 3. **Technician Management**
-- Assign repairs to specific technicians
-- Track individual performance
-- Skill-based routing (certain techs for motherboard repairs)
-- Time tracking per repair
+### 7.3 Quality Assurance
+- Post-repair testing checklist
+- Photo documentation (before/after)
+- Customer satisfaction surveys (SMS after pickup)
+- Technician quality scores
 
-### 4. **Appointment Scheduling**
-- Online booking for drop-offs
-- Calendar integration
-- SMS reminders for appointments
-- Walk-in queue management
-
-### 5. **Photo Documentation**
-- Before/after photos (automatic watermark)
-- Video proof of testing
-- Cosmetic damage documentation
-- Cloud storage integration
-
-### 6. **Parts Inventory Management**
-- Track part stock levels
-- Low stock alerts
-- Supplier management
-- Purchase order generation
-- Part cost tracking (for margin analysis)
-
-### 7. **Multi-location Support**
-- If you expand to multiple shops
-- Transfer repairs between locations
-- Location-specific pricing
-- Centralized reporting
-
-### 8. **Marketing Automation**
-- Email campaigns for promotions
-- Birthday/holiday discounts
-- Loyalty program (10th repair discount)
+### 7.4 Marketing Features
+- Customer segmentation (repeat customers, high-value)
+- Email marketing campaigns
+- Loyalty program/points
 - Referral tracking
+- Special offers management
 
-### 9. **Quality Control**
-- Testing checklist before marking complete
-- Quality score tracking
-- Customer feedback collection
-- Redo/warranty repair tracking
+### 7.5 Advanced Analytics
+- Predictive maintenance alerts (based on device age)
+- Peak hours analysis (staffing optimization)
+- Customer lifetime value
+- Repair success rates
+- Part failure rates (identify bad suppliers)
 
-### 10. **Advanced Analytics**
-- Predictive demand forecasting
-- Seasonal trends analysis
-- Customer segmentation
-- Profit margin analysis per repair type
-- Device lifecycle insights
+### 7.6 Multi-Location Support (Future)
+- If expanding to multiple shops
+- Location-based inventory
+- Inter-location part transfers
+- Consolidated reporting
 
-### 11. **Mobile App (Future)**
-- iOS & Android apps for customers
-- Push notifications
-- Photo uploads
-- Mobile payments
+### 7.7 Appointment Booking
+- Calendar integration
+- Time slot management
+- Appointment reminders
+- Walk-in vs appointment tracking
 
-### 12. **Integration Expansions**
-- QuickBooks for accounting
-- Google Maps for directions in notifications
-- Stripe/Square for online deposits
-- Mailchimp for marketing
-
----
-
-## 🔒 Security & Compliance Considerations
-
-### Data Protection
-- Encrypt customer passwords (for devices)
-- Secure API keys & credentials
-- HTTPS only communication
-- Regular backups
-
-### Privacy
-- GDPR/CCPA compliance (if applicable)
-- Customer data retention policies
-- Right to deletion
-- Data export capabilities
-
-### Access Control
-- Role-based permissions (Admin, Technician, Front Desk)
-- Audit logs for pricing changes
-- Session management
-- Two-factor authentication for admin
+### 7.8 Accessory Sales
+- Sell cases, screen protectors, chargers
+- Integrate with repair orders
+- Inventory for accessories
+- Upsell suggestions during checkout
 
 ---
 
-## 📏 Success Metrics
+## 8. Implementation Roadmap
 
-### Operational Metrics
-- Average repair completion time
-- First-time fix rate
-- Warranty claim rate
-- Daily repairs completed
+### Phase 1: MVP (Months 1-2)
+✅ Core dashboard with statistics
+✅ Customer management (CRUD)
+✅ Device database
+✅ Repair order creation and tracking
+✅ Manual pricing management
+✅ Basic reporting
+✅ User authentication and roles
 
-### Financial Metrics
-- Average repair value
-- Daily/monthly revenue
-- Profit margin by repair type
-- Cost per repair
+### Phase 2: Smart Features (Month 3)
+✅ Smart pricing algorithm
+✅ Price estimation and confidence scoring
+✅ Parts inventory management
+✅ Automated notifications (SMS/Email)
+✅ Technician assignment and workload
 
-### Customer Metrics
+### Phase 3: Integration (Month 4)
+✅ Lightspeed POS integration
+✅ Customer data sync
+✅ Payment processing integration
+✅ Advanced search and filters
+
+### Phase 4: Enhancement (Month 5-6)
+✅ Advanced analytics and reporting
+✅ Customer portal (self-service)
+✅ Quality assurance workflows
+✅ Mobile app development
+✅ Marketing automation
+
+---
+
+## 9. Security Considerations
+
+### 9.1 Data Protection
+- Encrypt sensitive data (customer passwords, device passcodes)
+- HTTPS only (SSL certificate)
+- Regular database backups
+- GDPR compliance (if applicable)
+- Customer data deletion requests
+
+### 9.2 Access Control
+- Role-based permissions
+- Audit logs for all data changes
+- Session timeout
+- Two-factor authentication (for admins)
+- IP whitelisting for admin panel (optional)
+
+### 9.3 API Security
+- API key authentication
+- Rate limiting
+- Input validation
+- SQL injection prevention
+- XSS protection
+
+---
+
+## 10. Cost Estimates
+
+### 10.1 Development Costs
+- **MVP Development**: $15,000 - $25,000 (freelancer/agency)
+- **Full Featured (Phases 1-4)**: $40,000 - $70,000
+- **Maintenance**: $500 - $1,500/month
+
+### 10.2 Operational Costs
+- **Hosting**: $50 - $200/month (depending on scale)
+- **Database**: $25 - $100/month
+- **SMS (Twilio)**: ~$0.01 per SMS (estimate $50-200/month)
+- **Email (SendGrid)**: $15 - $50/month
+- **SSL Certificate**: Free (Let's Encrypt) or $50-200/year
+- **Domain**: $10-20/year
+- **Backup Storage**: $10-30/month
+
+**Total Monthly Operational**: ~$150 - $600/month
+
+---
+
+## 11. Success Metrics
+
+### 11.1 Business KPIs
+- Average repair turnaround time
 - Customer satisfaction score
 - Repeat customer rate
-- Average response time
+- Revenue per repair order
+- Profit margin per repair type
+- Technician utilization rate
+
+### 11.2 System KPIs
+- Order processing time (staff efficiency)
+- Price estimation accuracy
 - Notification delivery rate
-
-### System Metrics
-- Smart pricing accuracy (vs. manual adjustments)
-- Lightspeed sync success rate
-- API uptime
-- Dashboard load times
+- System uptime
+- Page load times
 
 ---
 
-## 🛠️ Development Tools & Resources
+## 12. Risk Mitigation
 
-### Development
-- **Version Control**: Git + GitHub/GitLab
-- **API Documentation**: Swagger/OpenAPI
-- **Testing**: Jest (JS) or Pytest (Python)
-- **Code Quality**: ESLint, Prettier, SonarQube
-
-### Deployment
-- **Hosting**: AWS, Google Cloud, or DigitalOcean
-- **Database**: RDS, Cloud SQL, or managed PostgreSQL
-- **CI/CD**: GitHub Actions, GitLab CI
-- **Monitoring**: Sentry (errors), DataDog/New Relic (performance)
-
-### Project Management
-- **Tasks**: Jira, Linear, or GitHub Projects
-- **Documentation**: Notion, Confluence
-- **Design**: Figma for UI mockups
+### Potential Risks:
+1. **Lightspeed API Changes**: Build abstraction layer for easy switching
+2. **Data Loss**: Automated daily backups, tested restore procedures
+3. **SMS Costs**: Set spending caps, use email as fallback
+4. **Staff Resistance**: Provide training, make UI intuitive
+5. **Pricing Errors**: Manual review required for estimated prices
+6. **Security Breach**: Regular security audits, penetration testing
 
 ---
 
-## 💰 Estimated Costs (Monthly)
+## 13. Next Steps
 
-### Infrastructure
-- **Hosting**: $50-200 (depending on scale)
-- **Database**: $25-100
-- **SMS (Twilio)**: $20-100 (depends on volume)
-- **Email (SendGrid)**: $15-50
-- **Lightspeed API**: (check their pricing)
-- **SSL/Domain**: $10-20
-
-**Total Est**: $120-470/month
-
-### Development (One-time)
-- If outsourcing: $10,000-25,000 for full system
-- If in-house: 2-3 months developer time
+1. **Review & Refine** this plan with stakeholders
+2. **Select Technology Stack** based on team expertise
+3. **Create Detailed Wireframes** for UI/UX
+4. **Database Setup** and schema implementation
+5. **Start MVP Development** (Phase 1)
+6. **Beta Testing** with staff
+7. **Gradual Rollout** with training
+8. **Iterate Based on Feedback**
 
 ---
 
-## 📞 Next Steps
+## Contact & Questions
 
-1. **Review this plan** and prioritize features
-2. **Choose tech stack** based on your team's expertise
-3. **Set up Lightspeed developer account** and review their API docs
-4. **Design detailed mockups** for key screens
-5. **Set up development environment** and start Phase 1
-6. **Create sample data** for testing (devices, repairs, customers)
-7. **Start with MVP**: Focus on Phases 1-3 first, then iterate
-
----
-
-## 📚 Resources
-
-### Lightspeed API
-- Documentation: https://developers.lightspeedhq.com/
-- Authentication & rate limits
-
-### Notification Providers
-- **Twilio**: https://www.twilio.com/docs
-- **SendGrid**: https://docs.sendgrid.com/
-
-### Design Inspiration
-- Freshdesk (ticketing system)
-- RepairShopr (repair shop software)
-- ServiceM8 (job management)
+For questions or clarifications about this plan, please note:
+- Priority features that must be in MVP
+- Any custom requirements not covered
+- Budget constraints
+- Timeline expectations
+- Integration with other systems
 
 ---
 
 **Document Version**: 1.0  
 **Created**: 2025-11-10  
-**Next Review**: After Phase 1 completion
+**Status**: Draft for Review
 
----
-
-*This is a living document. Update as requirements evolve and new features are identified.*
