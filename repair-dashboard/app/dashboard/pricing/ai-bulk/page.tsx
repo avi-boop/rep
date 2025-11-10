@@ -488,7 +488,7 @@ export default function BulkAIPricingPage() {
       {combinations.length === 0 && (
         <div className="bg-gray-50 rounded-lg p-12 text-center">
           <p className="text-gray-600">
-            Select devices, repair types, and part qualities above, then click "Generate Combinations" to begin.
+            Select devices, repair types, and part qualities above, then click &quot;Generate Combinations&quot; to begin.
           </p>
         </div>
       )}
