@@ -5,7 +5,7 @@
 
 interface GeminiConfig {
   apiKey: string;
-  apiUrl?: string;
+  apiUrl: string;
 }
 
 interface PriceRecommendation {
