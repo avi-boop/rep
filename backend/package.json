@@ -1,0 +1,46 @@
+{
+  "name": "mobile-repair-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Mobile Repair Shop Dashboard",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest --coverage",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "db:seed": "node prisma/seed.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "keywords": ["repair", "mobile", "dashboard"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.1.5",
+    "twilio": "^4.20.0",
+    "@sendgrid/mail": "^8.1.0",
+    "redis": "^4.6.11",
+    "multer": "^1.4.5-lts.1",
+    "date-fns": "^3.0.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "prisma": "^5.7.0",
+    "@types/node": "^20.10.5"
+  }
+}

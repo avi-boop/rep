@@ -1,0 +1,346 @@
+// =============================================================================
+// PRISMA SCHEMA - Mobile Repair Shop Dashboard
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum DeviceType {
+  phone
+  tablet
+}
+
+enum RepairStatus {
+  pending
+  in_progress
+  waiting_parts
+  completed
+  ready_pickup
+  delivered
+  cancelled
+}
+
+enum Priority {
+  normal
+  urgent
+  express
+}
+
+enum RepairItemStatus {
+  pending
+  in_progress
+  completed
+}
+
+enum NotificationType {
+  sms
+  email
+  push
+}
+
+enum NotificationStatus {
+  pending
+  sent
+  failed
+  delivered
+}
+
+enum UserRole {
+  admin
+  manager
+  technician
+  front_desk
+}
+
+// =============================================================================
+// MODELS
+// =============================================================================
+
+model User {
+  id              Int      @id @default(autoincrement())
+  username        String   @unique @db.VarChar(50)
+  email           String   @unique @db.VarChar(255)
+  passwordHash    String   @map("password_hash") @db.VarChar(255)
+  role            UserRole
+  isActive        Boolean  @default(true) @map("is_active")
+  lastLogin       DateTime? @map("last_login")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Brand {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(100)
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  logoUrl     String?  @map("logo_url") @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  deviceModels DeviceModel[]
+
+  @@index([isPrimary])
+  @@map("brands")
+}
+
+model DeviceModel {
+  id           Int        @id @default(autoincrement())
+  brandId      Int        @map("brand_id")
+  name         String     @db.VarChar(100)
+  modelNumber  String?    @map("model_number") @db.VarChar(50)
+  releaseYear  Int?       @map("release_year")
+  deviceType   DeviceType @map("device_type")
+  screenSize   Decimal?   @map("screen_size") @db.Decimal(3, 1)
+  isActive     Boolean    @default(true) @map("is_active")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  brand         Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  pricing       Pricing[]
+  repairOrders  RepairOrder[]
+
+  @@unique([brandId, name])
+  @@index([brandId])
+  @@index([releaseYear])
+  @@index([deviceType])
+  @@map("device_models")
+}
+
+model RepairType {
+  id                Int       @id @default(autoincrement())
+  name              String    @unique @db.VarChar(100)
+  category          String?   @db.VarChar(50)
+  description       String?   @db.Text
+  estimatedDuration Int?      @map("estimated_duration")
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  pricing          Pricing[]
+  repairOrderItems RepairOrderItem[]
+
+  @@index([category])
+  @@map("repair_types")
+}
+
+model PartType {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique @db.VarChar(50)
+  qualityLevel    Int      @map("quality_level")
+  warrantyMonths  Int      @default(3) @map("warranty_months")
+  description     String?  @db.Text
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  pricing          Pricing[]
+  repairOrderItems RepairOrderItem[]
+
+  @@map("part_types")
+}
+
+model Pricing {
+  id              Int      @id @default(autoincrement())
+  deviceModelId   Int      @map("device_model_id")
+  repairTypeId    Int      @map("repair_type_id")
+  partTypeId      Int      @map("part_type_id")
+  price           Decimal  @db.Decimal(10, 2)
+  cost            Decimal? @db.Decimal(10, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  isEstimated     Boolean  @default(false) @map("is_estimated")
+  confidenceScore Decimal? @map("confidence_score") @db.Decimal(3, 2)
+  validFrom       DateTime @default(now()) @map("valid_from") @db.Date
+  validUntil      DateTime? @map("valid_until") @db.Date
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  deviceModel      DeviceModel       @relation(fields: [deviceModelId], references: [id], onDelete: Cascade)
+  repairType       RepairType        @relation(fields: [repairTypeId], references: [id], onDelete: Cascade)
+  partType         PartType          @relation(fields: [partTypeId], references: [id], onDelete: Cascade)
+  repairOrderItems RepairOrderItem[]
+  priceHistory     PriceHistory[]
+
+  @@unique([deviceModelId, repairTypeId, partTypeId, validFrom])
+  @@index([deviceModelId])
+  @@index([repairTypeId])
+  @@index([partTypeId])
+  @@index([isEstimated])
+  @@index([isActive])
+  @@map("pricing")
+}
+
+model PriceHistory {
+  id         Int      @id @default(autoincrement())
+  pricingId  Int      @map("pricing_id")
+  oldPrice   Decimal? @map("old_price") @db.Decimal(10, 2)
+  newPrice   Decimal? @map("new_price") @db.Decimal(10, 2)
+  oldCost    Decimal? @map("old_cost") @db.Decimal(10, 2)
+  newCost    Decimal? @map("new_cost") @db.Decimal(10, 2)
+  reason     String?  @db.VarChar(255)
+  changedBy  Int?     @map("changed_by")
+  changedAt  DateTime @default(now()) @map("changed_at")
+
+  pricing Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+
+  @@index([pricingId])
+  @@index([changedAt])
+  @@map("price_history")
+}
+
+model Customer {
+  id                      Int      @id @default(autoincrement())
+  lightspeedId            String?  @unique @map("lightspeed_id") @db.VarChar(100)
+  firstName               String   @map("first_name") @db.VarChar(100)
+  lastName                String   @map("last_name") @db.VarChar(100)
+  email                   String?  @db.VarChar(255)
+  phone                   String   @db.VarChar(20)
+  notificationPreferences Json     @default("{\"sms\": true, \"email\": true, \"push\": false}") @map("notification_preferences")
+  notes                   String?  @db.Text
+  isActive                Boolean  @default(true) @map("is_active")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+  lastSyncedAt            DateTime? @map("last_synced_at")
+
+  repairOrders  RepairOrder[]
+  notifications Notification[]
+
+  @@index([lightspeedId])
+  @@index([email])
+  @@index([phone])
+  @@map("customers")
+}
+
+model RepairOrder {
+  id                   Int          @id @default(autoincrement())
+  orderNumber          String       @unique @map("order_number") @db.VarChar(50)
+  customerId           Int          @map("customer_id")
+  deviceModelId        Int          @map("device_model_id")
+  deviceImei           String?      @map("device_imei") @db.VarChar(50)
+  deviceSerial         String?      @map("device_serial") @db.VarChar(50)
+  devicePassword       String?      @map("device_password") @db.VarChar(100)
+  status               RepairStatus @default(pending)
+  priority             Priority     @default(normal)
+  issueDescription     String?      @map("issue_description") @db.Text
+  cosmeticCondition    String?      @map("cosmetic_condition") @db.Text
+  estimatedCompletion  DateTime?    @map("estimated_completion")
+  actualCompletion     DateTime?    @map("actual_completion")
+  totalPrice           Decimal      @default(0) @map("total_price") @db.Decimal(10, 2)
+  depositPaid          Decimal      @default(0) @map("deposit_paid") @db.Decimal(10, 2)
+  assignedTechnicianId Int?         @map("assigned_technician_id")
+  checkedInBy          Int?         @map("checked_in_by")
+  checkedOutBy         Int?         @map("checked_out_by")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+
+  customer            Customer              @relation(fields: [customerId], references: [id])
+  deviceModel         DeviceModel           @relation(fields: [deviceModelId], references: [id])
+  repairOrderItems    RepairOrderItem[]
+  notifications       Notification[]
+  orderStatusHistory  OrderStatusHistory[]
+  photos              Photo[]
+
+  @@index([customerId])
+  @@index([deviceModelId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([orderNumber])
+  @@map("repair_orders")
+}
+
+model RepairOrderItem {
+  id              Int              @id @default(autoincrement())
+  repairOrderId   Int              @map("repair_order_id")
+  repairTypeId    Int              @map("repair_type_id")
+  partTypeId      Int              @map("part_type_id")
+  pricingId       Int?             @map("pricing_id")
+  quantity        Int              @default(1)
+  unitPrice       Decimal          @map("unit_price") @db.Decimal(10, 2)
+  discount        Decimal          @default(0) @db.Decimal(10, 2)
+  totalPrice      Decimal          @map("total_price") @db.Decimal(10, 2)
+  status          RepairItemStatus @default(pending)
+  technicianNotes String?          @map("technician_notes") @db.Text
+  startedAt       DateTime?        @map("started_at")
+  completedAt     DateTime?        @map("completed_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  repairOrder RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+  repairType  RepairType  @relation(fields: [repairTypeId], references: [id])
+  partType    PartType    @relation(fields: [partTypeId], references: [id])
+  pricing     Pricing?    @relation(fields: [pricingId], references: [id])
+
+  @@index([repairOrderId])
+  @@index([status])
+  @@map("repair_order_items")
+}
+
+model Notification {
+  id            Int                @id @default(autoincrement())
+  repairOrderId Int?               @map("repair_order_id")
+  customerId    Int                @map("customer_id")
+  type          NotificationType
+  eventType     String?            @map("event_type") @db.VarChar(50)
+  subject       String?            @db.VarChar(255)
+  message       String             @db.Text
+  status        NotificationStatus @default(pending)
+  sentAt        DateTime?          @map("sent_at")
+  deliveredAt   DateTime?          @map("delivered_at")
+  errorMessage  String?            @map("error_message") @db.Text
+  retryCount    Int                @default(0) @map("retry_count")
+  externalId    String?            @map("external_id") @db.VarChar(100)
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  repairOrder RepairOrder? @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+  customer    Customer     @relation(fields: [customerId], references: [id])
+
+  @@index([repairOrderId])
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model OrderStatusHistory {
+  id            Int          @id @default(autoincrement())
+  repairOrderId Int          @map("repair_order_id")
+  oldStatus     RepairStatus? @map("old_status")
+  newStatus     RepairStatus @map("new_status")
+  notes         String?      @db.Text
+  changedBy     Int?         @map("changed_by")
+  changedAt     DateTime     @default(now()) @map("changed_at")
+
+  repairOrder RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+
+  @@index([repairOrderId])
+  @@index([changedAt])
+  @@map("order_status_history")
+}
+
+model Photo {
+  id            Int      @id @default(autoincrement())
+  repairOrderId Int      @map("repair_order_id")
+  photoUrl      String   @map("photo_url") @db.VarChar(500)
+  photoType     String?  @map("photo_type") @db.VarChar(50)
+  description   String?  @db.Text
+  uploadedBy    Int?     @map("uploaded_by")
+  uploadedAt    DateTime @default(now()) @map("uploaded_at")
+
+  repairOrder RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+
+  @@index([repairOrderId])
+  @@map("photos")
+}
