@@ -1,15 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const showAll = searchParams.get('all') === 'true'
+    const mainOnly = searchParams.get('mainOnly') === 'true'
+    const subcategoriesOnly = searchParams.get('subcategoriesOnly') === 'true'
+
+    let where: any = { isActive: true }
+
+    if (mainOnly) {
+      where.isMainCategory = true
+    } else if (subcategoriesOnly) {
+      where.isMainCategory = false
+    }
+
     const repairTypes = await prisma.repairType.findMany({
-      where: { isActive: true },
+      where,
       orderBy: [
         { displayOrder: 'asc' },
         { name: 'asc' }
       ]
     })
+
     return NextResponse.json(repairTypes)
   } catch (error) {
     console.error('Error fetching repair types:', error)

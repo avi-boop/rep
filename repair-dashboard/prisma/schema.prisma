@@ -8,107 +8,96 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model brands {
-  id            Int             @id @default(autoincrement())
-  name          String          @unique
-  isPrimary     Boolean         @default(false)
-  logoUrl       String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-  device_models device_models[]
+model Brand {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  isPrimary    Boolean       @default(false)
+  logoUrl      String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deviceModels DeviceModel[]
+
+  @@map("brands")
 }
 
-model customers {
-  id                      Int             @id @default(autoincrement())
-  lightspeedId            String?         @unique
-  firstName               String
-  lastName                String
-  email                   String?
-  phone                   String          @unique
-  notificationPreferences String          @default("{\"sms\": true, \"email\": true, \"push\": false}")
-  notes                   String?
-  isActive                Boolean         @default(true)
-  createdAt               DateTime        @default(now())
-  updatedAt               DateTime
-  lastSyncedAt            DateTime?
-  notifications           notifications[]
-  repair_orders           repair_orders[]
-}
-
-model device_models {
-  id            Int             @id @default(autoincrement())
-  brandId       Int
-  name          String
-  modelNumber   String?
-  releaseYear   Int?
-  deviceType    String
-  screenSize    Float?
-  isActive      Boolean         @default(true)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-  brands        brands          @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  pricing       pricing[]
-  repair_orders repair_orders[]
+model DeviceModel {
+  id           Int           @id @default(autoincrement())
+  brandId      Int
+  name         String
+  modelNumber  String?
+  releaseYear  Int?
+  deviceType   String
+  screenSize   Float?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  brand        Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  pricings     Pricing[]
+  repairOrders RepairOrder[]
 
   @@unique([brandId, name])
+  @@map("device_models")
 }
 
-model notifications {
-  id            Int            @id @default(autoincrement())
-  repairOrderId Int?
-  customerId    Int
-  type          String
-  eventType     String?
-  subject       String?
-  message       String
-  status        String         @default("pending")
-  sentAt        DateTime?
-  deliveredAt   DateTime?
-  errorMessage  String?
-  retryCount    Int            @default(0)
-  externalId    String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime
-  customers     customers      @relation(fields: [customerId], references: [id])
-  repair_orders repair_orders? @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+model RepairType {
+  id                Int               @id @default(autoincrement())
+  name              String            @unique
+  category          String?
+  subcategory       String?           // For grouping under "Other"
+  description       String?
+  estimatedDuration Int?
+  displayOrder      Int?
+  isMainCategory    Boolean           @default(true)  @map("isMainCategory") // true for Front Screen, Back Panel, Battery, Other
+  isActive          Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  pricings          Pricing[]
+  repairOrderItems  RepairOrderItem[]
+
+  @@map("repair_types")
 }
 
-model order_status_history {
-  id            Int           @id @default(autoincrement())
-  repairOrderId Int
-  oldStatus     String?
-  newStatus     String
-  notes         String?
-  changedBy     Int?
-  changedAt     DateTime      @default(now())
-  repair_orders repair_orders @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+model PartType {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique
+  qualityLevel     Int
+  warrantyMonths   Int               @default(3)
+  description      String?
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  pricings         Pricing[]
+  repairOrderItems RepairOrderItem[]
+
+  @@map("part_types")
 }
 
-model part_types {
-  id                 Int                  @id @default(autoincrement())
-  name               String               @unique
-  qualityLevel       Int
-  warrantyMonths     Int                  @default(3)
-  description        String?
-  isActive           Boolean              @default(true)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime
-  pricing            pricing[]
-  repair_order_items repair_order_items[]
+model Pricing {
+  id               Int               @id @default(autoincrement())
+  deviceModelId    Int
+  repairTypeId     Int
+  partTypeId       Int
+  price            Float
+  cost             Float?
+  isActive         Boolean           @default(true)
+  isEstimated      Boolean           @default(false)
+  confidenceScore  Float?
+  validFrom        DateTime          @default(now())
+  validUntil       DateTime?
+  notes            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  priceHistory     PriceHistory[]
+  deviceModel      DeviceModel       @relation(fields: [deviceModelId], references: [id], onDelete: Cascade)
+  partType         PartType          @relation(fields: [partTypeId], references: [id], onDelete: Cascade)
+  repairType       RepairType        @relation(fields: [repairTypeId], references: [id], onDelete: Cascade)
+  repairOrderItems RepairOrderItem[]
+
+  @@unique([deviceModelId, repairTypeId, partTypeId])
+  @@map("pricing")
 }
 
-model photos {
-  id            Int           @id @default(autoincrement())
-  repairOrderId Int
-  photoUrl      String
-  photoType     String?
-  description   String?
-  uploadedBy    Int?
-  uploadedAt    DateTime      @default(now())
-  repair_orders repair_orders @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
-}
-
-model price_history {
+model PriceHistory {
   id        Int      @id @default(autoincrement())
   pricingId Int
   oldPrice  Float?
@@ -118,97 +107,132 @@ model price_history {
   reason    String?
   changedBy Int?
   changedAt DateTime @default(now())
-  pricing   pricing  @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+  pricing   Pricing  @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+
+  @@map("price_history")
 }
 
-model pricing {
-  id                 Int                  @id @default(autoincrement())
-  deviceModelId      Int
-  repairTypeId       Int
-  partTypeId         Int
-  price              Float
-  cost               Float?
-  isActive           Boolean              @default(true)
-  isEstimated        Boolean              @default(false)
-  confidenceScore    Float?
-  validFrom          DateTime             @default(now())
-  validUntil         DateTime?
-  notes              String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime
-  price_history      price_history[]
-  device_models      device_models        @relation(fields: [deviceModelId], references: [id], onDelete: Cascade)
-  part_types         part_types           @relation(fields: [partTypeId], references: [id], onDelete: Cascade)
-  repair_types       repair_types         @relation(fields: [repairTypeId], references: [id], onDelete: Cascade)
-  repair_order_items repair_order_items[]
+model Customer {
+  id                      Int            @id @default(autoincrement())
+  lightspeedId            String?        @unique
+  firstName               String
+  lastName                String
+  email                   String?
+  phone                   String         @unique
+  notificationPreferences String         @default("{\"sms\": true, \"email\": true, \"push\": false}")
+  notes                   String?
+  isActive                Boolean        @default(true)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  lastSyncedAt            DateTime?
+  notifications           Notification[]
+  repairOrders            RepairOrder[]
 
-  @@unique([deviceModelId, repairTypeId, partTypeId])
+  @@map("customers")
 }
 
-model repair_order_items {
-  id              Int           @id @default(autoincrement())
-  repairOrderId   Int
-  repairTypeId    Int
-  partTypeId      Int
-  pricingId       Int?
-  quantity        Int           @default(1)
-  unitPrice       Float
-  discount        Float         @default(0)
-  totalPrice      Float
-  status          String        @default("pending")
-  technicianNotes String?
-  startedAt       DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime
-  part_types      part_types    @relation(fields: [partTypeId], references: [id])
-  pricing         pricing?      @relation(fields: [pricingId], references: [id])
-  repair_orders   repair_orders @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
-  repair_types    repair_types  @relation(fields: [repairTypeId], references: [id])
-}
-
-model repair_orders {
-  id                   Int                    @id @default(autoincrement())
-  orderNumber          String                 @unique
+model RepairOrder {
+  id                   Int                  @id @default(autoincrement())
+  orderNumber          String               @unique
   customerId           Int
   deviceModelId        Int
   deviceImei           String?
   deviceSerial         String?
   devicePassword       String?
-  status               String                 @default("pending")
-  priority             String                 @default("normal")
+  status               String               @default("pending")
+  priority             String               @default("normal")
   issueDescription     String?
   cosmeticCondition    String?
   estimatedCompletion  DateTime?
   actualCompletion     DateTime?
-  totalPrice           Float                  @default(0)
-  depositPaid          Float                  @default(0)
+  totalPrice           Float                @default(0)
+  depositPaid          Float                @default(0)
   assignedTechnicianId Int?
   checkedInBy          Int?
   checkedOutBy         Int?
   lightspeedSaleId     String?
-  syncedToLightspeed   Boolean                @default(false)
+  syncedToLightspeed   Boolean              @default(false)
   syncedAt             DateTime?
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime
-  notifications        notifications[]
-  order_status_history order_status_history[]
-  photos               photos[]
-  repair_order_items   repair_order_items[]
-  customers            customers              @relation(fields: [customerId], references: [id])
-  device_models        device_models          @relation(fields: [deviceModelId], references: [id])
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  notifications        Notification[]
+  orderStatusHistory   OrderStatusHistory[]
+  photos               Photo[]
+  repairOrderItems     RepairOrderItem[]
+  customer             Customer             @relation(fields: [customerId], references: [id])
+  deviceModel          DeviceModel          @relation(fields: [deviceModelId], references: [id])
+
+  @@map("repair_orders")
 }
 
-model repair_types {
-  id                 Int                  @id @default(autoincrement())
-  name               String               @unique
-  category           String?
-  description        String?
-  estimatedDuration  Int?
-  isActive           Boolean              @default(true)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime
-  displayOrder       Int?
-  pricing            pricing[]
-  repair_order_items repair_order_items[]
+model RepairOrderItem {
+  id              Int         @id @default(autoincrement())
+  repairOrderId   Int
+  repairTypeId    Int
+  partTypeId      Int
+  pricingId       Int?
+  quantity        Int         @default(1)
+  unitPrice       Float
+  discount        Float       @default(0)
+  totalPrice      Float
+  status          String      @default("pending")
+  technicianNotes String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  partType        PartType    @relation(fields: [partTypeId], references: [id])
+  pricing         Pricing?    @relation(fields: [pricingId], references: [id])
+  repairOrder     RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+  repairType      RepairType  @relation(fields: [repairTypeId], references: [id])
+
+  @@map("repair_order_items")
+}
+
+model Notification {
+  id            Int          @id @default(autoincrement())
+  repairOrderId Int?
+  customerId    Int
+  type          String
+  eventType     String?
+  subject       String?
+  message       String
+  status        String       @default("pending")
+  sentAt        DateTime?
+  deliveredAt   DateTime?
+  errorMessage  String?
+  retryCount    Int          @default(0)
+  externalId    String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  customer      Customer     @relation(fields: [customerId], references: [id])
+  repairOrder   RepairOrder? @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model OrderStatusHistory {
+  id            Int         @id @default(autoincrement())
+  repairOrderId Int
+  oldStatus     String?
+  newStatus     String
+  notes         String?
+  changedBy     Int?
+  changedAt     DateTime    @default(now())
+  repairOrder   RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+
+  @@map("order_status_history")
+}
+
+model Photo {
+  id            Int         @id @default(autoincrement())
+  repairOrderId Int
+  photoUrl      String
+  photoType     String?
+  description   String?
+  uploadedBy    Int?
+  uploadedAt    DateTime    @default(now())
+  repairOrder   RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+
+  @@map("photos")
 }

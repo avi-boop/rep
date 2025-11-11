@@ -24,6 +24,8 @@ export function AddPricingModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deviceModels, setDeviceModels] = useState<Array<{ id: number; name: string }>>([])
+  const [subcategories, setSubcategories] = useState<Array<{ id: number; name: string; subcategory: string }>>([])
+  const [showSubcategories, setShowSubcategories] = useState(false)
 
   // Find Standard part type (default) or use first available
   const standardPartType = partTypes.find(pt => pt.name === 'Standard') || partTypes[0]
@@ -45,6 +47,17 @@ export function AddPricingModal({
     }
   }, [formData.brandId, isOpen])
 
+  // Fetch subcategories when "Other" is selected
+  useEffect(() => {
+    const selectedRepairType = repairTypes.find(rt => rt.id === formData.repairTypeId)
+    if (selectedRepairType?.name === 'Other') {
+      setShowSubcategories(true)
+      fetchSubcategories()
+    } else {
+      setShowSubcategories(false)
+    }
+  }, [formData.repairTypeId, repairTypes])
+
   const fetchDeviceModels = async (brandId: number) => {
     try {
       const response = await fetch(`/api/device-models?brandId=${brandId}`)
@@ -55,6 +68,16 @@ export function AddPricingModal({
       }
     } catch (error) {
       console.error('Error fetching device models:', error)
+    }
+  }
+
+  const fetchSubcategories = async () => {
+    try {
+      const response = await fetch('/api/repair-types?subcategoriesOnly=true')
+      const data = await response.json()
+      setSubcategories(data)
+    } catch (error) {
+      console.error('Error fetching subcategories:', error)
     }
   }
 
@@ -220,6 +243,11 @@ export function AddPricingModal({
                   </option>
                 ))}
               </select>
+              {showSubcategories && (
+                <p className="mt-1 text-xs text-blue-600">
+                  Select specific repair from subcategories below
+                </p>
+              )}
             </div>
 
             {/* Part Quality */}
@@ -244,6 +272,42 @@ export function AddPricingModal({
               </p>
             </div>
           </div>
+
+          {/* Subcategories (shown when "Other" is selected) */}
+          {showSubcategories && subcategories.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Specific Repair <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.repairTypeId}
+                onChange={(e) => setFormData(prev => ({ ...prev, repairTypeId: parseInt(e.target.value) }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                required
+              >
+                <option value="">Select specific repair...</option>
+                {Object.entries(
+                  subcategories.reduce((acc, subcat) => {
+                    const group = subcat.subcategory || 'Other'
+                    if (!acc[group]) acc[group] = []
+                    acc[group].push(subcat)
+                    return acc
+                  }, {} as Record<string, typeof subcategories>)
+                ).map(([group, items]) => (
+                  <optgroup key={group} label={group}>
+                    {items.map(subcat => (
+                      <option key={subcat.id} value={subcat.id}>
+                        {subcat.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <p className="mt-2 text-xs text-gray-600">
+                Choose the specific component or repair type from the list above
+              </p>
+            </div>
+          )}
 
           {/* Pricing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
