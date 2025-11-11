@@ -67,7 +67,7 @@ function usePricingData() {
     try {
       const [brandsRes, repairTypesRes, partTypesRes, pricingRes] = await Promise.all([
         fetch('/api/brands'),
-        fetch('/api/repair-types'),
+        fetch('/api/repair-types?mainOnly=true'),
         fetch('/api/part-types'),
         fetch('/api/pricing')
       ])

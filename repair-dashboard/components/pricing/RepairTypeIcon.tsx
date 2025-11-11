@@ -1,4 +1,4 @@
-import { Smartphone, Battery, Camera, PhoneOff, Wrench, Zap } from 'lucide-react'
+import { Smartphone, Battery, Camera, Wrench, Zap, SquareStack, Layers } from 'lucide-react'
 
 interface RepairTypeIconProps {
   repairType: string
@@ -46,11 +46,11 @@ export function RepairTypeIcon({ repairType, className = '', size = 20 }: Repair
       )
     }
 
-    // Back / Back Glass / Back Panel / Rear (all same)
-    if (type.includes('back') || type.includes('glass') || type.includes('panel') || type.includes('rear')) {
+    // Back / Back Glass / Back Panel (all same)
+    if (type.includes('back') && (type.includes('panel') || type.includes('glass'))) {
       return (
-        <div className={`${iconClass} text-purple-600 bg-purple-50 p-2 rounded-lg`} title="Back Glass Repair">
-          <PhoneOff size={size} className="rotate-180" />
+        <div className={`${iconClass} text-purple-600 bg-purple-50 p-2 rounded-lg`} title="Back Panel Repair">
+          <Layers size={size} />
         </div>
       )
     }
