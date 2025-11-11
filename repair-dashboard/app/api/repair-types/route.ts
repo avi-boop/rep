@@ -5,9 +5,10 @@ export async function GET() {
   try {
     const repairTypes = await prisma.repairType.findMany({
       where: { isActive: true },
-      orderBy: {
-        category: 'asc'
-      }
+      orderBy: [
+        { displayOrder: 'asc' },
+        { name: 'asc' }
+      ]
     })
     return NextResponse.json(repairTypes)
   } catch (error) {

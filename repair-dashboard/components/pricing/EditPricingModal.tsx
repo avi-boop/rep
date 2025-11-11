@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Save, AlertCircle, Sparkles, TrendingUp, Clock, DollarSign } from 'lucide-react'
+import { X, Save, AlertCircle, Sparkles, TrendingUp, DollarSign } from 'lucide-react'
 import { applyPsychologicalPricing } from '@/lib/pricing-utils'
+import { PriceHistory } from './PriceHistory'
 
 interface Pricing {
   id: number
@@ -28,8 +29,11 @@ interface Pricing {
     id: number
     oldPrice: number | null
     newPrice: number | null
+    oldCost: number | null
+    newCost: number | null
     changedAt: string
     reason: string | null
+    changedBy: string | null
   }>
 }
 
@@ -291,33 +295,14 @@ export function EditPricingModal({
           </div>
 
           {/* Price History */}
-          {pricing.priceHistory && pricing.priceHistory.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Clock size={18} className="text-gray-600" />
-                <h3 className="text-sm font-medium text-gray-700">Recent Price History</h3>
-              </div>
-              <div className="space-y-2">
-                {pricing.priceHistory.slice(0, 3).map((history) => (
-                  <div key={history.id} className="bg-gray-50 rounded p-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">
-                        {history.oldPrice ? `$${history.oldPrice.toFixed(2)}` : 'N/A'}
-                        {' → '}
-                        {history.newPrice ? `$${history.newPrice.toFixed(2)}` : 'N/A'}
-                      </span>
-                      <span className="text-gray-500">
-                        {new Date(history.changedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {history.reason && (
-                      <p className="text-gray-600 mt-1">{history.reason}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Price History</h3>
+            <PriceHistory
+              history={pricing.priceHistory || []}
+              currentPrice={currentPrice}
+              currentCost={currentCost}
+            />
+          </div>
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">

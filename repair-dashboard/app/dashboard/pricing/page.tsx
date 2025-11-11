@@ -45,8 +45,11 @@ interface Pricing {
     id: number
     oldPrice: number | null
     newPrice: number | null
+    oldCost: number | null
+    newCost: number | null
     changedAt: string
     reason: string | null
+    changedBy: string | null
   }>
 }
 
