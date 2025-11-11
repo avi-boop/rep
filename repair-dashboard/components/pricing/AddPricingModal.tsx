@@ -10,7 +10,7 @@ interface AddPricingModalProps {
   onSuccess: () => void
   brands: Array<{ id: number; name: string }>
   repairTypes: Array<{ id: number; name: string }>
-  standardPartTypeId: number  // Hard-coded to Standard part type
+  partTypes: Array<{ id: number; name: string; qualityLevel: number }>
 }
 
 export function AddPricingModal({
@@ -19,16 +19,20 @@ export function AddPricingModal({
   onSuccess,
   brands,
   repairTypes,
-  standardPartTypeId
+  partTypes
 }: AddPricingModalProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deviceModels, setDeviceModels] = useState<Array<{ id: number; name: string }>>([])
 
+  // Find Standard part type (default) or use first available
+  const standardPartType = partTypes.find(pt => pt.name === 'Standard') || partTypes[0]
+
   const [formData, setFormData] = useState({
     brandId: brands[0]?.id || 0,
     deviceModelId: 0,
     repairTypeId: repairTypes[0]?.id || 0,
+    partTypeId: standardPartType?.id || 1,
     price: '',
     cost: '',
     notes: ''
@@ -74,7 +78,7 @@ export function AddPricingModal({
         body: JSON.stringify({
           deviceModelId: parseInt(formData.deviceModelId.toString()),
           repairTypeId: parseInt(formData.repairTypeId.toString()),
-          partTypeId: standardPartTypeId,  // Always use Standard part type
+          partTypeId: parseInt(formData.partTypeId.toString()),
           price: parseFloat(formData.price),
           cost: formData.cost ? parseFloat(formData.cost) : null,
           isEstimated: false,
@@ -104,6 +108,7 @@ export function AddPricingModal({
       brandId: brands[0]?.id || 0,
       deviceModelId: 0,
       repairTypeId: repairTypes[0]?.id || 0,
+      partTypeId: standardPartType?.id || 1,
       price: '',
       cost: '',
       notes: ''
@@ -217,15 +222,26 @@ export function AddPricingModal({
               </select>
             </div>
 
-            {/* Part Quality (Fixed - Standard) */}
+            {/* Part Quality */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Part Quality
               </label>
-              <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 font-medium">
-                Standard Quality
-              </div>
-              <p className="mt-1 text-xs text-gray-500">All pricing uses Standard quality parts</p>
+              <select
+                value={formData.partTypeId}
+                onChange={(e) => setFormData(prev => ({ ...prev, partTypeId: parseInt(e.target.value) }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                {partTypes.map(part => (
+                  <option key={part.id} value={part.id}>
+                    {part.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                {formData.partTypeId === standardPartType?.id ? 'Standard quality (default)' : 'Premium OEM quality'}
+              </p>
             </div>
           </div>
 
