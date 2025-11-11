@@ -86,7 +86,34 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    
+
+    // Get existing pricing for history tracking
+    const existing = await prisma.pricing.findUnique({
+      where: { id: body.id }
+    })
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Pricing not found' }, { status: 404 })
+    }
+
+    // Track price changes in history
+    const priceChanged = body.price !== undefined && parseFloat(body.price) !== existing.price
+    const costChanged = body.cost !== undefined && parseFloat(body.cost) !== existing.cost
+
+    if (priceChanged || costChanged) {
+      await prisma.priceHistory.create({
+        data: {
+          pricingId: body.id,
+          oldPrice: existing.price,
+          newPrice: body.price !== undefined ? parseFloat(body.price) : existing.price,
+          oldCost: existing.cost,
+          newCost: body.cost !== undefined ? parseFloat(body.cost) : existing.cost,
+          reason: body.changeReason || 'Manual update via dashboard',
+          changedBy: body.changedBy || null
+        }
+      })
+    }
+
     const pricing = await prisma.pricing.update({
       where: { id: body.id },
       data: {
@@ -104,7 +131,11 @@ export async function PUT(request: NextRequest) {
           }
         },
         repairType: true,
-        partType: true
+        partType: true,
+        priceHistory: {
+          orderBy: { changedAt: 'desc' },
+          take: 5
+        }
       }
     })
 
