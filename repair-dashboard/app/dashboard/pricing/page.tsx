@@ -162,11 +162,11 @@ export default function PricingPage() {
         onClose={() => setShowAddModal(false)}
         onSuccess={() => {
           refetch()
-          alert('✅ Pricing added successfully!')
+          setShowAddModal(false)
         }}
         brands={data.brands}
         repairTypes={data.repairTypes}
-        standardPartTypeId={data.partTypes.find(pt => pt.name === 'Standard')?.id || data.partTypes[0]?.id || 4}
+        partTypes={data.partTypes}
       />
     </div>
   )

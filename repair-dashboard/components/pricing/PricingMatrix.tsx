@@ -59,9 +59,9 @@ interface Props {
 
 export function PricingMatrix({ brands, repairTypes, partTypes, pricing, onPricingUpdated }: Props) {
   const [selectedBrand, setSelectedBrand] = useState<number | null>(brands[0]?.id || null)
-  // Always use Standard part type (qualityLevel: 2)
+  // Default to Standard part type (qualityLevel: 2)
   const standardPartType = partTypes.find(pt => pt.name === 'Standard') || partTypes[0]
-  const [selectedPartType] = useState<number | null>(standardPartType?.id || null)
+  const [selectedPartType, setSelectedPartType] = useState<number | null>(standardPartType?.id || null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'confirmed' | 'estimated' | 'needsPsych'>('all')
   const [analyzing, setAnalyzing] = useState(false)
@@ -186,7 +186,7 @@ export function PricingMatrix({ brands, repairTypes, partTypes, pricing, onPrici
 
         {/* Filter Options (collapsible) */}
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
             {/* Brand Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -200,6 +200,24 @@ export function PricingMatrix({ brands, repairTypes, partTypes, pricing, onPrici
                 {brands.map(brand => (
                   <option key={brand.id} value={brand.id}>
                     {brand.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Part Quality Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Part Quality
+              </label>
+              <select
+                value={selectedPartType || ''}
+                onChange={(e) => setSelectedPartType(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {partTypes.map(pt => (
+                  <option key={pt.id} value={pt.id}>
+                    {pt.name} {pt.name === 'Standard' ? '(Default)' : ''}
                   </option>
                 ))}
               </select>
