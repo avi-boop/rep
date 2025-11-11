@@ -43,8 +43,8 @@ export default function NewCustomerPage() {
         throw new Error(data.error || 'Failed to create customer')
       }
 
-      // Success - redirect to customers list
-      router.push('/dashboard/customers')
+      // Success - redirect to customers list with success message
+      router.push('/dashboard/customers?created=true')
       router.refresh()
     } catch (err: any) {
       setError(err.message)
