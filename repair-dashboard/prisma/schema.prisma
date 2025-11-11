@@ -45,6 +45,7 @@ model RepairType {
   category          String?
   description       String?
   estimatedDuration Int?
+  displayOrder      Int?
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
