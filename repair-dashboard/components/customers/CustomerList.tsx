@@ -12,6 +12,7 @@ interface Customer {
   lastName: string
   email: string | null
   phone: string
+  lightspeedId: string | null
   createdAt: Date
   _count: {
     repairOrders: number
@@ -20,9 +21,10 @@ interface Customer {
 
 interface Props {
   customers: Customer[]
+  onUpdate?: () => void
 }
 
-export function CustomerList({ customers }: Props) {
+export function CustomerList({ customers, onUpdate }: Props) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -63,8 +65,12 @@ export function CustomerList({ customers }: Props) {
         throw new Error('Failed to delete customer')
       }
 
-      // Refresh the page to show updated list
-      router.refresh()
+      // Refresh the customer list
+      if (onUpdate) {
+        onUpdate()
+      } else {
+        router.refresh()
+      }
     } catch (error) {
       console.error('Error deleting customer:', error)
       alert('Failed to delete customer')
@@ -203,9 +209,20 @@ export function CustomerList({ customers }: Props) {
             <div key={customer.id} className="p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">
-                    {customer.firstName} {customer.lastName}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {customer.firstName} {customer.lastName}
+                    </h3>
+                    {customer.lightspeedId && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                          <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                        </svg>
+                        Lightspeed
+                      </span>
+                    )}
+                  </div>
                   <div className="mt-1 space-y-1">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Phone className="w-4 h-4 flex-shrink-0" />
