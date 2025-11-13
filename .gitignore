@@ -60,3 +60,4 @@ temp/
 *.sqlite3
 db.json
 .github/SECURITY_INCIDENT_REPORT.md
+.env
