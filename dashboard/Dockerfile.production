@@ -6,10 +6,12 @@ FROM node:18-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-# Copy package files
+# Copy package files and prisma schema
 COPY package*.json ./
+COPY prisma ./prisma
 # Use npm install instead of npm ci for better compatibility
-RUN npm install --production --frozen-lockfile
+# Skip postinstall script (prisma generate) as we'll run it later in builder stage
+RUN npm install --production --frozen-lockfile --ignore-scripts
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
