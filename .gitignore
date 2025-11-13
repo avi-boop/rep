@@ -61,3 +61,9 @@ temp/
 db.json
 .github/SECURITY_INCIDENT_REPORT.md
 .env
+
+# Status and security documentation
+FINAL_STATUS.md
+RESTORATION_COMPLETE.md
+SECURITY_SCAN_RESULTS.md
+DEPLOYMENT_STATUS.md
