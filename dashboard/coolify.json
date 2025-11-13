@@ -1,0 +1,52 @@
+{
+  "name": "mobile-repair-dashboard",
+  "description": "Secure Mobile Repair Dashboard with httpOnly authentication",
+  "type": "application",
+  "build": {
+    "type": "dockerfile",
+    "dockerfile": "Dockerfile.production",
+    "context": "."
+  },
+  "port": 3000,
+  "environment": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "services": {
+    "postgres": {
+      "image": "postgres:15-alpine",
+      "environment": {
+        "POSTGRES_DB": "mobile_repair_db",
+        "POSTGRES_USER": "repair_admin"
+      },
+      "volumes": [
+        "postgres_data:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": ["CMD-SHELL", "pg_isready -U repair_admin"],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      }
+    },
+    "redis": {
+      "image": "redis:7-alpine",
+      "command": "redis-server --appendonly yes",
+      "volumes": [
+        "redis_data:/data"
+      ],
+      "healthcheck": {
+        "test": ["CMD", "redis-cli", "ping"],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      }
+    }
+  },
+  "healthcheck": {
+    "path": "/api/health",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  }
+}
