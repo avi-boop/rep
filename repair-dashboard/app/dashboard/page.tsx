@@ -1,4 +1,7 @@
 import { prisma } from '@/lib/prisma'
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 import { formatCurrency } from '@/lib/utils'
 import { Wrench, DollarSign, Clock, CheckCircle, AlertCircle } from 'lucide-react'
 

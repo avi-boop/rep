@@ -1,4 +1,7 @@
 import { prisma } from '@/lib/prisma'
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 import { RepairStatusBoard } from '@/components/repairs/RepairStatusBoard'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
