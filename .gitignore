@@ -70,3 +70,4 @@ DEPLOYMENT_STATUS.md
 *.md
 SECURITY_*.md
 *_SUMMARY.md
+dashboard/.env.example
