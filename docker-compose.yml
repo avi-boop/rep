@@ -103,14 +103,10 @@ services:
       NODE_ENV: production
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     depends_on:
       - api
     networks:
       - repair_network
-    command: npm start
 
   # ---------------------------------------------------------------------------
   # Nginx (Reverse Proxy - Production)
