@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { PricingMatrix } from '@/components/pricing/PricingMatrix'
+import { InteractivePricingSelector } from '@/components/pricing/InteractivePricingSelector'
 import { PricingSyncButton } from '@/components/pricing/PricingSyncButton'
 import { PricingStats } from '@/components/pricing/PricingStats'
 import { AddPricingModal } from '@/components/pricing/AddPricingModal'
-import { Plus } from 'lucide-react'
+import { Plus, LayoutGrid, Table } from 'lucide-react'
 import Link from 'next/link'
+
+type ViewMode = 'table' | 'interactive'
 
 interface Brand {
   id: number
@@ -24,6 +27,15 @@ interface PartType {
   qualityLevel: number
 }
 
+interface DeviceModel {
+  id: number
+  name: string
+  brandId: number
+  releaseYear: number | null
+  deviceType: string
+  brand: Brand
+}
+
 interface Pricing {
   id: number
   deviceModelId: number
@@ -34,11 +46,7 @@ interface Pricing {
   isEstimated: boolean
   confidenceScore: number | null
   notes: string | null
-  deviceModel: {
-    id: number
-    name: string
-    brand: Brand
-  }
+  deviceModel: DeviceModel
   repairType: RepairType
   partType: PartType
   priceHistory?: Array<{
@@ -106,6 +114,20 @@ function usePricingData() {
 export default function PricingPage() {
   const { data, loading, refetch } = usePricingData()
   const [showAddModal, setShowAddModal] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    // Load from localStorage
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('pricingViewMode') as ViewMode) || 'table'
+    }
+    return 'table'
+  })
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pricingViewMode', mode)
+    }
+  }
 
   if (loading || !data) {
     return (
@@ -151,13 +173,64 @@ export default function PricingPage() {
         avgPrice={data.stats.avgPrice}
       />
 
-      <PricingMatrix
-        brands={data.brands}
-        repairTypes={data.repairTypes}
-        partTypes={data.partTypes}
-        pricing={data.pricing}
-        onPricingUpdated={refetch}
-      />
+      {/* View Mode Toggle */}
+      <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-1">Pricing View</h3>
+          <p className="text-sm text-gray-600">
+            {viewMode === 'table' 
+              ? 'View all prices in a comprehensive table format'
+              : 'Browse by brand and model for focused pricing'}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleViewModeChange('table')}
+            className={`
+              flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+              ${viewMode === 'table'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+              }
+            `}
+          >
+            <Table size={18} />
+            Table View
+          </button>
+          <button
+            onClick={() => handleViewModeChange('interactive')}
+            className={`
+              flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+              ${viewMode === 'interactive'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+              }
+            `}
+          >
+            <LayoutGrid size={18} />
+            Interactive View
+          </button>
+        </div>
+      </div>
+
+      {/* Render Selected View */}
+      {viewMode === 'table' ? (
+        <PricingMatrix
+          brands={data.brands}
+          repairTypes={data.repairTypes}
+          partTypes={data.partTypes}
+          pricing={data.pricing}
+          onPricingUpdated={refetch}
+        />
+      ) : (
+        <InteractivePricingSelector
+          brands={data.brands}
+          repairTypes={data.repairTypes}
+          partTypes={data.partTypes}
+          pricing={data.pricing}
+          onPricingUpdated={refetch}
+        />
+      )}
 
       {/* Add Pricing Modal */}
       <AddPricingModal
