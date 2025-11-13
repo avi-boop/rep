@@ -1,4 +1,7 @@
 import { prisma } from '@/lib/prisma'
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 import { formatCurrency } from '@/lib/utils'
 import { TrendingUp, DollarSign, Wrench, Users } from 'lucide-react'
 
