@@ -84,10 +84,12 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Demo credentials:</p>
-          <p className="font-mono mt-1">admin / admin123</p>
-        </div>
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-6 text-center text-sm text-gray-600">
+            <p>Demo credentials (dev only):</p>
+            <p className="font-mono mt-1">admin / admin123</p>
+          </div>
+        )}
       </div>
     </div>
   )
