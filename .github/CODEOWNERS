@@ -1,0 +1,32 @@
+# Code Owners for automated review requests
+# Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owner - will be requested for review on all PRs
+* @avi-boop
+
+# Security-related files require review
+SECURITY.md @avi-boop
+.github/workflows/ @avi-boop
+.github/dependabot.yml @avi-boop
+.env.example @avi-boop
+
+# Backend code
+/backend/ @avi-boop
+/app/ @avi-boop
+/api/ @avi-boop
+
+# Frontend code
+/frontend/ @avi-boop
+
+# Database and migrations
+/database/ @avi-boop
+*.sql @avi-boop
+
+# Configuration files
+docker-compose.yml @avi-boop
+*.yml @avi-boop
+*.yaml @avi-boop
+.env.example @avi-boop
+
+# Documentation
+*.md @avi-boop
