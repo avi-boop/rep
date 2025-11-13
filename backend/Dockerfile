@@ -1,7 +1,8 @@
 # Backend Dockerfile
 # Multi-stage build for Node.js Express API
+# Using Debian-based image for better Prisma compatibility
 
-FROM node:18-alpine AS builder
+FROM node:18 AS builder
 
 WORKDIR /app
 
@@ -14,22 +15,24 @@ RUN npm install
 # Copy prisma schema
 COPY prisma ./prisma/
 
-# Generate Prisma Client for linux-musl-openssl-3.0.x
-ENV PRISMA_CLI_BINARY_TARGETS="linux-musl-openssl-3.0.x"
+# Generate Prisma Client
 RUN npx prisma generate
 
 # Copy source code
 COPY . .
 
 # Production stage
-FROM node:18-alpine
+FROM node:18-slim
 
-# Install security updates
-RUN apk --no-cache upgrade
+# Install security updates and required libraries
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y openssl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create app user (security best practice)
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+RUN groupadd --gid 1001 nodejs && \
+    useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nodejs
 
 WORKDIR /app
 
