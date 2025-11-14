@@ -117,9 +117,9 @@ export default function PricingPage() {
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     // Load from localStorage
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('pricingViewMode') as ViewMode) || 'table'
+      return (localStorage.getItem('pricingViewMode') as ViewMode) || 'interactive'
     }
-    return 'table'
+    return 'interactive'
   })
 
   const handleViewModeChange = (mode: ViewMode) => {
