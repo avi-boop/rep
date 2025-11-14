@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
+import { requireAuth } from '@/lib/auth'
 
 // Input validation schemas
 const pricingQuerySchema = z.object({
@@ -36,11 +37,17 @@ const updatePricingSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     // Validate query parameters
     const searchParams = request.nextUrl.searchParams
     const queryData = Object.fromEntries(searchParams.entries())
-    
+
     const validatedQuery = pricingQuerySchema.parse(queryData)
     const { page, pageSize, ...filters } = validatedQuery
 
@@ -102,9 +109,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     const body = await request.json()
-    
+
     // Validate input
     const validatedData = createPricingSchema.parse(body)
     
@@ -170,9 +183,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     const body = await request.json()
-    
+
     // Validate input
     const validatedData = updatePricingSchema.parse(body)
 
