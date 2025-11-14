@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client'
 
 // Extended types with relations
-export type RepairWithDetails = Prisma.RepairOrderGetPayload<{
+export type RepairOrderWithDetails = Prisma.RepairOrderGetPayload<{
   include: {
     customer: true
     deviceModel: {
@@ -13,13 +13,12 @@ export type RepairWithDetails = Prisma.RepairOrderGetPayload<{
       include: {
         repairType: true
         partType: true
-        pricing: true
       }
     }
   }
 }>
 
-export type CustomerWithRepairs = Prisma.CustomerGetPayload<{
+export type CustomerWithRepairOrders = Prisma.CustomerGetPayload<{
   include: {
     repairOrders: {
       include: {
@@ -33,7 +32,7 @@ export type CustomerWithRepairs = Prisma.CustomerGetPayload<{
   }
 }>
 
-export type PriceWithDetails = Prisma.PricingGetPayload<{
+export type PricingWithDetails = Prisma.PricingGetPayload<{
   include: {
     deviceModel: {
       include: {
