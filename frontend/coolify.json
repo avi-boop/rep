@@ -1,0 +1,24 @@
+{
+  "name": "mobile-repair-frontend",
+  "description": "Next.js 14 Frontend for Mobile Repair Shop Dashboard",
+  "type": "application",
+  "build": {
+    "type": "dockerfile",
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "port": 3000,
+  "environment": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "healthcheck": {
+    "path": "/",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  },
+  "dependsOn": [
+    "mobile-repair-backend"
+  ]
+}
