@@ -6,6 +6,7 @@ import {
   estimatePriceFromSimilarModels,
   formatPriceDifference
 } from '@/lib/pricing-utils'
+import { requireAuth } from '@/lib/auth'
 
 /**
  * POST /api/pricing/analyze
@@ -18,6 +19,12 @@ import {
  * - Price outliers that need review
  */
 export async function POST(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     const body = await request.json()
     const { deviceModelId, repairTypeId } = body
@@ -180,6 +187,12 @@ export async function POST(request: NextRequest) {
  * Get pricing analysis summary
  */
 export async function GET(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     // Quick analysis on all pricing
     const allPricing = await prisma.pricing.findMany({
