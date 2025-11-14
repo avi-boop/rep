@@ -28,7 +28,7 @@ export class GeminiAIService {
       apiKey: process.env.GEMINI_API_KEY || '',
       apiUrl: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta',
     };
-    this.baseUrl = this.config.apiUrl;
+    this.baseUrl = this.config.apiUrl || 'https://generativelanguage.googleapis.com/v1beta';
   }
 
   /**
