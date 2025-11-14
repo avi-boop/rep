@@ -1,0 +1,45 @@
+{
+  "name": "mobile-repair-app",
+  "description": "Next.js 16 Application with Prisma for Mobile Repair Shop",
+  "type": "application",
+  "build": {
+    "type": "dockerfile",
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "port": 3000,
+  "environment": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "services": {
+    "postgres": {
+      "image": "postgres:15-alpine",
+      "environment": {
+        "POSTGRES_DB": "mobile_repair_db",
+        "POSTGRES_USER": "repair_admin"
+      },
+      "volumes": [
+        "postgres_data:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": ["CMD-SHELL", "pg_isready -U repair_admin"],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      }
+    }
+  },
+  "healthcheck": {
+    "path": "/",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  },
+  "commands": {
+    "postDeploy": [
+      "npx prisma migrate deploy",
+      "npx prisma generate"
+    ]
+  }
+}
