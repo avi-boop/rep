@@ -105,7 +105,7 @@ model PriceHistory {
   oldCost   Float?
   newCost   Float?
   reason    String?
-  changedBy Int?
+  changedBy String?  // Changed from Int? to String? to store username/email for audit trail
   changedAt DateTime @default(now())
   pricing   Pricing  @relation(fields: [pricingId], references: [id], onDelete: Cascade)
 

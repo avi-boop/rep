@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { requireAuth } from '@/lib/auth'
 
 const execAsync = promisify(exec)
 
@@ -11,13 +12,21 @@ const execAsync = promisify(exec)
  * Runs the import script and returns results
  */
 export async function POST(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     console.log('🚀 Starting Lightspeed pricing sync...')
 
-    // Run the import script
+    // Run the import script (command is hardcoded to prevent injection)
     const { stdout, stderr } = await execAsync('npm run import:pricing', {
       cwd: process.cwd(),
-      maxBuffer: 10 * 1024 * 1024 // 10MB buffer for large output
+      maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large output
+      shell: '/bin/sh', // Explicitly set shell
+      timeout: 5 * 60 * 1000 // 5 minute timeout
     })
 
     // Parse output for stats (if available)
@@ -64,6 +73,12 @@ export async function POST(request: NextRequest) {
  * Check sync status / last sync time
  */
 export async function GET(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     const { prisma } = await import('@/lib/prisma')
 

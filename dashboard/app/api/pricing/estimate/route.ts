@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { estimatePrice, saveEstimatedPrice } from '@/lib/pricing-estimator'
+import { requireAuth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     const body = await request.json()
     
