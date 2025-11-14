@@ -60,7 +60,37 @@ temp/
 *.sqlite3
 db.json
 .github/SECURITY_INCIDENT_REPORT.md
+
+# Environment files (but keep .example files)
 .env
+dashboard/.env
+**/.env
+**/.env.backup*
+**/.env.cloud-backup*
+**/.env.production
+
+# Credentials and secrets - NEVER COMMIT
+*CREDENTIALS*.txt
+*SECURE*.txt
+*PASSWORD*.txt
+*.sql
+COOLIFY_ENV_VARS.txt
+COOLIFY_USE_VPS_SUPABASE.txt
+QUICK_DEPLOY.txt
+COPY_PASTE_*.txt
+FINAL_DEPLOYMENT_SUMMARY.txt
+FINAL_STATUS.txt
+
+# Automation scripts with embedded credentials - NEVER COMMIT
+auto-configure-coolify.js
+auto-deploy-coolify.js
+auto-deploy-everything.js
+auto-fix-all.sh
+browserless-deploy.js
+deploy-to-coolify.js
+test-login-browserless.js
+migrate-to-coolify-db.sh
+start-and-deploy-supabase.sh
 
 # Status and security documentation
 FINAL_STATUS.md
@@ -70,4 +100,3 @@ DEPLOYMENT_STATUS.md
 *.md
 SECURITY_*.md
 *_SUMMARY.md
-dashboard/.env.example
