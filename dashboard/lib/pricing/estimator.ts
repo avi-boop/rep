@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 
 export interface PriceEstimate {
   price: number
@@ -48,6 +48,14 @@ export async function estimatePrice(
   }
 
   // 3. Find reference prices from same brand
+<<<<<<< HEAD:dashboard/lib/pricing/estimator.ts
+  if (!targetDevice.releaseYear) {
+    throw new Error('Device release year not available')
+  }
+
+  const targetYear = targetDevice.releaseYear
+=======
+>>>>>>> origin/cursor/dashboard-setup-verification-and-upgrade-planning-28ca:repair-dashboard/lib/pricing/estimator.ts
   const referencePrices = await prisma.pricing.findMany({
     where: {
       repairTypeId,
@@ -56,12 +64,19 @@ export async function estimatePrice(
       isActive: true,
       deviceModel: {
         brandId: targetDevice.brandId,
+<<<<<<< HEAD:dashboard/lib/pricing/estimator.ts
+        releaseYear: {
+          gte: targetYear - 2,
+          lte: targetYear + 2,
+        },
+=======
         ...(targetDevice.releaseYear && {
           releaseYear: {
             gte: targetDevice.releaseYear - 2,
             lte: targetDevice.releaseYear + 2,
           },
         }),
+>>>>>>> origin/cursor/dashboard-setup-verification-and-upgrade-planning-28ca:repair-dashboard/lib/pricing/estimator.ts
       },
     },
     include: {
@@ -81,10 +96,17 @@ export async function estimatePrice(
 
   // 4. Find bracketing models (older and newer)
   const older = referencePrices.filter(
+<<<<<<< HEAD:dashboard/lib/pricing/estimator.ts
+    (p) => p.deviceModel.releaseYear && p.deviceModel.releaseYear < targetYear
+  )
+  const newer = referencePrices.filter(
+    (p) => p.deviceModel.releaseYear && p.deviceModel.releaseYear > targetYear
+=======
     (p) => p.deviceModel.releaseYear && targetDevice.releaseYear && p.deviceModel.releaseYear < targetDevice.releaseYear
   )
   const newer = referencePrices.filter(
     (p) => p.deviceModel.releaseYear && targetDevice.releaseYear && p.deviceModel.releaseYear > targetDevice.releaseYear
+>>>>>>> origin/cursor/dashboard-setup-verification-and-upgrade-planning-28ca:repair-dashboard/lib/pricing/estimator.ts
   )
 
   let estimatedPrice: number
@@ -98,6 +120,21 @@ export async function estimatePrice(
 
     const olderPrice = Number(closestOlder.price)
     const newerPrice = Number(closestNewer.price)
+<<<<<<< HEAD:dashboard/lib/pricing/estimator.ts
+    const olderYear = closestOlder.deviceModel.releaseYear
+    const newerYear = closestNewer.deviceModel.releaseYear
+
+    if (!olderYear || !newerYear) {
+      // Fall back to average if years are missing
+      estimatedPrice = (olderPrice + newerPrice) / 2
+      confidence = 0.65
+      source = 'average_similar'
+    } else {
+      // Linear interpolation
+      const yearDiff = newerYear - olderYear
+      const targetYearDiff = targetYear - olderYear
+      const priceDiff = newerPrice - olderPrice
+=======
     const olderYear = closestOlder.deviceModel.releaseYear!
     const newerYear = closestNewer.deviceModel.releaseYear!
 
@@ -105,10 +142,12 @@ export async function estimatePrice(
     const yearDiff = newerYear - olderYear
     const targetYearDiff = targetDevice.releaseYear! - olderYear
     const priceDiff = newerPrice - olderPrice
+>>>>>>> origin/cursor/dashboard-setup-verification-and-upgrade-planning-28ca:repair-dashboard/lib/pricing/estimator.ts
 
-    estimatedPrice = olderPrice + (priceDiff * targetYearDiff) / yearDiff
-    confidence = 0.85
-    source = 'interpolation'
+      estimatedPrice = olderPrice + (priceDiff * targetYearDiff) / yearDiff
+      confidence = 0.85
+      source = 'interpolation'
+    }
   } else if (referencePrices.length > 0) {
     // Extrapolation (less confident)
     const nearest = referencePrices[referencePrices.length - 1]
