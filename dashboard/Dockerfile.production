@@ -11,7 +11,7 @@ COPY package*.json ./
 COPY prisma ./prisma
 # Use npm install instead of npm ci for better compatibility
 # Skip postinstall script (prisma generate) as we'll run it later in builder stage
-RUN npm install --production --frozen-lockfile --ignore-scripts
+RUN npm install --production --ignore-scripts
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
