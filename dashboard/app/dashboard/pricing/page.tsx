@@ -132,24 +132,33 @@ export default function PricingPage() {
   if (loading || !data) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading pricing data...</p>
+        <div className="text-center animate-fade-in">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-200 border-t-primary-600 mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <DollarSign className="h-6 w-6 text-primary-600" />
+            </div>
+          </div>
+          <p className="mt-6 text-gray-700 font-medium">Loading pricing data...</p>
+          <p className="mt-2 text-sm text-gray-500">Please wait while we fetch your pricing information</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pricing Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Pricing Management</h1>
           <p className="text-gray-600 mt-1">Manage repair pricing and sync from Lightspeed</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-3 flex-wrap">
           <PricingSyncButton />
-          <Link href="/dashboard/pricing/ai-bulk" className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 font-medium shadow-sm flex items-center gap-2">
+          <Link
+            href="/dashboard/pricing/ai-bulk"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-lg smooth-transition font-semibold shadow-md hover:scale-105"
+          >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -157,7 +166,7 @@ export default function PricingPage() {
           </Link>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm flex items-center gap-2"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl hover:shadow-lg smooth-transition font-semibold shadow-md hover:scale-105"
           >
             <Plus size={18} />
             Add Pricing
@@ -174,11 +183,14 @@ export default function PricingPage() {
       />
 
       {/* View Mode Toggle */}
-      <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-white p-6 rounded-2xl border border-gray-200 shadow-soft">
         <div>
-          <h3 className="font-semibold text-gray-900 mb-1">Pricing View</h3>
+          <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
+            <LayoutGrid className="w-5 h-5 text-primary-600" />
+            Pricing View
+          </h3>
           <p className="text-sm text-gray-600">
-            {viewMode === 'table' 
+            {viewMode === 'table'
               ? 'View all prices in a comprehensive table format'
               : 'Browse by brand and model for focused pricing'}
           </p>
@@ -187,10 +199,10 @@ export default function PricingPage() {
           <button
             onClick={() => handleViewModeChange('table')}
             className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+              flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium smooth-transition
               ${viewMode === 'table'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/30'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
               }
             `}
           >
@@ -200,10 +212,10 @@ export default function PricingPage() {
           <button
             onClick={() => handleViewModeChange('interactive')}
             className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+              flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium smooth-transition
               ${viewMode === 'interactive'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/30'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300'
               }
             `}
           >
