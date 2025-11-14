@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAuth } from '@/lib/auth'
 
 /**
  * GET /api/pricing/stats
@@ -7,6 +8,12 @@ import { prisma } from '@/lib/prisma'
  * Get comprehensive pricing statistics and insights
  */
 export async function GET(request: NextRequest) {
+  // Require authentication
+  const auth = requireAuth(request)
+  if (!auth.authorized) {
+    return auth.response
+  }
+
   try {
     // Overall counts
     const totalPricing = await prisma.pricing.count()

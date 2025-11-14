@@ -6,7 +6,7 @@ import { InteractivePricingSelector } from '@/components/pricing/InteractivePric
 import { PricingSyncButton } from '@/components/pricing/PricingSyncButton'
 import { PricingStats } from '@/components/pricing/PricingStats'
 import { AddPricingModal } from '@/components/pricing/AddPricingModal'
-import { Plus, LayoutGrid, Table } from 'lucide-react'
+import { Plus, LayoutGrid, Table, Download } from 'lucide-react'
 import Link from 'next/link'
 
 type ViewMode = 'table' | 'interactive'
@@ -73,17 +73,22 @@ function usePricingData() {
 
   const fetchData = async () => {
     try {
+      // Fetch all pricing records by requesting a large page size
+      // This fixes the pagination bug where only first 20 records were shown
       const [brandsRes, repairTypesRes, partTypesRes, pricingRes] = await Promise.all([
         fetch('/api/brands'),
         fetch('/api/repair-types?mainOnly=true'),
         fetch('/api/part-types'),
-        fetch('/api/pricing')
+        fetch('/api/pricing?pageSize=10000') // Fetch all records
       ])
 
       const brands = await brandsRes.json()
       const repairTypes = await repairTypesRes.json()
       const partTypes = await partTypesRes.json()
-      const pricing = await pricingRes.json()
+      const pricingResponse = await pricingRes.json()
+
+      // Extract pricing data from paginated response
+      const pricing = pricingResponse.data || pricingResponse
 
       const total = pricing.length
       const active = pricing.filter((p: Pricing) => p.price > 0).length
@@ -117,9 +122,9 @@ export default function PricingPage() {
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     // Load from localStorage
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('pricingViewMode') as ViewMode) || 'table'
+      return (localStorage.getItem('pricingViewMode') as ViewMode) || 'interactive'
     }
-    return 'table'
+    return 'interactive'
   })
 
   const handleViewModeChange = (mode: ViewMode) => {
@@ -127,6 +132,51 @@ export default function PricingPage() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('pricingViewMode', mode)
     }
+  }
+
+  const handleExportCSV = () => {
+    if (!data) return
+
+    // Prepare CSV data
+    const csvRows = [
+      // Header
+      ['Brand', 'Device Model', 'Repair Type', 'Part Quality', 'Price', 'Cost', 'Margin %', 'Margin $', 'Status', 'Confidence'].join(',')
+    ]
+
+    // Add data rows
+    data.pricing.forEach(price => {
+      const margin = price.cost ? price.price - price.cost : 0
+      const marginPercent = price.cost ? ((margin / price.price) * 100).toFixed(1) : '0'
+      const status = price.isEstimated ? 'Estimated' : 'Confirmed'
+      const confidence = price.confidenceScore ? `${Math.round(price.confidenceScore * 100)}%` : 'N/A'
+
+      csvRows.push([
+        `"${price.deviceModel.brand.name}"`,
+        `"${price.deviceModel.name}"`,
+        `"${price.repairType.name}"`,
+        `"${price.partType.name}"`,
+        price.price.toFixed(2),
+        price.cost ? price.cost.toFixed(2) : '0',
+        marginPercent,
+        margin.toFixed(2),
+        status,
+        confidence
+      ].join(','))
+    })
+
+    // Create and download CSV file
+    const csvContent = csvRows.join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    const timestamp = new Date().toISOString().split('T')[0]
+
+    link.setAttribute('href', url)
+    link.setAttribute('download', `pricing-export-${timestamp}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   if (loading || !data) {
@@ -155,6 +205,13 @@ export default function PricingPage() {
             </svg>
             AI Bulk Pricing
           </Link>
+          <button
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium shadow-sm flex items-center gap-2"
+          >
+            <Download size={18} />
+            Export CSV
+          </button>
           <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm flex items-center gap-2"
