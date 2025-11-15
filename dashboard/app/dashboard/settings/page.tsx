@@ -1,3 +1,6 @@
+// Force dynamic rendering for database access
+export const dynamic = 'force-dynamic'
+
 'use client';
 
 import { useState, useEffect } from 'react';
