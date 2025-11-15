@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { z } from 'zod'
+import { getRedisClient, isRedisAvailable } from './redis'
 
 // Environment validation
 const authEnvSchema = z.object({
@@ -255,16 +256,60 @@ export function generateRandomToken(length: number = 32): string {
 }
 
 /**
- * Rate limiting helper (stores in-memory, use Redis for production)
+ * Rate limiting with Redis (production-ready, distributed)
+ * Falls back to in-memory if Redis unavailable
  */
+
+// Fallback in-memory store
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>()
 
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   maxAttempts: number = 5,
   windowMs: number = 15 * 60 * 1000 // 15 minutes
-): { allowed: boolean; remaining: number; resetAt: number } {
+): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
   const now = Date.now()
+
+  // Try Redis first
+  const useRedis = await isRedisAvailable()
+
+  if (useRedis) {
+    try {
+      const redis = await getRedisClient()
+      const redisKey = `ratelimit:${key}`
+
+      // Get current count
+      const count = await redis.incr(redisKey)
+
+      // Set expiry on first attempt
+      if (count === 1) {
+        await redis.pExpire(redisKey, windowMs)
+      }
+
+      // Get TTL to calculate resetAt
+      const ttl = await redis.pTTL(redisKey)
+      const resetAt = ttl > 0 ? now + ttl : now + windowMs
+
+      if (count > maxAttempts) {
+        return {
+          allowed: false,
+          remaining: 0,
+          resetAt,
+        }
+      }
+
+      return {
+        allowed: true,
+        remaining: maxAttempts - count,
+        resetAt,
+      }
+    } catch (error) {
+      console.error('Redis rate limit error, falling back to in-memory:', error)
+      // Fall through to in-memory implementation
+    }
+  }
+
+  // Fallback: In-memory rate limiting
   const record = rateLimitStore.get(key)
 
   // Clean up expired records
@@ -307,6 +352,20 @@ export function checkRateLimit(
 /**
  * Clear rate limit for a key (useful after successful login)
  */
-export function clearRateLimit(key: string): void {
+export async function clearRateLimit(key: string): Promise<void> {
+  // Try Redis first
+  const useRedis = await isRedisAvailable()
+
+  if (useRedis) {
+    try {
+      const redis = await getRedisClient()
+      await redis.del(`ratelimit:${key}`)
+      return
+    } catch (error) {
+      console.error('Redis clear rate limit error:', error)
+    }
+  }
+
+  // Fallback: In-memory
   rateLimitStore.delete(key)
 }
