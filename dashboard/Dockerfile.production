@@ -10,7 +10,9 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
 # Install ALL dependencies including devDependencies (needed for build: tailwindcss, postcss, etc.)
+# Force NODE_ENV to be empty so npm installs devDependencies
 # Skip postinstall script (prisma generate) as we'll run it later in builder stage
+ENV NODE_ENV=
 RUN npm install --frozen-lockfile --ignore-scripts
 
 # Stage 2: Builder
