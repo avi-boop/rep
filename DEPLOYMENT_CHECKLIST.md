@@ -1,397 +1,380 @@
-# Mobile Repair Dashboard - Deployment Checklist
+# 🚀 Coolify Deployment Checklist
 
-## Pre-Deployment Checklist
+## 🔒 SECURITY FIRST - READ BEFORE DEPLOYING
 
-### ✅ Development Complete
-- [ ] All MVP features implemented and tested
-- [ ] Frontend builds without errors (`npm run build`)
-- [ ] Backend builds without errors (`npm run build`)
-- [ ] Database migrations tested and documented
-- [ ] All tests passing (unit, integration, e2e)
-- [ ] Code reviewed and approved
-- [ ] Documentation complete (API docs, README)
+**⚠️ CRITICAL**: Before proceeding, ensure you've secured all credentials:
 
-### ✅ Configuration
-- [ ] Environment variables documented in `.env.example`
-- [ ] Production environment variables prepared
-- [ ] Secrets generated (JWT, session secrets, etc.)
-- [ ] Database connection strings configured
-- [ ] Third-party API keys obtained and tested:
-  - [ ] Twilio (SMS)
-  - [ ] SendGrid (Email)
-  - [ ] Lightspeed POS (if ready)
-  - [ ] Stripe/Square (payment processing)
-  - [ ] AWS S3 or Cloudinary (file storage)
-- [ ] CORS origins configured for production domain
-- [ ] Rate limiting configured
-- [ ] Feature flags set appropriately
-
-### ✅ Security
-- [ ] All passwords are strong and unique
-- [ ] SSL/TLS certificate obtained
-- [ ] HTTPS enforced (HTTP redirects to HTTPS)
-- [ ] Security headers configured (CSP, HSTS, X-Frame-Options)
-- [ ] SQL injection prevention verified (using parameterized queries)
-- [ ] XSS protection verified (input sanitization)
-- [ ] CSRF protection enabled
-- [ ] API authentication working (JWT)
-- [ ] Role-based access control (RBAC) implemented
-- [ ] Sensitive data encrypted (passwords, device passcodes)
-- [ ] `.env` files not committed to git
-- [ ] Dependencies scanned for vulnerabilities (`npm audit`)
-- [ ] Security penetration testing completed (optional but recommended)
-
-### ✅ Database
-- [ ] Production database created
-- [ ] Database user with appropriate permissions created
-- [ ] Database connection tested
-- [ ] All migrations run successfully
-- [ ] Database indexes created
-- [ ] Connection pooling configured
-- [ ] Backup strategy implemented
-- [ ] Data retention policy defined
-
-### ✅ Performance
-- [ ] Frontend bundle size optimized (< 500KB initial)
-- [ ] Images optimized and lazy-loaded
-- [ ] API response times acceptable (< 500ms for most endpoints)
-- [ ] Database queries optimized (no N+1 queries)
-- [ ] Caching strategy implemented (Redis)
-- [ ] CDN configured for static assets
-- [ ] Compression enabled (gzip/brotli)
-- [ ] Load testing completed (simulated traffic)
-
-### ✅ Monitoring & Logging
-- [ ] Error tracking configured (Sentry or similar)
-- [ ] Application logging configured (Winston/Pino)
-- [ ] Database query logging enabled (for debugging)
-- [ ] Uptime monitoring setup (UptimeRobot or similar)
-- [ ] Performance monitoring setup (optional: New Relic, Datadog)
-- [ ] Log rotation configured
-- [ ] Alerting configured (email/SMS for critical errors)
-- [ ] Analytics configured (Google Analytics)
-
-### ✅ Backup & Recovery
-- [ ] Automated daily database backups configured
-- [ ] Backup retention policy set (30 days recommended)
-- [ ] Backup storage location secured (S3 with encryption)
-- [ ] Restore procedure documented and tested
-- [ ] Disaster recovery plan documented
-- [ ] RTO (Recovery Time Objective) defined
-- [ ] RPO (Recovery Point Objective) defined
+1. **Read Security Documentation**: `/docs/SECURITY_CREDENTIALS.md`
+2. **Rotate All API Keys**: Gemini, Lightspeed, Supabase passwords
+3. **Never Commit Secrets**: Verify `.env` files are in `.gitignore`
+4. **Create Secure Admin**: Use `scripts/create-secure-admin.js`
 
 ---
 
-## Infrastructure Setup
+## Quick Deployment Steps
 
-### Option A: Railway.app (Recommended for Small-Medium Shops)
-- [ ] Railway account created
-- [ ] Project created in Railway
-- [ ] PostgreSQL addon added
-- [ ] Redis addon added
-- [ ] Environment variables set in Railway dashboard
-- [ ] Domain configured (custom domain or Railway subdomain)
-- [ ] SSL certificate auto-configured
-- [ ] Deploy triggers configured (auto-deploy on git push)
-- [ ] Health check endpoints configured
+### 1. Generate Secrets First
+```bash
+# Generate JWT_SECRET
+openssl rand -hex 64
 
-### Option B: Digital Ocean
-- [ ] Droplet created (Ubuntu 22.04, 2GB+ RAM)
-- [ ] SSH key added for secure access
-- [ ] Firewall configured (ports 80, 443, 22 only)
-- [ ] Node.js installed
-- [ ] PostgreSQL installed and configured
-- [ ] Redis installed and configured
-- [ ] Nginx installed and configured as reverse proxy
-- [ ] PM2 installed for process management
-- [ ] SSL certificate obtained (Let's Encrypt)
-- [ ] Auto-renewal configured for SSL
-- [ ] Log rotation configured
-- [ ] Automatic security updates enabled
+# Generate REFRESH_TOKEN_SECRET
+openssl rand -hex 64
 
-### Option C: AWS
-- [ ] EC2 instance launched
-- [ ] Security groups configured
-- [ ] RDS PostgreSQL instance created
-- [ ] ElastiCache Redis instance created
-- [ ] S3 bucket created for file uploads
-- [ ] CloudFront CDN configured
-- [ ] IAM roles and policies configured
-- [ ] Load balancer configured (if needed)
-- [ ] Auto-scaling configured (if needed)
-- [ ] Route 53 DNS configured
+# Generate NEXTAUTH_SECRET
+openssl rand -hex 64
+
+# Save these securely - you'll need them in step 7
+```
 
 ---
 
-## Deployment Steps
+### 2. Create Application in Coolify
 
-### 1. Pre-Deployment
-```bash
-# Run all checks
-npm run test
-npm run lint
-npm run build
-
-# Check for security vulnerabilities
-npm audit
-npm audit fix
-
-# Update dependencies (if needed)
-npm update
-```
-
-### 2. Database Migration
-```bash
-# Backup current production database (if updating existing system)
-pg_dump mobile_repair_db > backup_pre_deploy_$(date +%Y%m%d_%H%M%S).sql
-
-# Run migrations on production
-NODE_ENV=production npm run prisma:migrate
-
-# Verify migrations
-NODE_ENV=production npm run prisma:studio
-```
-
-### 3. Deploy Backend
-```bash
-# Build backend
-cd backend
-npm run build
-
-# If using Railway: Push to git
-git push origin main
-
-# If using server: Upload and restart
-scp -r dist user@server:/var/www/repair-dashboard/backend/
-ssh user@server "cd /var/www/repair-dashboard/backend && pm2 restart repair-api"
-```
-
-### 4. Deploy Frontend
-```bash
-# Build frontend
-cd frontend
-npm run build
-
-# If using Vercel/Netlify: Push to git (auto-deploy)
-git push origin main
-
-# If using server: Upload to nginx
-scp -r build/* user@server:/var/www/repair-dashboard/frontend/
-```
-
-### 5. Post-Deployment Verification
-- [ ] Visit production URL - site loads correctly
-- [ ] Login works
-- [ ] Create a test repair order
-- [ ] Upload a test image
-- [ ] Send a test SMS notification
-- [ ] Send a test email notification
-- [ ] Check error logs - no critical errors
-- [ ] Verify SSL certificate is valid
-- [ ] Test on mobile devices
-- [ ] Test in different browsers (Chrome, Firefox, Safari)
-- [ ] Check database connections are working
-- [ ] Verify Redis caching is working
+1. Open Coolify dashboard
+2. Click **"New Resource"** → **"Application"**
+3. Select **"Public Repository"**
+4. Enter repository: `https://github.com/avi-boop/rep`
+5. Branch: `main`
+6. Base Directory: `/dashboard`
+7. Build Pack: **Dockerfile**
+8. Application Name: `mobile-repair-dashboard`
 
 ---
 
-## Post-Deployment
+### 3. Add PostgreSQL Database
 
-### Immediate (First 24 Hours)
-- [ ] Monitor error logs continuously
-- [ ] Watch server resource usage (CPU, memory, disk)
-- [ ] Test all critical user flows
-- [ ] Be available for urgent bug fixes
-- [ ] Inform team that system is live
-
-### First Week
-- [ ] Daily monitoring of error logs
-- [ ] Gather user feedback
-- [ ] Create list of issues/improvements
-- [ ] Monitor API response times
-- [ ] Check backup logs (backups running successfully?)
-- [ ] Review SMS/email sending costs
-
-### First Month
-- [ ] Weekly performance reviews
-- [ ] Database optimization (if needed)
-- [ ] Security audit
-- [ ] User training sessions
-- [ ] Documentation updates based on real usage
-- [ ] Plan for next iteration/features
+1. In Coolify, go to **"Databases"**
+2. Click **"Add Database"**
+3. Select **"PostgreSQL 15"**
+4. Configuration:
+   - Name: `mobile-repair-db`
+   - Database: `mobile_repair_db`
+   - Username: `repair_admin`
+   - Password: *Let Coolify generate or set custom*
+5. Click **"Create"**
+6. **Save the connection string** shown
 
 ---
 
-## Rollback Plan
+### 4. Add Redis Service
 
-### If Critical Issues Occur After Deployment:
+1. In Coolify, go to **"Services"**
+2. Click **"Add Service"**
+3. Select **"Redis 7"**
+4. Configuration:
+   - Name: `repair-redis`
+   - Persistence: **Enable** (appendonly)
+5. Click **"Create"**
+6. **Save the connection string** shown
 
-#### 1. Immediate Response
+---
+
+### 5. Link Services to Application
+
+1. Go to your application → **"Services"**
+2. Click **"Link Service"**
+3. Select `mobile-repair-db` (PostgreSQL)
+4. Click **"Link Service"** again
+5. Select `repair-redis`
+
+---
+
+### 6. Configure Environment Variables
+
+Go to Application → **"Environment Variables"** and add:
+
+#### Required Variables
 ```bash
-# Rollback code to previous version
+# Database (from step 3)
+DATABASE_URL=postgresql://repair_admin:[PASSWORD]@mobile-repair-db:5432/mobile_repair_db
+
+# Redis (from step 4)
+REDIS_URL=redis://repair-redis:6379
+
+# Authentication (from step 1 - the secrets you generated)
+JWT_SECRET=[YOUR_64_CHAR_HEX_FROM_STEP_1]
+REFRESH_TOKEN_SECRET=[YOUR_64_CHAR_HEX_FROM_STEP_1]
+JWT_EXPIRES_IN=24h
+REFRESH_TOKEN_EXPIRES_IN=7d
+
+# Application
+NODE_ENV=production
+NEXT_TELEMETRY_DISABLED=1
+PORT=3000
+HOSTNAME=0.0.0.0
+```
+
+#### Optional Integration Variables
+```bash
+# Only add if you have these services
+LIGHTSPEED_API_KEY=
+LIGHTSPEED_ACCOUNT_ID=
+GEMINI_API_KEY=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+SENDGRID_API_KEY=
+```
+
+---
+
+### 7. Deploy Application
+
+1. Click **"Deploy"** button
+2. Wait for build to complete (5-10 minutes)
+3. Monitor build logs for errors
+4. Wait for health check to pass ✅
+
+---
+
+### 8. Run Database Migrations
+
+After deployment succeeds:
+
+1. Go to Application → **"Console"** or **"Terminal"**
+2. Run:
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate deploy
+
+# (Optional) Seed database with initial data
+npx prisma db seed
+```
+
+---
+
+### 9. Verify Deployment
+
+#### Test Health Check
+```bash
+curl https://[your-app-url]/api/health
+```
+
+Expected:
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-11-13T...",
+  "services": {
+    "database": "connected",
+    "api": "healthy"
+  }
+}
+```
+
+#### Test Pricing API
+```bash
+curl https://[your-app-url]/api/pricing?page=1&pageSize=10
+```
+
+Should return paginated pricing data with validation.
+
+#### Test Authentication
+```bash
+# Try to login (will fail without user, but should return proper error)
+curl -X POST https://[your-app-url]/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@test.com","password":"test123"}'
+```
+
+Expected: `401` with proper error message (not crash).
+
+#### Test Rate Limiting
+```bash
+# Try 6 failed logins rapidly
+for i in {1..6}; do
+  curl -X POST https://[your-app-url]/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test@test.com","password":"wrong"}'
+  echo "\nAttempt $i"
+  sleep 1
+done
+```
+
+6th attempt should return: `429 Too Many Requests`
+
+---
+
+### 10. Access Dashboard
+
+Open browser and go to:
+```
+https://[your-app-url]/dashboard
+```
+
+You should see the secured dashboard interface.
+
+---
+
+## Troubleshooting
+
+### Build Fails
+
+**Check**: Build logs in Coolify
+**Common issues**:
+- Missing `package-lock.json` - Run `npm install` locally and commit
+- Prisma generate fails - Ensure DATABASE_URL is set during build
+- Node version mismatch - Dockerfile uses Node 18
+
+### Health Check Fails
+
+**Check**: Runtime logs in Coolify
+**Common issues**:
+- Database connection - Verify DATABASE_URL
+- Port mismatch - Should be 3000
+- Prisma client not generated - Run `npx prisma generate`
+
+### Can't Login
+
+**Check**: 
+1. Do you have users in the database?
+2. Is JWT_SECRET set correctly?
+3. Check browser cookies - should see `accessToken` and `refreshToken`
+
+**Create first user**:
+```bash
+# In Coolify console
+npx prisma studio
+# Or via SQL
+```
+
+### Rate Limiting Not Working
+
+**Check**:
+- Redis connection - Should see in logs
+- Try authentication endpoint multiple times
+- Check REDIS_URL environment variable
+
+---
+
+## Post-Deployment Tasks
+
+### Security (CRITICAL - Do First!)
+- [ ] **Create secure admin user**: Run `node scripts/create-secure-admin.js`
+- [ ] **Rotate all API keys**: Follow `/docs/SECURITY_CREDENTIALS.md`
+- [ ] **Change default passwords**: Admin, database, services
+- [ ] **Verify .env not in git**: Check `git status` - should not show `.env` files
+- [ ] **Test admin login**: Verify strong password works
+- [ ] Enable HTTPS (Coolify does automatically)
+- [ ] Configure custom domain
+- [ ] Setup SSL certificate (Coolify auto via Let's Encrypt)
+- [ ] Review firewall rules
+- [ ] **Setup password manager**: Store all credentials securely
+- [ ] **Remove exposed secrets from git history**: If any were committed
+
+### Monitoring
+- [ ] Setup uptime monitoring (UptimeRobot, etc.)
+- [ ] Configure error tracking (Sentry)
+- [ ] Setup log aggregation
+- [ ] Database backup schedule
+
+### Performance
+- [ ] Enable CDN for static assets
+- [ ] Configure database connection pooling
+- [ ] Setup Redis caching for sessions
+- [ ] Monitor resource usage
+
+---
+
+## Quick Reference
+
+### Coolify URLs
+- **Dashboard**: Your Coolify instance URL
+- **Application**: `https://[app-name].[coolify-domain]`
+- **Health**: `https://[app-name].[coolify-domain]/api/health`
+
+### Important Endpoints
+```
+GET  /api/health           - Health check
+POST /api/auth/login       - Login with httpOnly cookies
+POST /api/auth/logout      - Logout
+GET  /api/auth/me          - Get current user
+POST /api/auth/refresh     - Refresh token
+GET  /api/pricing          - Get pricing (validated, paginated)
+POST /api/pricing          - Create pricing (validated)
+PUT  /api/pricing          - Update pricing (validated)
+GET  /api/repairs          - Get repairs (validated, paginated)
+POST /api/repairs          - Create repair (validated)
+```
+
+### Environment Variable Template
+
+Copy this template for environment variables:
+
+```env
+# Database
+DATABASE_URL=postgresql://repair_admin:[DB_PASSWORD]@mobile-repair-db:5432/mobile_repair_db
+
+# Redis
+REDIS_URL=redis://repair-redis:6379
+
+# Authentication
+JWT_SECRET=[GENERATE_WITH: openssl rand -hex 64]
+REFRESH_TOKEN_SECRET=[GENERATE_WITH: openssl rand -hex 64]
+JWT_EXPIRES_IN=24h
+REFRESH_TOKEN_EXPIRES_IN=7d
+
+# Application
+NODE_ENV=production
+NEXT_TELEMETRY_DISABLED=1
+PORT=3000
+HOSTNAME=0.0.0.0
+```
+
+---
+
+## Success Criteria
+
+Your deployment is successful when:
+
+- ✅ Health check returns `200` with `"status": "ok"`
+- ✅ Dashboard loads at `/dashboard`
+- ✅ API endpoints return proper JSON responses
+- ✅ Authentication cookies are set (httpOnly)
+- ✅ Rate limiting blocks after 5 attempts
+- ✅ Validation errors return proper `400` responses
+- ✅ Database queries work (check pricing API)
+- ✅ No errors in runtime logs
+
+---
+
+## Rollback
+
+If deployment fails:
+
+1. Go to Coolify → Application → **Deployments**
+2. Find last working deployment
+3. Click **"Redeploy"**
+
+Or via Git:
+```bash
 git revert HEAD
 git push origin main
-
-# Or restore previous database backup
-psql mobile_repair_db < backup_pre_deploy_YYYYMMDD_HHMMSS.sql
-```
-
-#### 2. Communication
-- [ ] Notify all users of the issue
-- [ ] Provide ETA for fix
-- [ ] Update status page (if you have one)
-
-#### 3. Investigation
-- [ ] Check error logs
-- [ ] Review recent changes
-- [ ] Identify root cause
-- [ ] Implement fix
-- [ ] Test thoroughly before redeploying
-
----
-
-## Health Check Endpoints
-
-Ensure these endpoints are working:
-
-```bash
-# API health check
-curl https://api.yourrepairshop.com/health
-# Expected: {"status":"ok","timestamp":"..."}
-
-# Database check
-curl https://api.yourrepairshop.com/health/db
-# Expected: {"database":"connected"}
-
-# Redis check
-curl https://api.yourrepairshop.com/health/redis
-# Expected: {"redis":"connected"}
 ```
 
 ---
 
-## Environment-Specific Checklists
+## Support
 
-### Development Environment
-- [ ] Use development API keys (test mode)
-- [ ] Debug mode enabled
-- [ ] Verbose logging
-- [ ] Hot reload enabled
-- [ ] CORS permissive
-- [ ] Use local database
+**Documentation**:
+- `/COOLIFY_DEPLOYMENT_GUIDE.md` - Full deployment guide
+- `/docs/SECURITY_CREDENTIALS.md` - Security & credential management
+- `/SECURITY_FIXES_COMPLETED_FINAL.md` - Security fixes applied
+- `/ARCHITECTURE_STATUS.md` - System architecture
 
-### Staging Environment (Recommended)
-- [ ] Copy of production configuration
-- [ ] Use staging API keys
-- [ ] Test with production-like data
-- [ ] Deploy all changes here first
-- [ ] Run full test suite
-- [ ] Load testing
+**Scripts**:
+- `scripts/create-secure-admin.js` - Generate secure admin credentials
 
-### Production Environment
-- [ ] Production API keys
-- [ ] Debug mode DISABLED
-- [ ] Error logging only (no verbose logs)
-- [ ] CORS restricted to domain
-- [ ] Rate limiting enabled
-- [ ] Monitoring enabled
-- [ ] Backups automated
+**Need help?** Check Coolify logs:
+- Build logs - for deployment issues
+- Runtime logs - for application errors
+- Database logs - for connection issues
 
 ---
 
-## Continuous Monitoring
-
-### Daily Checks
-- [ ] Review error logs
-- [ ] Check backup status
-- [ ] Monitor server resources
-- [ ] Review user feedback
-
-### Weekly Checks
-- [ ] Review performance metrics
-- [ ] Check disk space
-- [ ] Update dependencies (security patches)
-- [ ] Review user analytics
-- [ ] Test backups (restore to staging)
-
-### Monthly Checks
-- [ ] Security audit
-- [ ] Performance optimization review
-- [ ] Database optimization (vacuum, reindex)
-- [ ] Review and rotate logs
-- [ ] Update documentation
-- [ ] Plan feature updates
-
----
-
-## Success Metrics
-
-After 1 month of production use:
-
-### Technical Metrics
-- [ ] Uptime: > 99.5%
-- [ ] API response time: < 500ms (95th percentile)
-- [ ] Error rate: < 0.5%
-- [ ] Database queries: < 200ms average
-- [ ] Page load time: < 3 seconds
-- [ ] Mobile performance score: > 80 (Lighthouse)
-
-### Business Metrics
-- [ ] Daily active users tracked
-- [ ] Average repairs processed per day increased
-- [ ] Customer satisfaction score measured
-- [ ] Time-to-repair reduced (vs manual process)
-- [ ] Notification delivery rate: > 95%
-- [ ] System adoption rate: > 80% of staff using it
-
----
-
-## Emergency Contacts
-
-Document these before deployment:
-
-- **Hosting Provider Support**: ___________________
-- **Database Admin**: ___________________
-- **Lead Developer**: ___________________
-- **System Administrator**: ___________________
-- **Business Owner**: ___________________
-- **Twilio Support**: support.twilio.com
-- **SendGrid Support**: support.sendgrid.com
-
----
-
-## Final Sign-Off
-
-Before going live, get approval from:
-
-- [ ] **Technical Lead**: System is technically ready
-- [ ] **QA Team**: All tests passed
-- [ ] **Security Officer**: Security review complete
-- [ ] **Business Owner**: Business requirements met
-- [ ] **Operations Manager**: Staff trained and ready
-
----
-
-## Deployment Date & Time
-
-- **Planned Deployment Date**: ___________________
-- **Deployment Time**: ___________________ (recommend off-peak hours)
-- **Estimated Downtime**: ___________________ (if any)
-- **Rollback Deadline**: ___________________ (max time before rollback decision)
-
----
-
-**Notes**:
-- Schedule deployment during low-traffic hours (e.g., Sunday 2 AM)
-- Have at least 2 people available during deployment
-- Keep all stakeholders informed
-- Document any issues encountered during deployment
-- Celebrate successful launch! 🎉
-
----
-
-**Deployment Status**: [ ] Not Started | [ ] In Progress | [ ] Completed | [ ] Rolled Back
-
-**Deployed By**: ___________________
-**Deployment Date**: ___________________
-**Version**: ___________________
+**Deployment Time**: 10-15 minutes  
+**Difficulty**: Easy (if following checklist)  
+**Status**: Ready to deploy ✅
