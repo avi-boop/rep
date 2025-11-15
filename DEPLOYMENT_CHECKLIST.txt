@@ -1,0 +1,313 @@
+╔══════════════════════════════════════════════════════════════════╗
+║       🚀 COMPLETE DEPLOYMENT CHECKLIST - LET'S DO THIS!         ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Follow these steps IN ORDER. Check off each one as you complete it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 PART 1: COOLIFY SETUP (15 minutes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: Login to Coolify
+□ Open your Coolify dashboard URL
+□ Login with your credentials
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 2: Create PREVIEW/DEV Application
+
+□ Click "+ New Resource" or "Applications"
+□ Click "Create New Application"
+
+Fill in these EXACT values:
+
+  Name: mobile-repair-preview
+  
+  Source:
+  □ Choose "Git Repository"
+  □ Repository URL: git@github.com:avi-boop/rep.git
+    (or use HTTPS: https://github.com/avi-boop/rep.git)
+  □ Branch: dev
+  
+  Build Configuration:
+  □ Build Pack: Dockerfile
+  □ Dockerfile Location: Dockerfile.production
+  □ Base Directory: dashboard
+  
+  Port Configuration:
+  □ Port: 3000
+  □ Protocol: HTTP
+  
+  Domain:
+  □ Add your preview domain (e.g., dev.yourdomain.com)
+    or use Coolify's auto-generated domain
+  
+  Webhook:
+  □ Enable "Automatic Deployment Webhook"
+  □ COPY the webhook URL → Save it somewhere!
+     Write it here: _________________________________
+
+□ Click "Create Application"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3: Add Environment Variables to PREVIEW App
+
+□ In the app, go to "Environment Variables" section
+□ Add these variables:
+
+Required Variables (ADD THESE NOW):
+
+  DATABASE_URL=postgresql://user:password@host:5432/repair_dev
+  ↑ Use your dev database URL
+  
+  JWT_SECRET=your-32-character-secret-key-here-dev
+  ↑ Generate with: openssl rand -base64 32
+  
+  NEXTAUTH_SECRET=your-32-character-secret-key-here-dev
+  ↑ Generate with: openssl rand -base64 32
+  
+  NEXTAUTH_URL=https://dev.yourdomain.com
+  ↑ Use your preview domain from Step 2
+  
+  NODE_ENV=production
+  PORT=3000
+  HOSTNAME=0.0.0.0
+  NEXT_TELEMETRY_DISABLED=1
+
+□ Click "Save" or "Update"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 4: Create PRODUCTION Application
+
+□ Click "+ New Resource" or "Applications" again
+□ Click "Create New Application"
+
+Fill in these EXACT values:
+
+  Name: mobile-repair-production
+  
+  Source:
+  □ Choose "Git Repository"
+  □ Repository URL: git@github.com:avi-boop/rep.git
+    (or use HTTPS: https://github.com/avi-boop/rep.git)
+  □ Branch: main
+  
+  Build Configuration:
+  □ Build Pack: Dockerfile
+  □ Dockerfile Location: Dockerfile.production
+  □ Base Directory: dashboard
+  
+  Port Configuration:
+  □ Port: 3000
+  □ Protocol: HTTP
+  
+  Domain:
+  □ Add your production domain (e.g., yourdomain.com)
+  
+  Webhook:
+  □ Enable "Automatic Deployment Webhook"
+  □ COPY the webhook URL → Save it somewhere!
+     Write it here: _________________________________
+
+□ Click "Create Application"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 5: Add Environment Variables to PRODUCTION App
+
+□ In the app, go to "Environment Variables" section
+□ Add these variables:
+
+Required Variables (ADD THESE NOW):
+
+  DATABASE_URL=postgresql://user:password@host:5432/repair_prod
+  ↑ Use your PRODUCTION database URL
+  
+  JWT_SECRET=your-32-character-secret-key-here-prod
+  ↑ Generate with: openssl rand -base64 32
+  ↑ DIFFERENT from dev!
+  
+  NEXTAUTH_SECRET=your-32-character-secret-key-here-prod
+  ↑ Generate with: openssl rand -base64 32
+  ↑ DIFFERENT from dev!
+  
+  NEXTAUTH_URL=https://yourdomain.com
+  ↑ Use your production domain from Step 4
+  
+  NODE_ENV=production
+  PORT=3000
+  HOSTNAME=0.0.0.0
+  NEXT_TELEMETRY_DISABLED=1
+
+□ Click "Save" or "Update"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 PART 2: GITHUB SECRETS SETUP (2 minutes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 6: Add GitHub Secrets
+
+□ Open: https://github.com/avi-boop/rep/settings/secrets/actions
+
+□ Click "New repository secret"
+
+Secret 1:
+  Name: COOLIFY_DEV_WEBHOOK_URL
+  Value: (paste the webhook URL from Step 2)
+  □ Click "Add secret"
+
+Secret 2:
+  Name: COOLIFY_WEBHOOK_URL
+  Value: (paste the webhook URL from Step 4)
+  □ Click "Add secret"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 PART 3: TEST DEPLOYMENTS (10 minutes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 7: Test Preview Deployment
+
+Run these commands:
+
+  cd /home/avi/projects/mobile
+  git checkout dev
+  git push origin dev
+
+□ Push completed
+□ Go to: https://github.com/avi-boop/rep/actions
+□ See workflow running (wait ~1 minute)
+□ Go to Coolify → mobile-repair-preview
+□ See deployment starting
+□ Wait 3-5 minutes for build
+□ Check logs for errors
+□ Open preview URL in browser
+□ Site loads successfully ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 8: Deploy to Production
+
+Run these commands:
+
+  cd /home/avi/projects/mobile
+  git checkout main
+  git merge dev
+  git push origin main
+
+□ Push completed
+□ Go to: https://github.com/avi-boop/rep/actions
+□ See workflow running (wait ~1 minute)
+□ Go to Coolify → mobile-repair-production
+□ See deployment starting
+□ Wait 3-5 minutes for build
+□ Check logs for errors
+□ Open production URL in browser
+□ Site loads successfully ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 PART 4: DATABASE SETUP (5 minutes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 9: Run Database Migrations (Production)
+
+In Coolify dashboard:
+□ Go to mobile-repair-production app
+□ Open "Terminal" or "Shell"
+□ Run these commands:
+
+  cd /app/dashboard
+  npx prisma migrate deploy
+  npx prisma db seed
+
+□ Migrations completed successfully
+□ Seed data loaded
+
+STEP 10: Run Database Migrations (Preview)
+
+In Coolify dashboard:
+□ Go to mobile-repair-preview app
+□ Open "Terminal" or "Shell"
+□ Run these commands:
+
+  cd /app/dashboard
+  npx prisma migrate deploy
+  npx prisma db seed
+
+□ Migrations completed successfully
+□ Seed data loaded
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 PART 5: VERIFICATION (5 minutes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 11: Test Production Site
+
+□ Open your production URL in browser
+□ See dashboard login page
+□ Try login with: admin / admin123
+□ Dashboard loads
+□ Navigation works
+□ No console errors (F12)
+
+STEP 12: Test Preview Site
+
+□ Open your preview URL in browser
+□ See dashboard login page
+□ Try login with: admin / admin123
+□ Dashboard loads
+□ Navigation works
+□ No console errors (F12)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ FINAL CHECKLIST
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+□ Two apps created in Coolify
+□ Webhooks configured
+□ Environment variables set
+□ GitHub secrets added
+□ Preview deployment works
+□ Production deployment works
+□ Databases migrated
+□ Can login to both sites
+□ Automatic deployments working
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 CONGRATULATIONS! YOU'RE LIVE!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your URLs:
+  Preview:    https://dev.yourdomain.com
+  Production: https://yourdomain.com
+
+Your workflow:
+  1. Code on feature branch
+  2. Push to dev → auto-deploys to preview
+  3. Test on preview
+  4. Merge to main → auto-deploys to production
+
+Next steps:
+  □ Add your real integrations (Twilio, SendGrid)
+  □ Customize for your business
+  □ Start taking repair orders!
+
+Need help? Check:
+  - WORKFLOW_GUIDE.md
+  - START_HERE_WORKFLOW.md
+  - ./scripts/status.sh
