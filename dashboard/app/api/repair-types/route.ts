@@ -18,10 +18,9 @@ export async function GET(request: NextRequest) {
 
     const repairTypes = await prisma.repairType.findMany({
       where,
-      orderBy: [
-        { displayOrder: 'asc' },
-        { name: 'asc' }
-      ]
+      orderBy: {
+        name: 'asc'
+      }
     })
 
     return NextResponse.json(repairTypes)
