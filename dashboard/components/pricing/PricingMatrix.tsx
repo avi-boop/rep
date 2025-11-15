@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { CheckCircle, AlertCircle, HelpCircle, Edit2, Search, Sparkles, Filter, TrendingUp, TrendingDown } from 'lucide-react'
+import { CheckCircle, AlertCircle, HelpCircle, Edit2, Search, Sparkles, Filter, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { RepairTypeIcon } from './RepairTypeIcon'
 import { EditPricingModal } from './EditPricingModal'
 import { applyPsychologicalPricing } from '@/lib/pricing-utils'
@@ -36,6 +36,8 @@ interface Pricing {
   deviceModel: {
     id: number
     name: string
+    deviceType: string
+    modelNumber: string | null
     brand: Brand
   }
   repairType: RepairType
@@ -390,8 +392,8 @@ function PriceCell({ price, onEdit }: { price: Pricing; onEdit: () => void }) {
 
   // Calculate margin
   const hasMargin = price.cost !== null && price.cost > 0
-  const margin = hasMargin ? price.price - price.cost : 0
-  const marginPercent = hasMargin ? ((margin / price.price) * 100) : 0
+  const margin = hasMargin && price.cost !== null ? price.price - price.cost : 0
+  const marginPercent = hasMargin && price.cost !== null ? ((margin / price.price) * 100) : 0
   const isLowMargin = marginPercent < 30
   const isGoodMargin = marginPercent >= 50
 
@@ -430,7 +432,7 @@ function PriceCell({ price, onEdit }: { price: Pricing; onEdit: () => void }) {
             isLowMargin ? 'bg-red-50 text-red-700' :
             'bg-blue-50 text-blue-700'
           }`}
-          title={`Cost: ${formatCurrency(price.cost)}, Margin: ${formatCurrency(margin)}`}
+          title={`Cost: ${price.cost !== null ? formatCurrency(price.cost) : 'N/A'}, Margin: ${formatCurrency(margin)}`}
         >
           <DollarSign className="w-3 h-3" />
           <span className="font-medium">{marginPercent.toFixed(0)}%</span>

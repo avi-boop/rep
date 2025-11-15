@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         id: pricing.id,
         device: pricing.deviceModel.name,
         repairType: pricing.repairType.name,
-        partType: pricing.partType.name,
+        partType: pricing.partType?.name || 'N/A',
         currentPrice,
         suggestedPrice,
         priceChange: formatPriceDifference(currentPrice, suggestedPrice),

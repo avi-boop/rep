@@ -6,7 +6,7 @@ import { InteractivePricingSelector } from '@/components/pricing/InteractivePric
 import { PricingSyncButton } from '@/components/pricing/PricingSyncButton'
 import { PricingStats } from '@/components/pricing/PricingStats'
 import { AddPricingModal } from '@/components/pricing/AddPricingModal'
-import { Plus, LayoutGrid, Table, Download } from 'lucide-react'
+import { Plus, LayoutGrid, Table, Download, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 
 type ViewMode = 'table' | 'interactive'
@@ -31,6 +31,7 @@ interface DeviceModel {
   id: number
   name: string
   brandId: number
+  modelNumber: string | null
   releaseYear: number | null
   deviceType: string
   brand: Brand

@@ -62,10 +62,10 @@ export async function POST(request: NextRequest) {
 
     // Create line items from repair items
     const items = repair.repairOrderItems.map(item => ({
-      name: `${repair.deviceModel.brand.name} ${repair.deviceModel.name} - ${item.repairType.name} (${item.partType.name})`,
+      name: `${repair.deviceModel.brand.name} ${repair.deviceModel.name} - ${item.repairType.name}${item.partType ? ` (${item.partType.name})` : ''}`,
       price: item.unitPrice,
       quantity: item.quantity,
-      sku: `REPAIR-${repair.deviceModel.id}-${item.repairType.id}-${item.partType.id}`
+      sku: `REPAIR-${repair.deviceModel.id}-${item.repairType.id}${item.partType ? `-${item.partType.id}` : ''}`
     }))
 
     // Create sale in Lightspeed
