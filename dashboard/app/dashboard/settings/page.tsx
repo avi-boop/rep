@@ -1,9 +1,7 @@
-export const dynamic = 'force-dynamic'
+'use client'
+
 // Force dynamic rendering for database access
-export const dynamic = 'force-dynamic'
-
-
-'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { Settings, ExternalLink, Check, X, Loader2 } from 'lucide-react';

@@ -1,9 +1,7 @@
-export const dynamic = 'force-dynamic'
+'use client'
+
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
-
-
-'use client'
 
 import { useState } from 'react'
 import { AddPricingModal } from '@/components/pricing/AddPricingModal'
