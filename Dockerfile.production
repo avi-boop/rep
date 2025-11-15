@@ -9,9 +9,9 @@ WORKDIR /app
 # Copy package files and prisma schema from dashboard directory
 COPY dashboard/package*.json ./
 COPY dashboard/prisma ./prisma
-# Use npm install instead of npm ci for better compatibility
+# Install ALL dependencies including devDependencies (needed for build: tailwindcss, postcss, etc.)
 # Skip postinstall script (prisma generate) as we'll run it later in builder stage
-RUN npm install --production --frozen-lockfile --ignore-scripts
+RUN npm install --frozen-lockfile --ignore-scripts
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
