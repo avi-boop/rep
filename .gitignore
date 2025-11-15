@@ -63,11 +63,15 @@ db.json
 
 # Environment files (but keep .example files)
 .env
+.env.secure
+.env.local
+.env.*.local
 dashboard/.env
 **/.env
 **/.env.backup*
 **/.env.cloud-backup*
 **/.env.production
+**/.env.secure
 
 # Credentials and secrets - NEVER COMMIT
 *CREDENTIALS*.txt
