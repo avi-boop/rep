@@ -90,32 +90,32 @@ export function CustomerList({ customers, onUpdate }: Props) {
   const hasActiveFilters = filters.minRepairs || filters.maxRepairs || filters.hasEmail !== 'all'
 
   return (
-    <div className="bg-white rounded-2xl shadow-soft border border-gray-100">
+    <div className="bg-white rounded-lg shadow">
       {/* Search & Filters */}
-      <div className="p-6 border-b border-gray-100 space-y-4">
+      <div className="p-4 border-b border-gray-200 space-y-4">
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search customers by name, phone, or email..."
-              className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 smooth-transition"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`px-4 py-3 rounded-xl border-2 smooth-transition flex items-center gap-2 font-medium ${
+            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
               showFilters || hasActiveFilters
-                ? 'bg-primary-50 border-primary-300 text-primary-700'
-                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                ? 'bg-blue-50 border-blue-300 text-blue-700'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
             }`}
           >
             <SlidersHorizontal className="w-4 h-4" />
             Filters
             {hasActiveFilters && (
-              <span className="bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+              <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
                 Active
               </span>
             )}
@@ -124,16 +124,13 @@ export function CustomerList({ customers, onUpdate }: Props) {
 
         {/* Advanced Filters */}
         {showFilters && (
-          <div className="border-2 border-primary-200 rounded-xl p-5 bg-gradient-to-r from-primary-50 to-white space-y-4 animate-slide-in">
+          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <SlidersHorizontal className="w-5 h-5 text-primary-600" />
-                Advanced Filters
-              </h3>
+              <h3 className="font-medium text-gray-900">Advanced Filters</h3>
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1 font-medium smooth-transition"
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                 >
                   <X className="w-4 h-4" />
                   Clear filters
@@ -202,24 +199,22 @@ export function CustomerList({ customers, onUpdate }: Props) {
       {/* Customer List */}
       <div className="divide-y divide-gray-200">
         {filteredCustomers.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-              <User className="w-8 h-8 text-gray-400" />
-            </div>
-            <p className="font-bold text-gray-900 text-lg mb-1">No customers found</p>
-            <p className="text-sm text-gray-600">Try adjusting your search or filters</p>
+          <div className="p-8 text-center text-gray-500">
+            <User className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+            <p className="font-medium">No customers found</p>
+            <p className="text-sm mt-1">Try adjusting your search or filters</p>
           </div>
         ) : (
           filteredCustomers.map(customer => (
-            <div key={customer.id} className="p-5 hover:bg-gray-50 smooth-transition border-l-4 border-transparent hover:border-primary-500">
+            <div key={customer.id} className="p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-gray-900 truncate text-lg">
+                    <h3 className="font-semibold text-gray-900 truncate">
                       {customer.firstName} {customer.lastName}
                     </h3>
                     {customer.lightspeedId && (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200">
                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
                           <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
@@ -228,27 +223,23 @@ export function CustomerList({ customers, onUpdate }: Props) {
                       </span>
                     )}
                   </div>
-                  <div className="mt-2 space-y-1.5">
+                  <div className="mt-1 space-y-1">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <div className="w-7 h-7 rounded-lg bg-primary-100 flex items-center justify-center">
-                        <Phone className="w-4 h-4 text-primary-600 flex-shrink-0" />
-                      </div>
-                      <span className="font-medium">{customer.phone}</span>
+                      <Phone className="w-4 h-4 flex-shrink-0" />
+                      <span>{customer.phone}</span>
                     </div>
                     {customer.email && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center">
-                          <Mail className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                        </div>
+                        <Mail className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate">{customer.email}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="text-right mr-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-200">
-                    <p className="text-sm font-bold text-gray-900">
+                <div className="flex items-center gap-3">
+                  <div className="text-right mr-2">
+                    <p className="text-sm font-medium text-gray-900">
                       {customer._count.repairOrders} repair{customer._count.repairOrders !== 1 ? 's' : ''}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
@@ -260,21 +251,21 @@ export function CustomerList({ customers, onUpdate }: Props) {
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/dashboard/customers/${customer.id}`}
-                      className="p-2.5 text-primary-600 hover:bg-primary-50 rounded-xl smooth-transition border-2 border-transparent hover:border-primary-200"
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />
                     </Link>
                     <Link
                       href={`/dashboard/customers/${customer.id}?edit=true`}
-                      className="p-2.5 text-gray-600 hover:bg-gray-100 rounded-xl smooth-transition border-2 border-transparent hover:border-gray-300"
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Edit Customer"
                     >
                       <Edit className="w-4 h-4" />
                     </Link>
                     <button
                       onClick={() => setShowDeleteConfirm(customer.id)}
-                      className="p-2.5 text-danger-600 hover:bg-danger-50 rounded-xl smooth-transition border-2 border-transparent hover:border-danger-200"
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete Customer"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -289,25 +280,22 @@ export function CustomerList({ customers, onUpdate }: Props) {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-large animate-scale-in">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-danger-100 mx-auto mb-6">
-              <Trash2 className="w-8 h-8 text-danger-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">Confirm Delete</h3>
-            <p className="text-gray-600 mb-8 text-center">
-              Are you sure you want to delete this customer? This action cannot be undone and will remove all associated data.
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Delete</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this customer? This action cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="px-5 py-2.5 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 smooth-transition font-medium"
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(showDeleteConfirm)}
-                className="px-5 py-2.5 bg-gradient-to-r from-danger-600 to-danger-700 text-white rounded-xl hover:shadow-lg smooth-transition flex items-center gap-2 font-semibold shadow-md hover:scale-105"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete Customer

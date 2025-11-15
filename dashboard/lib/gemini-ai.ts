@@ -5,7 +5,7 @@
 
 interface GeminiConfig {
   apiKey: string;
-  apiUrl: string;
+  apiUrl?: string;
 }
 
 interface PriceRecommendation {
@@ -119,10 +119,6 @@ Respond only with the JSON object, no additional text.`;
     const url = `${this.baseUrl}/models/gemini-2.5-flash:generateContent?key=${this.config.apiKey}`;
 
     try {
-      // Add 30 second timeout to prevent hanging requests
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -141,10 +137,7 @@ Respond only with the JSON object, no additional text.`;
             maxOutputTokens: 8192,
           },
         }),
-        signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -164,11 +157,7 @@ Respond only with the JSON object, no additional text.`;
       }
 
       return data.candidates[0].content.parts[0].text;
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.error('Gemini API request timeout after 30 seconds');
-        throw new Error('Gemini AI request timed out. The AI service may be slow or unavailable.');
-      }
+    } catch (error) {
       console.error('Error calling Gemini API:', error);
       throw error;
     }

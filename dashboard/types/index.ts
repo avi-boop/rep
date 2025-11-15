@@ -13,7 +13,6 @@ export type RepairOrderWithDetails = Prisma.RepairOrderGetPayload<{
       include: {
         repairType: true
         partType: true
-        pricing: true
       }
     }
   }

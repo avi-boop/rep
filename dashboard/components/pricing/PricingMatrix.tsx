@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { CheckCircle, AlertCircle, HelpCircle, Edit2, Search, Sparkles, Filter, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { CheckCircle, AlertCircle, HelpCircle, Edit2, Search, Sparkles, Filter, TrendingUp, TrendingDown } from 'lucide-react'
 import { RepairTypeIcon } from './RepairTypeIcon'
 import { EditPricingModal } from './EditPricingModal'
 import { applyPsychologicalPricing } from '@/lib/pricing-utils'
@@ -36,8 +36,6 @@ interface Pricing {
   deviceModel: {
     id: number
     name: string
-    deviceType: string
-    modelNumber: string | null
     brand: Brand
   }
   repairType: RepairType
@@ -74,7 +72,7 @@ export function PricingMatrix({ brands, repairTypes, partTypes, pricing, onPrici
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedPricing, setSelectedPricing] = useState<Pricing | null>(null)
 
-  // Get devices for selected brand with enhanced search filter
+  // Get devices for selected brand with search filter
   const devices = pricing
     .filter(p => p.deviceModel.brand.id === selectedBrand)
     .map(p => p.deviceModel)
@@ -83,16 +81,7 @@ export function PricingMatrix({ brands, repairTypes, partTypes, pricing, onPrici
     )
     .filter(device => {
       if (!searchTerm) return true
-
-      const search = searchTerm.toLowerCase()
-
-      // Search across multiple fields
-      return (
-        device.name.toLowerCase().includes(search) ||
-        device.brand.name.toLowerCase().includes(search) ||
-        device.deviceType.toLowerCase().includes(search) ||
-        (device.modelNumber && device.modelNumber.toLowerCase().includes(search))
-      )
+      return device.name.toLowerCase().includes(searchTerm.toLowerCase())
     })
     .sort((a, b) => a.name.localeCompare(b.name))
 
@@ -171,7 +160,7 @@ export function PricingMatrix({ brands, repairTypes, partTypes, pricing, onPrici
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search by model, brand, device type, or model number..."
+              placeholder="Search device models..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -390,13 +379,6 @@ function PriceCell({ price, onEdit }: { price: Pricing; onEdit: () => void }) {
   const psychPrice = applyPsychologicalPricing(price.price)
   const needsPsychAdjustment = psychPrice !== price.price
 
-  // Calculate margin
-  const hasMargin = price.cost !== null && price.cost > 0
-  const margin = hasMargin && price.cost !== null ? price.price - price.cost : 0
-  const marginPercent = hasMargin && price.cost !== null ? ((margin / price.price) * 100) : 0
-  const isLowMargin = marginPercent < 30
-  const isGoodMargin = marginPercent >= 50
-
   return (
     <div className="flex flex-col items-center gap-1 p-2">
       {/* Status Icon */}
@@ -423,22 +405,6 @@ function PriceCell({ price, onEdit }: { price: Pricing; onEdit: () => void }) {
           <Edit2 className="w-3 h-3" />
         </button>
       </div>
-
-      {/* Margin Display */}
-      {hasMargin && (
-        <div
-          className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded ${
-            isGoodMargin ? 'bg-green-50 text-green-700' :
-            isLowMargin ? 'bg-red-50 text-red-700' :
-            'bg-blue-50 text-blue-700'
-          }`}
-          title={`Cost: ${price.cost !== null ? formatCurrency(price.cost) : 'N/A'}, Margin: ${formatCurrency(margin)}`}
-        >
-          <DollarSign className="w-3 h-3" />
-          <span className="font-medium">{marginPercent.toFixed(0)}%</span>
-          <span className="text-xs opacity-75">margin</span>
-        </div>
-      )}
 
       {/* Psychological Pricing Suggestion */}
       {needsPsychAdjustment && (

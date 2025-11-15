@@ -84,7 +84,7 @@ export async function estimatePrice(
 
   // Step 4: Attempt interpolation
   if (referencePrices.length >= 2 && targetDevice.releaseYear) {
-    const targetYear = targetDevice.releaseYear // Store for use in filter callbacks
+    const targetYear = targetDevice.releaseYear
     const older = referencePrices.filter(
       p => p.deviceModel.releaseYear && p.deviceModel.releaseYear < targetYear
     )
@@ -104,7 +104,7 @@ export async function estimatePrice(
 
       // Linear interpolation
       const yearDiff = newerYear - olderYear
-      const targetYearDiff = targetYear - olderYear
+      const targetYearDiff = targetDevice.releaseYear - olderYear
       const priceDiff = newerPrice - olderPrice
 
       let estimatedPrice = olderPrice + (priceDiff * (targetYearDiff / yearDiff))
