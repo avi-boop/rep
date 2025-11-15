@@ -1,0 +1,185 @@
+╔══════════════════════════════════════════════════════════════════╗
+║           COOLIFY MULTI-ENVIRONMENT SETUP GUIDE                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+🎯 GOAL: Two environments - Production (main) and Preview (dev)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 STEP 1: CREATE TWO APPLICATIONS IN COOLIFY
+
+─────────────────────────────────────────────────────────────────
+🟢 APPLICATION 1: PRODUCTION
+─────────────────────────────────────────────────────────────────
+Name: mobile-repair-production
+Repository: git@github.com:avi-boop/rep.git
+Branch: main
+Build Pack: Dockerfile
+Dockerfile: Dockerfile.production (in root)
+Port: 3000
+Domain: your-domain.com (or production subdomain)
+
+⚙️ Build Settings:
+   - Base Directory: /dashboard
+   - Dockerfile Path: ../Dockerfile.production
+   - Build Command: (leave empty, Dockerfile handles it)
+   - Start Command: (leave empty, Dockerfile handles it)
+
+🪝 Webhook:
+   - Enable webhook
+   - Copy the webhook URL (you'll need this for GitHub)
+
+─────────────────────────────────────────────────────────────────
+🟡 APPLICATION 2: PREVIEW/DEV
+─────────────────────────────────────────────────────────────────
+Name: mobile-repair-preview
+Repository: git@github.com:avi-boop/rep.git
+Branch: dev
+Build Pack: Dockerfile
+Dockerfile: Dockerfile.production (in root)
+Port: 3000
+Domain: dev.your-domain.com (or preview subdomain)
+
+⚙️ Build Settings:
+   - Base Directory: /dashboard
+   - Dockerfile Path: ../Dockerfile.production
+   - Build Command: (leave empty, Dockerfile handles it)
+   - Start Command: (leave empty, Dockerfile handles it)
+
+🪝 Webhook:
+   - Enable webhook
+   - Copy the webhook URL (you'll need this for GitHub)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 STEP 2: ADD ENVIRONMENT VARIABLES TO BOTH APPS
+
+Copy these to BOTH production and preview apps in Coolify:
+
+─────────────────────────────────────────────────────────────────
+🔐 REQUIRED VARIABLES
+─────────────────────────────────────────────────────────────────
+
+DATABASE_URL=postgresql://user:password@host:5432/database_name
+POSTGRES_PASSWORD=your-secure-postgres-password
+
+JWT_SECRET=your-32-character-secret-key-here
+NEXTAUTH_SECRET=your-32-character-secret-key-here
+NEXTAUTH_URL=https://your-domain.com  # Change for each environment!
+
+NODE_ENV=production
+PORT=3000
+HOSTNAME=0.0.0.0
+NEXT_TELEMETRY_DISABLED=1
+
+─────────────────────────────────────────────────────────────────
+📱 OPTIONAL: INTEGRATIONS (add when ready)
+─────────────────────────────────────────────────────────────────
+
+TWILIO_ACCOUNT_SID=your-twilio-sid
+TWILIO_AUTH_TOKEN=your-twilio-token
+TWILIO_PHONE_NUMBER=+1234567890
+
+SENDGRID_API_KEY=your-sendgrid-key
+
+LIGHTSPEED_API_KEY=your-lightspeed-key
+LIGHTSPEED_ACCOUNT_ID=your-account-id
+
+GEMINI_API_KEY=your-gemini-key
+
+REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=your-redis-password
+
+─────────────────────────────────────────────────────────────────
+⚠️ IMPORTANT: Different values for each environment
+─────────────────────────────────────────────────────────────────
+
+PRODUCTION:
+   NEXTAUTH_URL=https://your-domain.com
+   DATABASE_URL=postgresql://user:pass@prod-db:5432/prod_db
+
+PREVIEW/DEV:
+   NEXTAUTH_URL=https://dev.your-domain.com
+   DATABASE_URL=postgresql://user:pass@dev-db:5432/dev_db
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 STEP 3: CONFIGURE GITHUB SECRETS
+
+Go to: GitHub.com → Your Repo → Settings → Secrets and variables → Actions
+
+Add these secrets:
+
+─────────────────────────────────────────────────────────────────
+COOLIFY_WEBHOOK_URL
+   Value: <webhook URL from production app>
+
+COOLIFY_DEV_WEBHOOK_URL
+   Value: <webhook URL from preview app>
+─────────────────────────────────────────────────────────────────
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 STEP 4: VERIFY DEPLOYMENT
+
+1. Push to dev branch:
+   git push origin dev
+   
+2. Check Coolify → mobile-repair-preview
+   - Should start building automatically
+   - Wait 3-5 minutes
+   - Check logs for errors
+
+3. Test preview URL: https://dev.your-domain.com
+
+4. If working, push to main:
+   git push origin main
+   
+5. Check Coolify → mobile-repair-production
+   - Should start building automatically
+   - Wait 3-5 minutes
+   
+6. Test production URL: https://your-domain.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 STEP 5: SETUP DATABASE (One-time)
+
+Once deployed, run migrations:
+
+1. In Coolify, go to your app
+2. Open Terminal/Shell
+3. Run:
+   cd /app/dashboard
+   npx prisma migrate deploy
+   npx prisma db seed
+
+Repeat for both production and preview apps!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ VERIFICATION CHECKLIST
+
+□ Two apps created in Coolify (production + preview)
+□ Webhooks enabled and URLs copied
+□ Environment variables set in both apps
+□ GitHub secrets configured
+□ Pushed to dev branch successfully
+□ Preview deployment working
+□ Pushed to main branch successfully
+□ Production deployment working
+□ Database migrations run
+□ Can login to both environments
+□ Both URLs accessible
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 DONE!
+
+Your workflow:
+  1. Work on feature branch locally
+  2. Push to dev → auto-deploys to preview
+  3. Test on preview URL
+  4. Merge to main → auto-deploys to production
+
+Need help? Check WORKFLOW_GUIDE.md

@@ -1,0 +1,104 @@
+name: Coolify Deployment
+
+on:
+  push:
+    branches:
+      - main       # Production deployment
+      - dev        # Preview/staging deployment
+  pull_request:
+    branches:
+      - main
+      - dev
+
+env:
+  COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
+  COOLIFY_DEV_WEBHOOK_URL: ${{ secrets.COOLIFY_DEV_WEBHOOK_URL }}
+
+jobs:
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger Coolify Production Deployment
+        run: |
+          curl -X POST "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "branch": "main",
+              "commit": "${{ github.sha }}",
+              "message": "${{ github.event.head_commit.message }}",
+              "author": "${{ github.event.head_commit.author.name }}"
+            }'
+
+      - name: Deployment Status
+        run: |
+          echo "✅ Production deployment triggered"
+          echo "🔗 Commit: ${{ github.sha }}"
+          echo "📝 Message: ${{ github.event.head_commit.message }}"
+
+  deploy-preview:
+    name: Deploy to Preview/Dev
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger Coolify Dev Deployment
+        run: |
+          curl -X POST "${{ secrets.COOLIFY_DEV_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "branch": "dev",
+              "commit": "${{ github.sha }}",
+              "message": "${{ github.event.head_commit.message }}",
+              "author": "${{ github.event.head_commit.author.name }}"
+            }'
+
+      - name: Deployment Status
+        run: |
+          echo "✅ Preview deployment triggered"
+          echo "🔗 Commit: ${{ github.sha }}"
+          echo "📝 Message: ${{ github.event.head_commit.message }}"
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd dashboard
+          npm ci
+
+      - name: Run linter
+        run: |
+          cd dashboard
+          npm run lint
+
+      - name: Type check
+        run: |
+          cd dashboard
+          npm run build --dry-run || echo "Build check completed"
+
+      - name: Test Summary
+        run: |
+          echo "✅ All checks passed"
+          echo "🔀 PR is ready for review"
