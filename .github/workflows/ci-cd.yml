@@ -97,32 +97,35 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: repair-dashboard/package-lock.json
+          cache-dependency-path: dashboard/package-lock.json
 
       - name: Install dependencies
-        working-directory: ./repair-dashboard
+        working-directory: ./dashboard
         run: npm ci
 
       - name: Run linter
-        working-directory: ./repair-dashboard
+        working-directory: ./dashboard
         run: npm run lint
 
       - name: Run tests
-        working-directory: ./repair-dashboard
+        working-directory: ./dashboard
         run: npm run test -- --coverage || echo "No tests configured, skipping..."
         continue-on-error: true
 
       - name: Build
-        working-directory: ./repair-dashboard
+        working-directory: ./dashboard
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/repair_shop_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test_jwt_secret_for_ci_minimum_32_characters
+          REFRESH_TOKEN_SECRET: test_refresh_secret_for_ci_minimum_32_characters
         run: npm run build
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
-        if: hashFiles('./repair-dashboard/coverage/lcov.info') != ''
+        if: hashFiles('./dashboard/coverage/lcov.info') != ''
         with:
-          files: ./repair-dashboard/coverage/lcov.info
+          files: ./dashboard/coverage/lcov.info
           flags: frontend
 
   # ==========================================
@@ -156,7 +159,7 @@ jobs:
         continue-on-error: true
 
       - name: Frontend npm audit
-        working-directory: ./repair-dashboard
+        working-directory: ./dashboard
         run: npm audit --audit-level=moderate || echo "Vulnerabilities found, review required"
         continue-on-error: true
 
@@ -224,12 +227,11 @@ jobs:
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
-          context: ./frontend
+          context: .
+          file: ./Dockerfile.production
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
-          build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
