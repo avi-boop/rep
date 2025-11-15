@@ -26,11 +26,11 @@ export async function GET(request: NextRequest) {
 
       const syncedCustomers = [];
       for (const lsCustomer of lightspeedCustomers) {
-        if (!lsCustomer.customerID) continue;
+        if (!lsCustomer.id) continue;
 
         // Check if customer already exists
         const existing = await prisma.customer.findUnique({
-          where: { lightspeedId: lsCustomer.customerID },
+          where: { lightspeedId: lsCustomer.id },
         });
 
         if (existing) {
@@ -38,24 +38,25 @@ export async function GET(request: NextRequest) {
           const updated = await prisma.customer.update({
             where: { id: existing.id },
             data: {
-              firstName: lsCustomer.firstName,
-              lastName: lsCustomer.lastName,
-              email: lsCustomer.emailAddress || null,
-              phone: lsCustomer.primaryPhone || existing.phone,
+              firstName: lsCustomer.first_name || '',
+              lastName: lsCustomer.last_name || '',
+              email: lsCustomer.email || null,
+              phone: lsCustomer.phone || lsCustomer.mobile || existing.phone,
               lastSyncedAt: new Date(),
             },
           });
           syncedCustomers.push({ action: 'updated', customer: updated });
         } else {
           // Create new customer (only if phone number provided)
-          if (lsCustomer.primaryPhone) {
+          const phone = lsCustomer.phone || lsCustomer.mobile;
+          if (phone) {
             const created = await prisma.customer.create({
               data: {
-                lightspeedId: lsCustomer.customerID,
-                firstName: lsCustomer.firstName,
-                lastName: lsCustomer.lastName,
-                email: lsCustomer.emailAddress || null,
-                phone: lsCustomer.primaryPhone,
+                lightspeedId: lsCustomer.id,
+                firstName: lsCustomer.first_name || '',
+                lastName: lsCustomer.last_name || '',
+                email: lsCustomer.email || null,
+                phone,
                 lastSyncedAt: new Date(),
               },
             });
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
     // Create in local database
     const localCustomer = await prisma.customer.create({
       data: {
-        lightspeedId: lightspeedCustomer.customerID,
+        lightspeedId: lightspeedCustomer.id || '',
         firstName,
         lastName,
         email: email || null,
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       customer: localCustomer,
-      lightspeedId: lightspeedCustomer.customerID,
+      lightspeedId: lightspeedCustomer.id,
     });
 
   } catch (error: any) {
