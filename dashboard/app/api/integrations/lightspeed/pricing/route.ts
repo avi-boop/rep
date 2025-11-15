@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      lightspeedItemId: lightspeedItem.itemID,
+      lightspeedItemId: lightspeedItem.id,
       message: 'Price synced to Lightspeed successfully',
     });
 
