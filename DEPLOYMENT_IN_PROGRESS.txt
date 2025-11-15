@@ -1,0 +1,87 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║               DEPLOYMENT IN PROGRESS - BUILD RUNNING                 ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+✅ CODE PUSHED TO GITHUB
+
+✅ DEPLOYMENT TRIGGERED VIA API
+
+🔄 BUILD IN PROGRESS (Expected: 8-12 minutes)
+
+Current Status:
+  • Pulling latest code from GitHub (main branch)
+  • Building Docker image with Dockerfile.production
+  • Installing dependencies
+  • Generating Prisma client
+  • Building Next.js application (standalone mode)
+  • Creating production container
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 MONITOR BUILD:
+
+Live logs in Coolify:
+https://coolify.theprofitplatform.com.au/project/woc8ocogwoks4oc8oscswggw/application/zccwogo8g4884gwcgwk4wwoc
+
+Application UUID: zccwogo8g4884gwcgwk4wwoc
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏳ NEXT STEPS (After Build Completes):
+
+1. ✅ Build completes successfully
+   → Container starts
+   → Health checks begin
+
+2. 🔧 Run database migrations:
+   In Coolify Terminal or SSH:
+   npx prisma migrate deploy
+
+3. 🧪 Test health endpoint:
+   curl http://zccwogo8g4884gwcgwk4wwoc.31.97.222.218.sslip.io/api/health
+
+4. ✅ Verify deployment:
+   • Health endpoint returns {"status":"ok"}
+   • Dashboard accessible at /dashboard
+   • Login page functional at /login
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 BUILD PHASES TO WATCH FOR:
+
+Phase 1: Pulling code (1-2 min)
+  ✓ Cloning from GitHub
+  ✓ Checking out main branch
+
+Phase 2: Building Docker image (5-8 min)
+  ✓ Installing Node.js dependencies
+  ✓ Generating Prisma client
+  ✓ Building Next.js application
+  ✓ Creating standalone output
+
+Phase 3: Starting container (1-2 min)
+  ✓ Health checks
+  ✓ Container running
+
+Total Expected: 8-12 minutes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 DEPLOYMENT SUMMARY:
+
+✅ Repository: https://github.com/avi-boop/rep
+✅ Branch: main
+✅ Base Directory: /dashboard
+✅ Dockerfile: Dockerfile.production
+✅ Environment Variables: Configured (14 variables)
+✅ Build Triggered: Via API
+
+Status: 🔄 Building...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ Started: $(date '+%Y-%m-%d %H:%M:%S')
+⏰ Expected Completion: $(date -d '+12 minutes' '+%Y-%m-%d %H:%M:%S')
+

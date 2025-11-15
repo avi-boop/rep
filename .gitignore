@@ -100,3 +100,13 @@ DEPLOYMENT_STATUS.md
 *.md
 SECURITY_*.md
 *_SUMMARY.md
+.coolify-api
+
+# Sensitive configuration files
+COOLIFY_ENV_VARS_READY.txt
+PRODUCTION_ENV_UPDATE.txt
+CURRENT_STATUS.txt
+NEW_ADMIN_CREDENTIALS.txt
+CREDENTIALS_SECURE.txt
+dashboard/.env.coolify
+**/CREDENTIALS*.txt
