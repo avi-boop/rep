@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build description for Lightspeed item
-    const description = `${pricing.deviceModel.brand.name} ${pricing.deviceModel.name} - ${pricing.repairType.name} (${pricing.partType.name})`;
+    const description = `${pricing.deviceModel.brand.name} ${pricing.deviceModel.name} - ${pricing.repairType.name}${pricing.partType ? ` (${pricing.partType.name})` : ''}`;
 
     // Sync to Lightspeed
     const lightspeedItem = await lightspeedService.syncPricing({
