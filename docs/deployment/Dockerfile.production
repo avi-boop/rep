@@ -1,0 +1,70 @@
+# Production Dockerfile for Secured Dashboard
+# Multi-stage build for optimal size and security
+
+# Stage 1: Dependencies
+FROM node:18-alpine AS deps
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+
+# Copy package files and prisma schema from dashboard directory
+COPY dashboard/package*.json ./
+COPY dashboard/prisma ./prisma
+# Install ALL dependencies including devDependencies (needed for build: tailwindcss, postcss, etc.)
+# Skip postinstall script (prisma generate) as we'll run it explicitly next
+# Explicitly set NODE_ENV to empty to force installation of ALL dependencies
+RUN NODE_ENV= npm ci --ignore-scripts
+
+# Generate Prisma Client here in deps stage so it's cached with node_modules
+RUN npx prisma generate
+
+# Stage 2: Builder
+FROM node:18-alpine AS builder
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY dashboard/. .
+
+# Set environment to production
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Prisma Client already generated in deps stage and copied with node_modules
+
+# Build Next.js application
+RUN npm run build
+
+# Stage 3: Runner
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+# Install curl for health checks and openssl for Prisma
+RUN apk add --no-cache curl openssl
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy standalone output from builder
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Set ownership
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Start Next.js standalone server
+CMD ["node", "server.js"]
