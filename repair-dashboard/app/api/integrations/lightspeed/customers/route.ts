@@ -26,11 +26,11 @@ export async function GET(request: NextRequest) {
 
       const syncedCustomers = [];
       for (const lsCustomer of lightspeedCustomers) {
-        if (!lsCustomer.customerID) continue;
+        if (!lsCustomer.id) continue;
 
         // Check if customer already exists
         const existing = await prisma.customer.findUnique({
-          where: { lightspeedId: lsCustomer.customerID },
+          where: { lightspeedId: lsCustomer.id },
         });
 
         if (existing) {
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
           if (lsCustomer.primaryPhone) {
             const created = await prisma.customer.create({
               data: {
-                lightspeedId: lsCustomer.customerID,
+                lightspeedId: lsCustomer.id,
                 firstName: lsCustomer.firstName,
                 lastName: lsCustomer.lastName,
                 email: lsCustomer.emailAddress || null,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     // Create in local database
     const localCustomer = await prisma.customer.create({
       data: {
-        lightspeedId: lightspeedCustomer.customerID,
+        lightspeedId: lightspeedCustomer.id,
         firstName,
         lastName,
         email: email || null,
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       customer: localCustomer,
-      lightspeedId: lightspeedCustomer.customerID,
+      lightspeedId: lightspeedCustomer.id,
     });
 
   } catch (error: any) {
