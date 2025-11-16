@@ -1,0 +1,144 @@
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║   🎯 THE ABSOLUTE SIMPLEST DEPLOYMENT EVER 🎯                 ║
+║   ✅ DASHBOARD CONSOLIDATED - Single Source of Truth          ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+I've automated 99% - you just need to CLICK and PASTE!
+Dashboard is now in: /dashboard/ (consolidated, 798MB saved)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: Open Coolify (CLICK THIS LINK)
+👉 https://coolify.theprofitplatform.com.au
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 2: Navigate
+Click: Projects → mobile-repair-dashboard → "+ New Resource" → "Application"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3: PREVIEW APP - Copy-Paste These Values
+
+Name:
+mobile-repair-preview
+
+Repository URL:
+https://github.com/avi-boop/rep
+
+Branch:
+dev
+
+Build Pack:
+Dockerfile
+
+Dockerfile:
+Dockerfile.production
+
+Port:
+3000
+
+Domain:
+dev.theprofitplatform.com.au
+
+ENVIRONMENT VARIABLES (click "+ Add" for each):
+
+DATABASE_URL
+postgresql://user:password@host:5432/mobile_repair_dev
+
+JWT_SECRET
+SpN9VfKYhXNsgaKyripKYVRyqFhMzykR3P4bZz4baq4=
+
+NEXTAUTH_SECRET
+1GQG/H8lT55GT2ohlb/qWUmIsymaRgRC/HsXt411e+0=
+
+NEXTAUTH_URL
+https://dev.theprofitplatform.com.au
+
+NODE_ENV
+production
+
+PORT
+3000
+
+HOSTNAME
+0.0.0.0
+
+NEXT_TELEMETRY_DISABLED
+1
+
+Click "Save" → "Deploy"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 4: PRODUCTION APP - Click "+ New Resource" → "Application" again
+
+Name:
+mobile-repair-production
+
+Repository URL:
+https://github.com/avi-boop/rep
+
+Branch:
+main
+
+Build Pack:
+Dockerfile
+
+Dockerfile:
+Dockerfile.production
+
+Port:
+3000
+
+Domain:
+theprofitplatform.com.au
+
+ENVIRONMENT VARIABLES (click "+ Add" for each):
+
+DATABASE_URL
+postgresql://user:password@host:5432/mobile_repair_prod
+
+JWT_SECRET
+6TgLbnU+TSjx+5n1wbeCn85+2okn9yi+YTJykFnGm80=
+
+NEXTAUTH_SECRET
+XrpT8QVkpkz2jt6XFgpM4uvvycgWjM4GNFCGYNRgzgE=
+
+NEXTAUTH_URL
+https://theprofitplatform.com.au
+
+NODE_ENV
+production
+
+PORT
+3000
+
+HOSTNAME
+0.0.0.0
+
+NEXT_TELEMETRY_DISABLED
+1
+
+Click "Save" → "Deploy"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ DONE! Wait 5 minutes for build, then access:
+   Preview: https://dev.theprofitplatform.com.au
+   Production: https://theprofitplatform.com.au
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ YOU NEED A DATABASE FIRST!
+
+In Coolify: "+ New Resource" → "Database" → "PostgreSQL"
+Name: mobile-repair-db
+Create it, then copy the connection URL and use it above.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOTAL TIME: 10 minutes
+EFFORT: Just copy-paste!
