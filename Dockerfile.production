@@ -6,9 +6,9 @@ FROM node:18-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-# Copy package files and prisma schema from dashboard directory
-COPY dashboard/package*.json ./
-COPY dashboard/prisma ./prisma
+# Copy package files and prisma schema from repair-dashboard directory
+COPY repair-dashboard/package*.json ./
+COPY repair-dashboard/prisma ./prisma
 # Install ALL dependencies including devDependencies (needed for build: tailwindcss, postcss, etc.)
 # Skip postinstall script (prisma generate) as we'll run it later in builder stage
 RUN npm install --frozen-lockfile --ignore-scripts
@@ -19,7 +19,7 @@ WORKDIR /app
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY dashboard/. .
+COPY repair-dashboard/. .
 
 # Set environment to production
 ENV NODE_ENV=production
