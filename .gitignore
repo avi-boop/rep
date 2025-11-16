@@ -114,3 +114,29 @@ NEW_ADMIN_CREDENTIALS.txt
 CREDENTIALS_SECURE.txt
 dashboard/.env.coolify
 **/CREDENTIALS*.txt
+
+# ===================================
+# Security: Never commit these files
+# ===================================
+# Environment files
+.env
+.env.*
+!.env.example
+*.env.local
+*.env.production
+*.env.development
+
+# Secrets and credentials  
+*.key
+*.pem
+*.secret
+*credentials*.txt
+*-secrets*.txt
+.coolify-mcp.env
+.deployment-secrets-raw.txt
+.coolify-deployment-info.txt
+
+# Backup files
+*.backup
+*.bak
+*.old
