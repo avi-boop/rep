@@ -11,8 +11,8 @@ COPY repair-dashboard/package*.json ./
 COPY repair-dashboard/prisma ./prisma
 # Install ALL dependencies including devDependencies (needed for build: tailwindcss, postcss, etc.)
 # Skip postinstall script (prisma generate) as we'll run it later in builder stage
-# Force installation of devDependencies even if NODE_ENV=production is set
-RUN npm ci --include=dev --ignore-scripts
+# Explicitly set NODE_ENV to empty to force installation of ALL dependencies
+RUN NODE_ENV= npm ci --ignore-scripts
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
