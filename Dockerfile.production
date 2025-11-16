@@ -10,9 +10,12 @@ WORKDIR /app
 COPY repair-dashboard/package*.json ./
 COPY repair-dashboard/prisma ./prisma
 # Install ALL dependencies including devDependencies (needed for build: tailwindcss, postcss, etc.)
-# Skip postinstall script (prisma generate) as we'll run it later in builder stage
+# Skip postinstall script (prisma generate) as we'll run it explicitly next
 # Explicitly set NODE_ENV to empty to force installation of ALL dependencies
 RUN NODE_ENV= npm ci --ignore-scripts
+
+# Generate Prisma Client here in deps stage so it's cached with node_modules
+RUN npx prisma generate
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
@@ -26,8 +29,7 @@ COPY repair-dashboard/. .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Generate Prisma Client
-RUN npx prisma generate
+# Prisma Client already generated in deps stage and copied with node_modules
 
 # Build Next.js application
 RUN npm run build
