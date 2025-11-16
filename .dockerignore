@@ -40,10 +40,10 @@ Thumbs.db
 *.md
 !README.md
 
-# Other projects in monorepo
+# Other projects in monorepo - excluded from Docker builds
+# Note: repair-dashboard is NOT excluded as it's needed for Dockerfile.production
 backend/
 frontend/
-repair-dashboard/
 app/
 sample-code/
 lightspeed-sales-analysis/
@@ -53,8 +53,3 @@ docs/
 templates/
 scripts/*.js
 scripts/*.sh
-!dashboard/
-
-# Keep only dashboard
-*
-!dashboard/**
