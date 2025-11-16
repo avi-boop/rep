@@ -38,24 +38,24 @@ export async function GET(request: NextRequest) {
           const updated = await prisma.customer.update({
             where: { id: existing.id },
             data: {
-              firstName: lsCustomer.firstName,
-              lastName: lsCustomer.lastName,
-              email: lsCustomer.emailAddress || null,
-              phone: lsCustomer.primaryPhone || existing.phone,
+              firstName: lsCustomer.first_name,
+              lastName: lsCustomer.last_name,
+              email: lsCustomer.email || null,
+              phone: lsCustomer.phone || existing.phone,
               lastSyncedAt: new Date(),
             },
           });
           syncedCustomers.push({ action: 'updated', customer: updated });
         } else {
           // Create new customer (only if phone number provided)
-          if (lsCustomer.primaryPhone) {
+          if (lsCustomer.phone) {
             const created = await prisma.customer.create({
               data: {
                 lightspeedId: lsCustomer.id,
-                firstName: lsCustomer.firstName,
-                lastName: lsCustomer.lastName,
-                email: lsCustomer.emailAddress || null,
-                phone: lsCustomer.primaryPhone,
+                firstName: lsCustomer.first_name,
+                lastName: lsCustomer.last_name,
+                email: lsCustomer.email || null,
+                phone: lsCustomer.phone,
                 lastSyncedAt: new Date(),
               },
             });
