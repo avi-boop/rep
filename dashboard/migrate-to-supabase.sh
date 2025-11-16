@@ -3,7 +3,7 @@
 # Migrate to Supabase using Docker network
 # This script runs Prisma commands from inside the Docker network
 
-cd /home/avi/projects/mobile/rep/repair-dashboard
+cd /home/avi/projects/mobile/dashboard
 
 # Create a temporary .env for Docker
 cat > .env.docker << EOF

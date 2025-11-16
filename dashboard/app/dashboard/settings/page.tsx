@@ -92,7 +92,7 @@ export default function SettingsPage() {
       setMessage({ type: 'success', text: 'Restarting application...' });
       // User will need to manually restart PM2
       setTimeout(() => {
-        setMessage({ type: 'success', text: 'Please run: pm2 restart repair-dashboard' });
+        setMessage({ type: 'success', text: 'Please run: pm2 restart dashboard' });
       }, 1000);
     }
   };
@@ -276,7 +276,7 @@ export default function SettingsPage() {
               After saving new settings, restart the application to apply changes:
             </p>
             <code className="block bg-yellow-100 p-3 rounded text-sm text-yellow-900">
-              pm2 restart repair-dashboard
+              pm2 restart dashboard
             </code>
           </div>
         )}
