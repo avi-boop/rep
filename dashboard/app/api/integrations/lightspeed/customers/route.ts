@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { lightspeedService } from '@/lib/lightspeed';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 
 /**
  * GET /api/integrations/lightspeed/customers

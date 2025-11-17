@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { geminiAIService } from '@/lib/gemini-ai';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 
 /**
  * POST /api/integrations/gemini/pricing

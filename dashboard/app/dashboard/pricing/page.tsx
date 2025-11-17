@@ -1,7 +1,7 @@
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 import { formatCurrency } from '@/lib/utils'
 import { PricingMatrix } from '@/components/pricing/PricingMatrix'
 

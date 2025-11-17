@@ -1,7 +1,7 @@
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 import { RepairStatusBoard } from '@/components/repairs/RepairStatusBoard'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'

@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const { prisma } = await import('@/lib/prisma')
+    const { prisma } = await import('@/lib/db')
 
     // Get latest price update
     const latestUpdate = await prisma.pricing.findFirst({
