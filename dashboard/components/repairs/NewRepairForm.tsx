@@ -301,7 +301,7 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
                 )}
                 {showCustomerDropdown && customerSearch && filteredCustomers.length === 0 && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-gray-500">
-                    No customers found. Click "Add New" to create one.
+                    No customers found. Click &ldquo;Add New&rdquo; to create one.
                   </div>
                 )}
               </div>
