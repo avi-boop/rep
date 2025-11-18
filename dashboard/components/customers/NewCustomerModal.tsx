@@ -30,6 +30,8 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
     notes: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [existingCustomer, setExistingCustomer] = useState<Customer | null>(null)
+  const [checkingPhone, setCheckingPhone] = useState(false)
 
   // Handle client-side mounting for portal
   useEffect(() => {
@@ -83,24 +85,51 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
   // Don't render content if modal is closed
   if (!isOpen) return null
 
+  // Check for duplicate phone number
+  const checkDuplicatePhone = async (phone: string) => {
+    if (!phone.trim() || phone.replace(/\D/g, '').length < 10) {
+      setExistingCustomer(null)
+      return
+    }
+
+    setCheckingPhone(true)
+    try {
+      const response = await fetch(`/api/customers?search=${encodeURIComponent(phone)}`)
+      if (response.ok) {
+        const customers = await response.json()
+        const match = customers.find((c: Customer) => c.phone === phone.trim())
+        setExistingCustomer(match || null)
+      }
+    } catch (error) {
+      console.error('Error checking for duplicate phone:', error)
+    } finally {
+      setCheckingPhone(false)
+    }
+  }
+
+  // Debounce phone number check
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.phone) {
+        checkDuplicatePhone(formData.phone)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [formData.phone])
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
-    } else if (formData.firstName.trim().length > 100) {
+    // All fields are now optional, just validate format if provided
+    if (formData.firstName && formData.firstName.trim().length > 100) {
       newErrors.firstName = 'First name must be less than 100 characters'
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
-    } else if (formData.lastName.trim().length > 100) {
+    if (formData.lastName && formData.lastName.trim().length > 100) {
       newErrors.lastName = 'Last name must be less than 100 characters'
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required'
-    } else {
+    if (formData.phone && formData.phone.trim()) {
       // Remove all non-digit characters for validation
       const digitsOnly = formData.phone.replace(/\D/g, '')
       if (digitsOnly.length < 10 || digitsOnly.length > 15) {
@@ -230,7 +259,7 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
           {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              First Name *
+              First Name
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -253,7 +282,7 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
           {/* Last Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name *
+              Last Name
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -276,7 +305,7 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
           {/* Phone */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number *
+              Phone Number
             </label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -294,12 +323,43 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
             {errors.phone && (
               <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
             )}
+            {checkingPhone && (
+              <p className="mt-1 text-sm text-gray-500">Checking for existing customer...</p>
+            )}
+            {existingCustomer && (
+              <div className="mt-3 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-600" />
+                    <p className="font-semibold text-blue-900">Customer Already Exists</p>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm text-gray-700 mb-3">
+                  <p><span className="font-medium">Name:</span> {existingCustomer.firstName} {existingCustomer.lastName}</p>
+                  <p><span className="font-medium">Phone:</span> {existingCustomer.phone}</p>
+                  {existingCustomer.email && (
+                    <p><span className="font-medium">Email:</span> {existingCustomer.email}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onCustomerCreated(existingCustomer)
+                    onClose()
+                    toast.success('Existing customer selected')
+                  }}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Use This Customer
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email (Optional)
+              Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -322,7 +382,7 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
           {/* Notes */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes (Optional)
+              Notes
             </label>
             <div className="relative">
               <FileText className="absolute left-3 top-3 w-5 h-5 text-gray-400" />

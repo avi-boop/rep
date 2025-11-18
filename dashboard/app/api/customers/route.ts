@@ -94,9 +94,9 @@ export async function POST(request: NextRequest) {
     // Create customer in local database first
     const customer = await prisma.customer.create({
       data: {
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        phone: validatedData.phone,
+        firstName: validatedData.firstName || '',
+        lastName: validatedData.lastName || '',
+        phone: validatedData.phone || '',
         email: validatedData.email || null,
         notes: validatedData.notes || null,
         notificationPreferences: JSON.stringify(
@@ -110,10 +110,10 @@ export async function POST(request: NextRequest) {
     if (lightspeedService.isConfigured()) {
       try {
         const lightspeedCustomer = await lightspeedService.createCustomer({
-          firstName: validatedData.firstName,
-          lastName: validatedData.lastName,
+          firstName: validatedData.firstName || '',
+          lastName: validatedData.lastName || '',
           email: validatedData.email || '',
-          phone: validatedData.phone,
+          phone: validatedData.phone || '',
         })
 
         // Update local customer with Lightspeed ID

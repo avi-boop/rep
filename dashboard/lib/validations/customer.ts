@@ -2,27 +2,29 @@ import { z } from 'zod'
 
 /**
  * Validation schema for creating a new customer
- * Ensures data integrity and security
+ * All fields are optional to allow flexible data entry
  */
 export const createCustomerSchema = z.object({
   firstName: z
     .string()
-    .min(1, 'First name is required')
     .max(100, 'First name must be less than 100 characters')
-    .trim(),
+    .trim()
+    .optional()
+    .or(z.literal('')),
 
   lastName: z
     .string()
-    .min(1, 'Last name is required')
     .max(100, 'Last name must be less than 100 characters')
-    .trim(),
+    .trim()
+    .optional()
+    .or(z.literal('')),
 
   phone: z
     .string()
-    .min(1, 'Phone number is required')
     .max(20, 'Phone number must be less than 20 characters')
     .refine(
       (val) => {
+        if (!val || val.trim() === '') return true
         // Remove all non-digit characters for validation
         const digitsOnly = val.replace(/\D/g, '')
         return digitsOnly.length >= 10 && digitsOnly.length <= 15
@@ -30,10 +32,15 @@ export const createCustomerSchema = z.object({
       { message: 'Phone number must contain 10-15 digits' }
     )
     .refine(
-      (val) => /^[\d\s\-\+\(\)]+$/.test(val),
+      (val) => {
+        if (!val || val.trim() === '') return true
+        return /^[\d\s\-\+\(\)]+$/.test(val)
+      },
       { message: 'Phone number contains invalid characters' }
     )
-    .transform((val) => val.trim()),
+    .transform((val) => val ? val.trim() : '')
+    .optional()
+    .or(z.literal('')),
 
   email: z
     .string()
