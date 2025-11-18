@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
-import { Plus, X, Search } from 'lucide-react'
+import { Plus, X, Search, UserPlus } from 'lucide-react'
+import { NewCustomerModal } from '@/components/customers/NewCustomerModal'
+import AIPhotoDiagnostics from '@/components/ai/AIPhotoDiagnostics'
+import { toastHelpers } from '@/lib/toast'
 
 interface Brand {
   id: number
@@ -49,6 +52,7 @@ interface RepairItem {
 
 export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [selectedBrand, setSelectedBrand] = useState<number | null>(null)
@@ -57,8 +61,71 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
   const [deviceImei, setDeviceImei] = useState('')
   const [issueDescription, setIssueDescription] = useState('')
   const [priority, setPriority] = useState('normal')
+  const [showNewCustomerModal, setShowNewCustomerModal] = useState(false)
+  const [allCustomers, setAllCustomers] = useState<Customer[]>(customers)
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
 
   const selectedBrandData = brands.find(b => b.id === selectedBrand)
+
+  // Filter customers based on search
+  const filteredCustomers = allCustomers.filter(c => {
+    if (!customerSearch) return true
+    const searchLower = customerSearch.toLowerCase()
+    return (
+      c.firstName.toLowerCase().includes(searchLower) ||
+      c.lastName.toLowerCase().includes(searchLower) ||
+      c.phone.includes(searchLower) ||
+      (c.email && c.email.toLowerCase().includes(searchLower))
+    )
+  })
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('.customer-search-container')) {
+        setShowCustomerDropdown(false)
+      }
+    }
+
+    if (showCustomerDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showCustomerDropdown])
+
+  // Pre-fill form from URL parameters (when coming from pricing page)
+  useEffect(() => {
+    const modelId = searchParams.get('modelId')
+    const repairTypeId = searchParams.get('repairTypeId')
+    const partTypeId = searchParams.get('partTypeId')
+    const price = searchParams.get('price')
+    const brandName = searchParams.get('brandName')
+
+    if (modelId && repairTypeId && partTypeId) {
+      // Find the brand that contains this model
+      const brand = brands.find(b =>
+        b.deviceModels.some(m => m.id === parseInt(modelId))
+      )
+
+      if (brand) {
+        setSelectedBrand(brand.id)
+        setSelectedDevice(parseInt(modelId))
+
+        // Add the repair item
+        const newItem: RepairItem = {
+          repairTypeId: parseInt(repairTypeId),
+          partTypeId: parseInt(partTypeId),
+          price: price ? parseFloat(price) : 0
+        }
+        setRepairItems([newItem])
+
+        // Show a toast to inform the user
+        toastHelpers.success('Repair pre-filled from pricing', 'You can now select a customer and add more repairs if needed')
+      }
+    }
+  }, [searchParams, brands])
 
   const addRepairItem = () => {
     setRepairItems([
@@ -79,7 +146,10 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
 
   const fetchPrice = async (index: number) => {
     const item = repairItems[index]
-    if (!selectedDevice) return
+    if (!selectedDevice) {
+      toastHelpers.error('Please select a device first')
+      return
+    }
 
     try {
       const res = await fetch('/api/pricing/estimate', {
@@ -91,23 +161,48 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
           partTypeId: item.partTypeId
         })
       })
-      const data = await res.json()
-      updateRepairItem(index, 'price', data.price)
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.price && data.price > 0) {
+          updateRepairItem(index, 'price', data.price)
+          toastHelpers.priceFetched(data.price)
+        } else {
+          toastHelpers.priceNotFound()
+        }
+      } else {
+        toastHelpers.priceNotFound()
+      }
     } catch (error) {
       console.error('Failed to fetch price:', error)
+      toastHelpers.error('Failed to fetch price', 'Please enter manually')
     }
   }
 
   const totalPrice = repairItems.reduce((sum, item) => sum + item.price, 0)
 
+  const handleCustomerCreated = (newCustomer: Customer) => {
+    // Add new customer to the list
+    setAllCustomers(prev => [newCustomer, ...prev])
+    // Automatically select the newly created customer
+    setSelectedCustomer(newCustomer)
+    // Clear search and hide dropdown
+    setCustomerSearch('')
+    setShowCustomerDropdown(false)
+    // Show success message
+    toastHelpers.customerCreated(`${newCustomer.firstName} ${newCustomer.lastName}`)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedCustomer || !selectedDevice || repairItems.length === 0) {
-      alert('Please fill in all required fields')
+      toastHelpers.error('Please fill in all required fields')
       return
     }
 
     setLoading(true)
+    const loadingToast = toastHelpers.loading('Creating repair order...')
+
     try {
       const res = await fetch('/api/repairs', {
         method: 'POST',
@@ -130,6 +225,18 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
       })
 
       if (res.ok) {
+        const data = await res.json()
+        const { repair, notifications } = data
+
+        // Show success toast with notification status
+        toastHelpers.repairCreated(
+          repair.orderNumber,
+          {
+            sms: notifications?.sms?.success || false,
+            email: notifications?.email?.success || false
+          }
+        )
+
         router.push('/dashboard/repairs')
         router.refresh()
       } else {
@@ -137,7 +244,7 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
       }
     } catch (error) {
       console.error('Error creating repair:', error)
-      alert('Failed to create repair. Please try again.')
+      toastHelpers.error('Failed to create repair', 'Please try again or contact support')
     } finally {
       setLoading(false)
     }
@@ -153,25 +260,69 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select Customer *
             </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
-                required
-                value={selectedCustomer?.id || ''}
-                onChange={(e) => {
-                  const customer = customers.find(c => c.id === Number(e.target.value))
-                  setSelectedCustomer(customer || null)
-                }}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            <div className="flex gap-2">
+              <div className="relative flex-1 customer-search-container">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+                <input
+                  type="text"
+                  value={selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName} - ${selectedCustomer.phone}` : customerSearch}
+                  onChange={(e) => {
+                    setCustomerSearch(e.target.value)
+                    setSelectedCustomer(null)
+                    setShowCustomerDropdown(true)
+                  }}
+                  onFocus={() => setShowCustomerDropdown(true)}
+                  placeholder="Type to search customers..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required={!selectedCustomer}
+                />
+                {showCustomerDropdown && customerSearch && filteredCustomers.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {filteredCustomers.slice(0, 50).map(c => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCustomer(c)
+                          setCustomerSearch('')
+                          setShowCustomerDropdown(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium text-gray-900">
+                          {c.firstName} {c.lastName}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {c.phone}{c.email && ` • ${c.email}`}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showCustomerDropdown && customerSearch && filteredCustomers.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-gray-500">
+                    No customers found. Click "Add New" to create one.
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNewCustomerModal(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 whitespace-nowrap"
+                title="Add New Customer"
               >
-                <option value="">Search or select customer...</option>
-                {customers.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.firstName} {c.lastName} - {c.phone}
-                  </option>
-                ))}
-              </select>
+                <UserPlus className="w-5 h-5" />
+                Add New
+              </button>
             </div>
+            {selectedCustomer && (
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium">Selected:</span> {selectedCustomer.firstName} {selectedCustomer.lastName}
+                  {selectedCustomer.email && <span className="text-gray-500"> • {selectedCustomer.email}</span>}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -256,6 +407,52 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
           />
         </div>
       </div>
+
+      {/* AI Diagnostics (Optional) */}
+      {selectedDevice && selectedBrandData && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4">AI-Powered Diagnostics (Optional)</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Upload a photo of the device for instant AI analysis. Suggested repairs will be automatically added below.
+          </p>
+          <AIPhotoDiagnostics
+            deviceType={`${selectedBrandData.name} ${selectedBrandData.deviceModels.find(d => d.id === selectedDevice)?.name || ''}`}
+            onDiagnosisComplete={(diagnosis, repairs) => {
+              // Auto-populate issue description
+              const description = `AI Analysis: ${diagnosis.overall_condition}\n\nDetected Issues:\n${
+                diagnosis.damages.map(d => `- ${d.type.replace(/_/g, ' ')}: ${d.description} (${d.severity})`).join('\n')
+              }`;
+              setIssueDescription(description);
+
+              // Auto-add repair items based on suggestions
+              const newRepairItems = repairs.map(repair => {
+                const repairType = repairTypes.find(rt =>
+                  rt.name.toLowerCase().includes(repair.type.toLowerCase().split(' ')[0])
+                );
+                return {
+                  repairTypeId: repairType?.id || repairTypes[0].id,
+                  partTypeId: partTypes[2]?.id || partTypes[0].id, // Default to mid-tier quality
+                  price: 0
+                };
+              });
+
+              setRepairItems(prev => [...prev, ...newRepairItems]);
+
+              // Set priority based on urgency
+              if (diagnosis.urgency === 'high') {
+                setPriority('urgent');
+              } else if (diagnosis.urgency === 'medium') {
+                setPriority('normal');
+              }
+
+              toastHelpers.success('AI analysis complete! Repairs added automatically');
+            }}
+            onError={(error) => {
+              toastHelpers.error('AI diagnosis failed', error);
+            }}
+          />
+        </div>
+      )}
 
       {/* Repair Items */}
       <div className="bg-white rounded-lg shadow p-6">
@@ -374,6 +571,13 @@ export function NewRepairForm({ brands, repairTypes, partTypes, customers }: Pro
           </button>
         </div>
       </div>
+
+      {/* New Customer Modal */}
+      <NewCustomerModal
+        isOpen={showNewCustomerModal}
+        onClose={() => setShowNewCustomerModal(false)}
+        onCustomerCreated={handleCustomerCreated}
+      />
     </form>
   )
 }
