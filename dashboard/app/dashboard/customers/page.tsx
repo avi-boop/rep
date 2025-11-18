@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
 import { CustomerList } from '@/components/customers/CustomerList'
+import { NewCustomerModal } from '@/components/customers/NewCustomerModal'
 import { Plus, RefreshCw } from 'lucide-react'
-import Link from 'next/link'
 
 interface Customer {
   id: number
@@ -26,6 +26,7 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const fetchCustomers = async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) setRefreshing(true)
@@ -58,6 +59,24 @@ export default function CustomersPage() {
     }
   }, [searchTerm])
 
+  // Handle customer creation
+  const handleCustomerCreated = (newCustomer: any) => {
+    // Transform the customer data to match the expected type
+    const customer: Customer = {
+      ...newCustomer,
+      createdAt: new Date(newCustomer.createdAt),
+      _count: newCustomer._count || { repairOrders: 0 }
+    }
+
+    // Add the new customer to the list immediately for better UX
+    setCustomers(prev => [customer, ...prev])
+
+    // Also refresh from server if searching to ensure consistency
+    if (searchTerm.trim().length >= 2) {
+      setTimeout(() => fetchCustomers(), 500)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -66,13 +85,13 @@ export default function CustomersPage() {
           <p className="text-gray-600 mt-1">Search for customers with active repairs</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard/customers/new"
+          <button
+            onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <Plus className="w-5 h-5" />
             Add Customer
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -119,6 +138,13 @@ export default function CustomersPage() {
       ) : (
         <CustomerList customers={customers} onUpdate={() => fetchCustomers()} />
       )}
+
+      {/* Add Customer Modal */}
+      <NewCustomerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCustomerCreated={handleCustomerCreated}
+      />
     </div>
   )
 }

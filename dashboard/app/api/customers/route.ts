@@ -1,14 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { lightspeedService } from '@/lib/lightspeed'
+import { createCustomerSchema, customerSearchSchema } from '@/lib/validations/customer'
+import { Prisma } from '@prisma/client'
+import { ZodError } from 'zod'
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const search = searchParams.get('search')
-    const hasActiveRepairs = searchParams.get('hasActiveRepairs') === 'true'
+    const rawSearch = searchParams.get('search')
+    const rawHasActiveRepairs = searchParams.get('hasActiveRepairs')
 
-    const where: any = {}
+    // Validate search parameters
+    const validationResult = customerSearchSchema.safeParse({
+      search: rawSearch || undefined,
+      hasActiveRepairs: rawHasActiveRepairs || undefined
+    })
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid search parameters', details: validationResult.error.errors },
+        { status: 400 }
+      )
+    }
+
+    const { search, hasActiveRepairs } = validationResult.data
+
+    const where: Prisma.CustomerWhereInput = {}
 
     if (search) {
       where.OR = [
@@ -39,29 +57,52 @@ export async function GET(request: NextRequest) {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: 100 // Limit results to prevent performance issues
     })
 
     return NextResponse.json(customers)
   } catch (error) {
     console.error('Error fetching customers:', error)
-    return NextResponse.json({ error: 'Failed to fetch customers' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to fetch customers'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    // Parse and validate request body
     const body = await request.json()
+
+    const validationResult = createCustomerSchema.safeParse(body)
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validationResult.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        },
+        { status: 400 }
+      )
+    }
+
+    const validatedData = validationResult.data
 
     // Create customer in local database first
     const customer = await prisma.customer.create({
       data: {
-        firstName: body.firstName,
-        lastName: body.lastName,
-        phone: body.phone,
-        email: body.email || null,
-        notes: body.notes || null,
-        notificationPreferences: JSON.stringify(body.notificationPreferences || { sms: true, email: true, push: false }),
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        phone: validatedData.phone,
+        email: validatedData.email || null,
+        notes: validatedData.notes || null,
+        notificationPreferences: JSON.stringify(
+          validatedData.notificationPreferences ||
+          { sms: true, email: true, push: false }
+        ),
       }
     })
 
@@ -69,10 +110,10 @@ export async function POST(request: NextRequest) {
     if (lightspeedService.isConfigured()) {
       try {
         const lightspeedCustomer = await lightspeedService.createCustomer({
-          firstName: body.firstName,
-          lastName: body.lastName,
-          email: body.email || '',
-          phone: body.phone,
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          email: validatedData.email || '',
+          phone: validatedData.phone,
         })
 
         // Update local customer with Lightspeed ID
@@ -94,9 +135,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(customer, { status: 201 })
   } catch (error: any) {
     console.error('Error creating customer:', error)
+
+    // Handle Prisma unique constraint violations
     if (error.code === 'P2002') {
-      return NextResponse.json({ error: 'Phone number already exists' }, { status: 400 })
+      const field = error.meta?.target?.[0] || 'field'
+      return NextResponse.json(
+        { error: `A customer with this ${field} already exists` },
+        { status: 400 }
+      )
     }
-    return NextResponse.json({ error: 'Failed to create customer' }, { status: 500 })
+
+    // Handle Zod validation errors (should be caught above, but just in case)
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      )
+    }
+
+    // Handle JSON parsing errors
+    if (error instanceof SyntaxError) {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      )
+    }
+
+    // Generic error
+    const message = error instanceof Error ? error.message : 'Failed to create customer'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

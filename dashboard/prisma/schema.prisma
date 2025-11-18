@@ -131,10 +131,15 @@ model Customer {
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
   lastSyncedAt            DateTime?
-  
+
   repairOrders            RepairOrder[]
   notifications           Notification[]
-  
+  chatHistory             ChatHistory[]
+
+  @@index([firstName, lastName]) // For name-based searches
+  @@index([email])               // For email searches
+  @@index([createdAt])           // For sorting by creation date
+  @@index([isActive])            // For filtering active customers
   @@map("customers")
 }
 
@@ -166,7 +171,8 @@ model RepairOrder {
   notifications        Notification[]
   orderStatusHistory   OrderStatusHistory[]
   photos               Photo[]
-  
+  aiQualityChecks      AIQualityCheck[]
+
   @@map("repair_orders")
 }
 
@@ -236,12 +242,86 @@ model Photo {
   id            Int         @id @default(autoincrement())
   repairOrderId Int
   photoUrl      String
-  photoType     String?     // 'before', 'after', 'issue', 'testing'
+  photoType     String?     // 'before', 'after', 'issue', 'testing', 'qc'
   description   String?
   uploadedBy    Int?
   uploadedAt    DateTime    @default(now())
-  
+  aiAnalysis    Json?       // AI analysis results if applicable
+
   repairOrder   RepairOrder @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
-  
+
   @@map("photos")
+}
+
+model ChatHistory {
+  id            Int       @id @default(autoincrement())
+  customerId    Int
+  sessionId     String?
+  role          String    // 'user' | 'assistant' | 'system'
+  message       String    @db.Text
+  metadata      Json?     // AI model used, tokens, confidence, etc.
+  createdAt     DateTime  @default(now())
+
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, createdAt])
+  @@index([sessionId])
+  @@map("chat_history")
+}
+
+model AIAnalytics {
+  id            Int       @id @default(autoincrement())
+  endpoint      String    // '/api/ai/diagnose', '/api/ai/chat', etc.
+  model         String    // 'gemini-2.0-flash-exp', etc.
+  tokensUsed    Int?
+  responseTime  Int       // milliseconds
+  success       Boolean
+  errorMessage  String?
+  metadata      Json?     // Additional context
+  createdAt     DateTime  @default(now())
+
+  @@index([endpoint, createdAt])
+  @@index([createdAt])
+  @@map("ai_analytics")
+}
+
+model InventoryForecast {
+  id                  Int       @id @default(autoincrement())
+  partName            String
+  partTypeId          Int?
+  forecastDate        DateTime
+  currentStock        Int?
+  weeklyUsage         Float?
+  trend               String?   // 'increasing', 'decreasing', 'stable'
+  predicted30DayDemand Int
+  recommendedOrder    Int
+  confidence          Float     // 0.0 - 1.0
+  reasoning           String?   @db.Text
+  metadata            Json?
+  createdAt           DateTime  @default(now())
+
+  @@index([partName, forecastDate])
+  @@index([forecastDate])
+  @@map("inventory_forecasts")
+}
+
+model AIQualityCheck {
+  id              Int          @id @default(autoincrement())
+  repairOrderId   Int
+  photoId         Int?
+  checkType       String       // 'pre_delivery', 'in_process', 'final'
+  passed          Boolean
+  score           Float        // 0-100
+  issues          Json?        // Array of detected issues
+  recommendations Json?        // Array of recommended actions
+  reviewedBy      Int?         // User ID if manually reviewed
+  reviewNotes     String?      @db.Text
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  repairOrder     RepairOrder  @relation(fields: [repairOrderId], references: [id], onDelete: Cascade)
+
+  @@index([repairOrderId, checkType])
+  @@index([createdAt])
+  @@map("ai_quality_checks")
 }
