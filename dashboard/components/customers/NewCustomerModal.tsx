@@ -79,43 +79,43 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
     }
   }, [isOpen])
 
+  // Debounce phone number check
+  useEffect(() => {
+    if (!isOpen || !formData.phone) {
+      setExistingCustomer(null)
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      const phone = formData.phone
+      if (!phone.trim() || phone.replace(/\D/g, '').length < 10) {
+        setExistingCustomer(null)
+        return
+      }
+
+      setCheckingPhone(true)
+      try {
+        const response = await fetch(`/api/customers?search=${encodeURIComponent(phone)}`)
+        if (response.ok) {
+          const customers = await response.json()
+          const match = customers.find((c: Customer) => c.phone === phone.trim())
+          setExistingCustomer(match || null)
+        }
+      } catch (error) {
+        console.error('Error checking for duplicate phone:', error)
+      } finally {
+        setCheckingPhone(false)
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [formData.phone, isOpen])
+
   // Don't render portal until mounted (client-side only)
   if (!mounted) return null
 
   // Don't render content if modal is closed
   if (!isOpen) return null
-
-  // Check for duplicate phone number
-  const checkDuplicatePhone = async (phone: string) => {
-    if (!phone.trim() || phone.replace(/\D/g, '').length < 10) {
-      setExistingCustomer(null)
-      return
-    }
-
-    setCheckingPhone(true)
-    try {
-      const response = await fetch(`/api/customers?search=${encodeURIComponent(phone)}`)
-      if (response.ok) {
-        const customers = await response.json()
-        const match = customers.find((c: Customer) => c.phone === phone.trim())
-        setExistingCustomer(match || null)
-      }
-    } catch (error) {
-      console.error('Error checking for duplicate phone:', error)
-    } finally {
-      setCheckingPhone(false)
-    }
-  }
-
-  // Debounce phone number check
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (formData.phone) {
-        checkDuplicatePhone(formData.phone)
-      }
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [formData.phone])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
