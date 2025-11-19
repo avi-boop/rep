@@ -32,14 +32,15 @@ model DeviceModel {
   releaseYear  Int?
   deviceType   String     // 'phone' or 'tablet'
   screenSize   Float?
+  logoUrl      String?
   isActive     Boolean    @default(true)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
-  
+
   brand        Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
   pricings     Pricing[]
   repairOrders RepairOrder[]
-  
+
   @@unique([brandId, name])
   @@map("device_models")
 }
@@ -48,15 +49,18 @@ model RepairType {
   id                Int                 @id @default(autoincrement())
   name              String              @unique
   category          String?
+  subcategory       String?
   description       String?
   estimatedDuration Int?                // in minutes
+  isMainCategory    Boolean             @default(false)
+  displayOrder      Int                 @default(0)
   isActive          Boolean             @default(true)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
-  
+
   pricings          Pricing[]
   repairOrderItems  RepairOrderItem[]
-  
+
   @@map("repair_types")
 }
 

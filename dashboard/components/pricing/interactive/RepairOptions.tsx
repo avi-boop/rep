@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { RepairCard } from './RepairCard'
 import { EditPricingModal } from '../EditPricingModal'
 import { AddPricingModal } from '../AddPricingModal'
-import { ArrowLeft, Loader2, TrendingUp, DollarSign, Package, CheckCircle, GripVertical, Star } from 'lucide-react'
+import { ArrowLeft, Loader2, TrendingUp, DollarSign, Package, CheckCircle, GripVertical, Star, ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { useFavorites } from '@/lib/hooks/useFavorites'
 
@@ -85,9 +85,38 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
   const [sortOption, setSortOption] = useState<'popular' | 'alphabetical'>('popular')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const { favorites, isFavorite } = useFavorites('repair')
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['front', 'battery', 'back', 'others']))
+  const [showAddCustomRepair, setShowAddCustomRepair] = useState(false)
 
-  // Sort repairs based on selected option
-  const sortedRepairs = useMemo(() => {
+  // Helper function to categorize a repair type
+  const getCategoryForRepair = useCallback((repairName: string, category: string | null) => {
+    const nameLower = repairName.toLowerCase()
+
+    // Front category - screen and display related
+    if (nameLower.includes('screen') || nameLower.includes('display') || nameLower.includes('glass') ||
+        nameLower.includes('digitizer') || nameLower.includes('lcd') || nameLower.includes('oled') ||
+        category?.toLowerCase() === 'front' || category?.toLowerCase() === 'screen') {
+      return 'front'
+    }
+
+    // Battery category
+    if (nameLower.includes('battery') || category?.toLowerCase() === 'battery') {
+      return 'battery'
+    }
+
+    // Back category - back glass, housing, camera
+    if (nameLower.includes('back') || nameLower.includes('rear') || nameLower.includes('housing') ||
+        nameLower.includes('camera glass') || nameLower.includes('back glass') ||
+        category?.toLowerCase() === 'back') {
+      return 'back'
+    }
+
+    // Everything else goes to Others
+    return 'others'
+  }, [])
+
+  // Group repairs by category
+  const categorizedRepairs = useMemo(() => {
     let repairsCopy = [...repairs]
 
     // Filter by favorites if enabled
@@ -95,36 +124,51 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
       repairsCopy = repairsCopy.filter(repair => isFavorite(repair.repairType.id))
     }
 
+    // Sort within each repair if needed
     if (sortOption === 'alphabetical') {
-      return repairsCopy.sort((a, b) =>
-        a.repairType.name.localeCompare(b.repairType.name)
-      )
+      repairsCopy.sort((a, b) => a.repairType.name.localeCompare(b.repairType.name))
     } else {
-      // Sort by popularity: favorites first, then repairs with pricing, then by price
-      return repairsCopy.sort((a, b) => {
+      repairsCopy.sort((a, b) => {
         const aIsFav = isFavorite(a.repairType.id)
         const bIsFav = isFavorite(b.repairType.id)
-
-        // Favorites first
         if (aIsFav && !bIsFav) return -1
         if (!aIsFav && bIsFav) return 1
-
         const aHasPricing = a.pricing !== null
         const bHasPricing = b.pricing !== null
-
         if (aHasPricing && !bHasPricing) return -1
         if (!aHasPricing && bHasPricing) return 1
-
-        // Both have pricing or both don't - sort by price (higher first)
         if (aHasPricing && bHasPricing) {
           return (b.pricing?.price || 0) - (a.pricing?.price || 0)
         }
-
-        // Both don't have pricing - sort alphabetically
         return a.repairType.name.localeCompare(b.repairType.name)
       })
     }
-  }, [repairs, sortOption, showFavoritesOnly, isFavorite])
+
+    // Group by category
+    const grouped = {
+      front: [] as RepairOption[],
+      battery: [] as RepairOption[],
+      back: [] as RepairOption[],
+      others: [] as RepairOption[]
+    }
+
+    repairsCopy.forEach(repair => {
+      const category = getCategoryForRepair(repair.repairType.name, repair.repairType.category)
+      grouped[category].push(repair)
+    })
+
+    return grouped
+  }, [repairs, sortOption, showFavoritesOnly, isFavorite, getCategoryForRepair])
+
+  // Legacy sorted repairs for backward compatibility
+  const sortedRepairs = useMemo(() => {
+    return [
+      ...categorizedRepairs.front,
+      ...categorizedRepairs.battery,
+      ...categorizedRepairs.back,
+      ...categorizedRepairs.others
+    ]
+  }, [categorizedRepairs])
 
   const fetchPartTypes = useCallback(async () => {
     try {
@@ -256,6 +300,48 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
     setDraggedIndex(null)
   }
 
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev)
+      if (next.has(category)) {
+        next.delete(category)
+      } else {
+        next.add(category)
+      }
+      return next
+    })
+  }
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'front':
+        return '📱'
+      case 'battery':
+        return '🔋'
+      case 'back':
+        return '📷'
+      case 'others':
+        return '🔧'
+      default:
+        return '🔧'
+    }
+  }
+
+  const getCategoryName = (category: string) => {
+    switch (category) {
+      case 'front':
+        return 'Front (Screen & Display)'
+      case 'battery':
+        return 'Battery'
+      case 'back':
+        return 'Back (Housing & Camera)'
+      case 'others':
+        return 'Others'
+      default:
+        return category
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -370,36 +456,82 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
         </button>
       </div>
 
-      {/* Repair Options List - Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5">
-        {(isReordering ? repairs : sortedRepairs).map((repair, index) => (
-          <div
-            key={repair.repairType.id}
-            draggable={isReordering}
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            className={`${isReordering ? 'cursor-move' : ''} ${
-              draggedIndex === index ? 'opacity-50' : ''
-            }`}
-          >
-            {isReordering && (
-              <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
-                <GripVertical className="w-4 h-4" />
-                <span>Drag to reorder</span>
-              </div>
-            )}
-            <RepairCard
-              {...repair}
-              modelId={modelId}
-              modelName={modelName}
-              brandName={brandName}
-              onEdit={() => handleEditPricing(repair)}
-              onAdd={() => handleAddPricing(repair)}
-              onBookRepair={() => handleBookRepair(repair)}
-            />
-          </div>
-        ))}
+      {/* Repair Options by Category */}
+      <div className="space-y-4">
+        {(['front', 'battery', 'back', 'others'] as const).map((category) => {
+          const categoryRepairs = categorizedRepairs[category]
+          if (categoryRepairs.length === 0) return null
+
+          const isExpanded = expandedCategories.has(category)
+          const icon = getCategoryIcon(category)
+          const name = getCategoryName(category)
+
+          return (
+            <div key={category} className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden">
+              {/* Category Header */}
+              <button
+                onClick={() => toggleCategory(category)}
+                className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{icon}</span>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {name}
+                    </h3>
+                    <p className="text-xs text-gray-600">
+                      {categoryRepairs.length} {categoryRepairs.length === 1 ? 'repair' : 'repairs'}
+                      {categoryRepairs.filter(r => r.pricing !== null).length > 0 && (
+                        <span className="ml-2">
+                          • {categoryRepairs.filter(r => r.pricing !== null).length} priced
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {category === 'others' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowAddCustomRepair(true)
+                      }}
+                      className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      title="Add custom repair"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  )}
+                  {isExpanded ? (
+                    <ChevronDown className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+                  )}
+                </div>
+              </button>
+
+              {/* Category Content */}
+              {isExpanded && (
+                <div className="p-4 bg-white">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5">
+                    {categoryRepairs.map((repair) => (
+                      <RepairCard
+                        key={repair.repairType.id}
+                        {...repair}
+                        modelId={modelId}
+                        modelName={modelName}
+                        brandName={brandName}
+                        onEdit={() => handleEditPricing(repair)}
+                        onAdd={() => handleAddPricing(repair)}
+                        onBookRepair={() => handleBookRepair(repair)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {repairs.length === 0 && (
@@ -420,11 +552,26 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
       )}
 
       {/* Add Pricing Modal */}
-      {showAddModal && (
+      {showAddModal && !showAddCustomRepair && (
         <AddPricingModal
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
           onSuccess={handleModalSuccess}
+          brands={allBrands}
+          repairTypes={allRepairTypes}
+          partTypes={partTypes}
+        />
+      )}
+
+      {/* Add Custom Repair Modal */}
+      {showAddCustomRepair && (
+        <AddPricingModal
+          isOpen={showAddCustomRepair}
+          onClose={() => setShowAddCustomRepair(false)}
+          onSuccess={() => {
+            setShowAddCustomRepair(false)
+            fetchRepairs()
+          }}
           brands={allBrands}
           repairTypes={allRepairTypes}
           partTypes={partTypes}

@@ -526,7 +526,7 @@ export default function SettingsPage() {
                 <ol className="list-decimal list-inside space-y-1 ml-4">
                   <li>Navigate to a repair order details page</li>
                   <li>Upload photos of the damaged device</li>
-                  <li>Click "Analyze with AI" button</li>
+                  <li>Click &quot;Analyze with AI&quot; button</li>
                   <li>Review the AI diagnosis and recommendations</li>
                   <li>Use insights to create accurate quotes</li>
                 </ol>

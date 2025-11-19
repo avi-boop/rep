@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import Image from 'next/image'
 import { Smartphone, Tablet, Wrench, DollarSign, Calendar, Star } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { useFavorites } from '@/lib/hooks/useFavorites'
@@ -11,6 +12,7 @@ interface ModelCardProps {
   modelNumber: string | null
   releaseYear: number | null
   deviceType: 'phone' | 'tablet'
+  logoUrl?: string | null
   repairCount: number
   priceRange: { min: number; max: number }
   onClick: () => void
@@ -22,6 +24,7 @@ export const ModelCard = memo(function ModelCard({
   modelNumber,
   releaseYear,
   deviceType,
+  logoUrl,
   repairCount,
   priceRange,
   onClick
@@ -53,10 +56,20 @@ export const ModelCard = memo(function ModelCard({
         <Star className={`w-3.5 h-3.5 ${favorite ? 'fill-current' : ''}`} />
       </button>
 
-      {/* Device Icon */}
+      {/* Device Icon/Logo */}
       <div className="flex items-center gap-2 mb-2">
-        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-blue-50 group-hover:to-blue-100 flex items-center justify-center transition-colors">
-          {deviceType === 'tablet' ? (
+        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-blue-50 group-hover:to-blue-100 flex items-center justify-center transition-colors overflow-hidden">
+          {logoUrl ? (
+            <div className="relative w-8 h-8">
+              <Image
+                src={logoUrl}
+                alt={name}
+                fill
+                className="object-contain"
+                sizes="32px"
+              />
+            </div>
+          ) : deviceType === 'tablet' ? (
             <Tablet className="w-5 h-5 text-gray-700 group-hover:text-blue-600 transition-colors" />
           ) : (
             <Smartphone className="w-5 h-5 text-gray-700 group-hover:text-blue-600 transition-colors" />

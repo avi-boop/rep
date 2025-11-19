@@ -13,6 +13,7 @@ interface Model {
   modelNumber: string | null
   releaseYear: number | null
   deviceType: 'phone' | 'tablet'
+  logoUrl?: string | null
   repairCount: number
   priceRange: { min: number; max: number }
 }

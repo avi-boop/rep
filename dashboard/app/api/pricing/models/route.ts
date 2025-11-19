@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
         releaseYear: model.releaseYear,
         deviceType: model.deviceType,
         screenSize: model.screenSize,
+        logoUrl: model.brand.logoUrl,  // Use brand logo
         repairCount: stats?._count || 0,
         priceRange: {
           min: stats?._min.price || 0,
