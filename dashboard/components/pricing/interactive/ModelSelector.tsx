@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { ModelCard } from './ModelCard'
-import { ArrowLeft, Search, Loader2, Smartphone, Tablet } from 'lucide-react'
+import { ArrowLeft, Search, Loader2, Smartphone, Tablet, Star } from 'lucide-react'
+import { useFavorites } from '@/lib/hooks/useFavorites'
 
 interface Model {
   id: number
@@ -25,11 +26,12 @@ interface ModelSelectorProps {
 
 export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: ModelSelectorProps) {
   const [models, setModels] = useState<Model[]>([])
-  const [filteredModels, setFilteredModels] = useState<Model[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [deviceTypeFilter, setDeviceTypeFilter] = useState<'all' | 'phone' | 'tablet'>('all')
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const { favorites, isFavorite } = useFavorites('model')
 
   const fetchModels = useCallback(async () => {
     setLoading(true)
@@ -51,7 +53,8 @@ export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: Mod
     }
   }, [brandId])
 
-  const filterModels = useCallback(() => {
+  // Filter and sort models
+  const filteredModels = useMemo(() => {
     let filtered = models
 
     // Search filter
@@ -67,16 +70,26 @@ export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: Mod
       filtered = filtered.filter((model) => model.deviceType === deviceTypeFilter)
     }
 
-    setFilteredModels(filtered)
-  }, [models, searchTerm, deviceTypeFilter])
+    // Favorites filter
+    if (showFavoritesOnly) {
+      filtered = filtered.filter((model) => isFavorite(model.id))
+    }
+
+    // Sort: favorites first, then by name
+    return filtered.sort((a, b) => {
+      const aIsFav = isFavorite(a.id)
+      const bIsFav = isFavorite(b.id)
+
+      if (aIsFav && !bIsFav) return -1
+      if (!aIsFav && bIsFav) return 1
+
+      return a.name.localeCompare(b.name)
+    })
+  }, [models, searchTerm, deviceTypeFilter, showFavoritesOnly, isFavorite])
 
   useEffect(() => {
     fetchModels()
   }, [fetchModels])
-
-  useEffect(() => {
-    filterModels()
-  }, [filterModels])
 
   const phoneCount = models.filter(m => m.deviceType === 'phone').length
   const tabletCount = models.filter(m => m.deviceType === 'tablet').length
@@ -136,54 +149,75 @@ export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: Mod
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search models..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search models..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Device Type Filter */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDeviceTypeFilter('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                deviceTypeFilter === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              All ({models.length})
+            </button>
+            <button
+              onClick={() => setDeviceTypeFilter('phone')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                deviceTypeFilter === 'phone'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Smartphone className="w-4 h-4" />
+              Phones ({phoneCount})
+            </button>
+            <button
+              onClick={() => setDeviceTypeFilter('tablet')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                deviceTypeFilter === 'tablet'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Tablet className="w-4 h-4" />
+              Tablets ({tabletCount})
+            </button>
+          </div>
         </div>
 
-        {/* Device Type Filter */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setDeviceTypeFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              deviceTypeFilter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All ({models.length})
-          </button>
-          <button
-            onClick={() => setDeviceTypeFilter('phone')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-              deviceTypeFilter === 'phone'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Smartphone className="w-4 h-4" />
-            Phones ({phoneCount})
-          </button>
-          <button
-            onClick={() => setDeviceTypeFilter('tablet')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-              deviceTypeFilter === 'tablet'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Tablet className="w-4 h-4" />
-            Tablets ({tabletCount})
-          </button>
-        </div>
+        {/* Favorites Filter */}
+        {favorites.size > 0 && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                showFavoritesOnly
+                  ? 'bg-yellow-50 border-yellow-300 text-yellow-700'
+                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Star className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current text-yellow-500' : ''}`} />
+              <span className="font-medium">
+                {showFavoritesOnly ? 'Show All' : 'Show Favorites'} ({favorites.size})
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Models Grid */}
@@ -206,7 +240,7 @@ export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: Mod
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredModels.map((model) => (
               <ModelCard
                 key={model.id}

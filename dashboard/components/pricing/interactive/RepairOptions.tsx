@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { RepairCard } from './RepairCard'
 import { EditPricingModal } from '../EditPricingModal'
 import { AddPricingModal } from '../AddPricingModal'
-import { ArrowLeft, Loader2, TrendingUp, DollarSign, Package, CheckCircle, GripVertical } from 'lucide-react'
+import { ArrowLeft, Loader2, TrendingUp, DollarSign, Package, CheckCircle, GripVertical, Star } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { useFavorites } from '@/lib/hooks/useFavorites'
 
 interface ModelInfo {
   id: number
@@ -82,18 +83,32 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [isReordering, setIsReordering] = useState(false)
   const [sortOption, setSortOption] = useState<'popular' | 'alphabetical'>('popular')
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const { favorites, isFavorite } = useFavorites('repair')
 
   // Sort repairs based on selected option
   const sortedRepairs = useMemo(() => {
-    const repairsCopy = [...repairs]
+    let repairsCopy = [...repairs]
+
+    // Filter by favorites if enabled
+    if (showFavoritesOnly) {
+      repairsCopy = repairsCopy.filter(repair => isFavorite(repair.repairType.id))
+    }
 
     if (sortOption === 'alphabetical') {
       return repairsCopy.sort((a, b) =>
         a.repairType.name.localeCompare(b.repairType.name)
       )
     } else {
-      // Sort by popularity: repairs with pricing first, then by price
+      // Sort by popularity: favorites first, then repairs with pricing, then by price
       return repairsCopy.sort((a, b) => {
+        const aIsFav = isFavorite(a.repairType.id)
+        const bIsFav = isFavorite(b.repairType.id)
+
+        // Favorites first
+        if (aIsFav && !bIsFav) return -1
+        if (!aIsFav && bIsFav) return 1
+
         const aHasPricing = a.pricing !== null
         const bHasPricing = b.pricing !== null
 
@@ -109,7 +124,7 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
         return a.repairType.name.localeCompare(b.repairType.name)
       })
     }
-  }, [repairs, sortOption])
+  }, [repairs, sortOption, showFavoritesOnly, isFavorite])
 
   const fetchPartTypes = useCallback(async () => {
     try {
@@ -291,15 +306,15 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
       </div>
 
       {/* Part Quality Selector, Sort Option, and Reorder Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           {/* Part Quality */}
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">Part Quality:</label>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Part:</label>
             <select
               value={selectedPartTypeId || ''}
               onChange={(e) => setSelectedPartTypeId(Number(e.target.value))}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {partTypes.map((pt) => (
                 <option key={pt.id} value={pt.id}>
@@ -310,35 +325,53 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
           </div>
 
           {/* Sort Option */}
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">Sort By:</label>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Sort:</label>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as 'popular' | 'alphabetical')}
               disabled={isReordering}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="popular">Most Popular</option>
               <option value="alphabetical">Alphabetical</option>
             </select>
           </div>
+
+          {/* Favorites Filter */}
+          {favorites.size > 0 && (
+            <button
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                showFavoritesOnly
+                  ? 'bg-yellow-50 border-yellow-300 text-yellow-700'
+                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+              title={showFavoritesOnly ? 'Show all repairs' : 'Show favorite repairs only'}
+            >
+              <Star className={`w-3.5 h-3.5 ${showFavoritesOnly ? 'fill-current text-yellow-500' : ''}`} />
+              <span className="font-medium">
+                {showFavoritesOnly ? 'All' : 'Favorites'} ({favorites.size})
+              </span>
+            </button>
+          )}
         </div>
 
         <button
           onClick={() => setIsReordering(!isReordering)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
             isReordering
               ? 'bg-blue-600 text-white border-blue-600'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}
         >
           <GripVertical className="w-4 h-4" />
-          <span>{isReordering ? 'Done Reordering' : 'Reorder Repairs'}</span>
+          <span>{isReordering ? 'Done' : 'Reorder'}</span>
         </button>
       </div>
 
       {/* Repair Options List - Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5">
         {(isReordering ? repairs : sortedRepairs).map((repair, index) => (
           <div
             key={repair.repairType.id}

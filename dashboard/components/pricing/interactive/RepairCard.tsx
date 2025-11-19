@@ -1,9 +1,10 @@
 'use client'
 
 import { memo, useState } from 'react'
-import { Edit2, Clock, CheckCircle, HelpCircle, AlertCircle, TrendingUp, Calendar, Eye, EyeOff } from 'lucide-react'
+import { Edit2, Clock, CheckCircle, HelpCircle, AlertCircle, TrendingUp, Calendar, Eye, EyeOff, Star } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { RepairTypeIcon } from '../RepairTypeIcon'
+import { useFavorites } from '@/lib/hooks/useFavorites'
 
 interface RepairCardProps {
   repairType: {
@@ -40,34 +41,54 @@ interface RepairCardProps {
 export const RepairCard = memo(function RepairCard({ repairType, pricing, partType, modelId, modelName, brandName, onEdit, onAdd, onBookRepair }: RepairCardProps) {
   const hasPricing = pricing !== null
   const [showDetails, setShowDetails] = useState(false)
+  const { isFavorite, toggleFavorite } = useFavorites('repair')
+  const favorite = isFavorite(repairType.id)
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    toggleFavorite(repairType.id)
+  }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 hover:border-blue-300 hover:shadow-sm transition-all">
+    <div className="bg-white rounded-lg border border-gray-200 p-2.5 hover:border-blue-300 hover:shadow-sm transition-all relative">
+      {/* Favorite Button */}
+      <button
+        onClick={handleFavoriteClick}
+        className={`absolute top-1.5 right-1.5 z-10 p-1 rounded-full transition-all ${
+          favorite
+            ? 'bg-yellow-100 text-yellow-500 hover:bg-yellow-200'
+            : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+        }`}
+        title={favorite ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        <Star className={`w-3 h-3 ${favorite ? 'fill-current' : ''}`} />
+      </button>
+
       {/* Compact Header */}
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <h3 className="text-sm font-semibold text-gray-900 truncate flex-1">{repairType.name}</h3>
+      <div className="flex items-center justify-between gap-2 mb-1.5 pr-6">
+        <h3 className="text-xs font-semibold text-gray-900 truncate flex-1">{repairType.name}</h3>
 
         {/* Action Icons */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           {hasPricing && (
             <>
               <button
                 onClick={() => setShowDetails(!showDetails)}
-                className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+                className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
                 title={showDetails ? "Hide details" : "Show details"}
               >
-                {showDetails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showDetails ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
               <button
                 onClick={onEdit}
-                className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
+                className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
                 title="Edit pricing"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={onBookRepair}
-                className="flex items-center gap-1 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors font-medium"
+                className="flex items-center gap-0.5 px-1.5 py-0.5 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors font-medium"
                 title="Book this repair"
               >
                 <Calendar className="w-3 h-3" />
@@ -81,9 +102,9 @@ export const RepairCard = memo(function RepairCard({ repairType, pricing, partTy
       {hasPricing ? (
         <>
           {/* Price - Always Visible */}
-          <div className="mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-green-600">
+          <div className="mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base font-bold text-green-600">
                 {formatCurrency(pricing.price)}
               </span>
               {pricing.isEstimated ? (

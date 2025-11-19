@@ -1,8 +1,9 @@
 'use client'
 
 import { memo } from 'react'
-import { Smartphone, Tablet, Wrench, DollarSign, Calendar } from 'lucide-react'
+import { Smartphone, Tablet, Wrench, DollarSign, Calendar, Star } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { useFavorites } from '@/lib/hooks/useFavorites'
 
 interface ModelCardProps {
   id: number
@@ -16,6 +17,7 @@ interface ModelCardProps {
 }
 
 export const ModelCard = memo(function ModelCard({
+  id,
   name,
   modelNumber,
   releaseYear,
@@ -25,25 +27,45 @@ export const ModelCard = memo(function ModelCard({
   onClick
 }: ModelCardProps) {
   const hasNoPricing = priceRange.min === 0 && priceRange.max === 0
+  const { isFavorite, toggleFavorite } = useFavorites('model')
+  const favorite = isFavorite(id)
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    toggleFavorite(id)
+  }
 
   return (
     <button
       onClick={onClick}
-      className="group relative bg-white rounded-xl border-2 border-gray-200 p-5 hover:border-blue-500 hover:shadow-lg transition-all duration-200 text-left w-full"
+      className="group relative bg-white rounded-lg border-2 border-gray-200 p-3 hover:border-blue-500 hover:shadow-md transition-all duration-200 text-left w-full"
     >
+      {/* Favorite Button */}
+      <button
+        onClick={handleFavoriteClick}
+        className={`absolute top-2 right-2 z-10 p-1.5 rounded-full transition-all ${
+          favorite
+            ? 'bg-yellow-100 text-yellow-500 hover:bg-yellow-200'
+            : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+        }`}
+        title={favorite ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        <Star className={`w-3.5 h-3.5 ${favorite ? 'fill-current' : ''}`} />
+      </button>
+
       {/* Device Icon */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-blue-50 group-hover:to-blue-100 flex items-center justify-center transition-colors">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-blue-50 group-hover:to-blue-100 flex items-center justify-center transition-colors">
           {deviceType === 'tablet' ? (
-            <Tablet className="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
+            <Tablet className="w-5 h-5 text-gray-700 group-hover:text-blue-600 transition-colors" />
           ) : (
-            <Smartphone className="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
+            <Smartphone className="w-5 h-5 text-gray-700 group-hover:text-blue-600 transition-colors" />
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-8">
           {/* Model Name */}
-          <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+          <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
             {name}
           </h3>
 
@@ -55,25 +77,25 @@ export const ModelCard = memo(function ModelCard({
       </div>
 
       {/* Stats */}
-      <div className="space-y-2">
+      <div className="space-y-1">
         {/* Release Year */}
         {releaseYear && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+            <Calendar className="w-3 h-3" />
             <span>{releaseYear}</span>
           </div>
         )}
 
         {/* Repair Count */}
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Wrench className="w-4 h-4" />
+        <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <Wrench className="w-3 h-3" />
           <span className="font-medium">{repairCount}</span>
           <span>{repairCount === 1 ? 'repair' : 'repairs'}</span>
         </div>
 
         {/* Price Range */}
-        <div className="flex items-center gap-2 text-sm">
-          <DollarSign className="w-4 h-4 text-green-600" />
+        <div className="flex items-center gap-1.5 text-xs">
+          <DollarSign className="w-3 h-3 text-green-600" />
           {hasNoPricing ? (
             <span className="text-red-500 font-medium">No pricing</span>
           ) : priceRange.min === priceRange.max ? (
@@ -85,15 +107,6 @@ export const ModelCard = memo(function ModelCard({
               {formatCurrency(priceRange.min)} - {formatCurrency(priceRange.max)}
             </span>
           )}
-        </div>
-      </div>
-
-      {/* Hover Arrow */}
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
         </div>
       </div>
     </button>

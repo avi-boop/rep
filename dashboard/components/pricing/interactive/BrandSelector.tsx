@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { BrandCard } from './BrandCard'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Star } from 'lucide-react'
+import { useFavorites } from '@/lib/hooks/useFavorites'
 
 interface Brand {
   id: number
@@ -20,6 +21,29 @@ export function BrandSelector({ onSelectBrand }: BrandSelectorProps) {
   const [brands, setBrands] = useState<Brand[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const { favorites, isFavorite } = useFavorites('brand')
+
+  // Filter and sort brands
+  const displayedBrands = useMemo(() => {
+    let filtered = brands
+
+    // Filter by favorites if enabled
+    if (showFavoritesOnly) {
+      filtered = filtered.filter(brand => isFavorite(brand.id))
+    }
+
+    // Sort: favorites first, then alphabetically
+    return filtered.sort((a, b) => {
+      const aIsFav = isFavorite(a.id)
+      const bIsFav = isFavorite(b.id)
+
+      if (aIsFav && !bIsFav) return -1
+      if (!aIsFav && bIsFav) return 1
+
+      return a.name.localeCompare(b.name)
+    })
+  }, [brands, showFavoritesOnly, isFavorite])
 
   const fetchBrands = useCallback(async () => {
     setLoading(true)
@@ -88,9 +112,28 @@ export function BrandSelector({ onSelectBrand }: BrandSelectorProps) {
         <p className="text-gray-600">Choose a device brand to view models and pricing</p>
       </div>
 
+      {/* Filters */}
+      {favorites.size > 0 && (
+        <div className="flex justify-center">
+          <button
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              showFavoritesOnly
+                ? 'bg-yellow-50 border-yellow-300 text-yellow-700'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current text-yellow-500' : ''}`} />
+            <span className="font-medium">
+              {showFavoritesOnly ? 'Show All' : 'Show Favorites'} ({favorites.size})
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* Brand Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {brands.map((brand) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {displayedBrands.map((brand) => (
           <BrandCard
             key={brand.id}
             {...brand}
@@ -102,7 +145,7 @@ export function BrandSelector({ onSelectBrand }: BrandSelectorProps) {
       {/* Stats Footer */}
       <div className="text-center pt-4">
         <p className="text-sm text-gray-500">
-          {brands.length} {brands.length === 1 ? 'brand' : 'brands'} available
+          Showing {displayedBrands.length} of {brands.length} {brands.length === 1 ? 'brand' : 'brands'}
         </p>
       </div>
     </div>
