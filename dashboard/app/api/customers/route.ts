@@ -91,6 +91,32 @@ export async function POST(request: NextRequest) {
 
     const validatedData = validationResult.data
 
+    // Check for duplicate phone number before creating (server-side check to prevent race conditions)
+    if (validatedData.phone && validatedData.phone.trim()) {
+      const existingCustomer = await prisma.customer.findFirst({
+        where: {
+          phone: validatedData.phone
+        }
+      })
+
+      if (existingCustomer) {
+        return NextResponse.json(
+          {
+            error: 'A customer with this phone number already exists',
+            duplicate: true,
+            customer: {
+              id: existingCustomer.id,
+              firstName: existingCustomer.firstName,
+              lastName: existingCustomer.lastName,
+              phone: existingCustomer.phone,
+              email: existingCustomer.email,
+            }
+          },
+          { status: 409 } // 409 Conflict
+        )
+      }
+    }
+
     // Create customer in local database first
     const customer = await prisma.customer.create({
       data: {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Toaster } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: "Repair Dashboard - Mobile Repair Shop Management",
@@ -15,6 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
+        <Toaster />
       </body>
     </html>
   );

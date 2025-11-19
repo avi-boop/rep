@@ -41,36 +41,42 @@ export async function GET(request: NextRequest) {
       ]
     })
 
-    // Calculate price ranges and stats for each model
-    const modelsWithStats = await Promise.all(
-      models.map(async (model) => {
-        const priceStats = await prisma.pricing.aggregate({
+    // Calculate price ranges and stats for each model (optimized with single query)
+    const modelIds = models.map(m => m.id)
+
+    const pricingStats = modelIds.length > 0
+      ? await prisma.pricing.groupBy({
+          by: ['deviceModelId'],
           where: {
-            deviceModelId: model.id,
+            deviceModelId: { in: modelIds },
             isActive: true
           },
           _min: { price: true },
           _max: { price: true },
           _count: true
         })
+      : []
 
-        return {
-          id: model.id,
-          brandId: model.brandId,
-          brandName: model.brand.name,
-          name: model.name,
-          modelNumber: model.modelNumber,
-          releaseYear: model.releaseYear,
-          deviceType: model.deviceType,
-          screenSize: model.screenSize,
-          repairCount: priceStats._count,
-          priceRange: {
-            min: priceStats._min.price || 0,
-            max: priceStats._max.price || 0
-          }
+    // Map stats to models
+    const modelsWithStats = models.map(model => {
+      const stats = pricingStats.find(s => s.deviceModelId === model.id)
+
+      return {
+        id: model.id,
+        brandId: model.brandId,
+        brandName: model.brand.name,
+        name: model.name,
+        modelNumber: model.modelNumber,
+        releaseYear: model.releaseYear,
+        deviceType: model.deviceType,
+        screenSize: model.screenSize,
+        repairCount: stats?._count || 0,
+        priceRange: {
+          min: stats?._min.price || 0,
+          max: stats?._max.price || 0
         }
-      })
-    )
+      }
+    })
 
     return NextResponse.json({
       success: true,

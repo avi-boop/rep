@@ -53,6 +53,7 @@ export function PricingWizard() {
     // If we have URL params but no state, we should fetch the data
     // For now, we'll just ensure the step is correct
     // In a real implementation, you'd fetch brand/model data here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Update URL when state changes
@@ -70,7 +71,7 @@ export function PricingWizard() {
     }
 
     router.replace(`/dashboard/pricing?${params.toString()}`, { scroll: false })
-  }, [step, selectedBrand, selectedModel])
+  }, [step, selectedBrand, selectedModel, router])
 
   const handleSelectBrand = (brand: Brand) => {
     setSelectedBrand(brand)

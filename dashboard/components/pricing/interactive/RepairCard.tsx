@@ -1,6 +1,7 @@
 'use client'
 
-import { Edit2, Clock, CheckCircle, HelpCircle, AlertCircle, TrendingUp } from 'lucide-react'
+import { memo, useState } from 'react'
+import { Edit2, Clock, CheckCircle, HelpCircle, AlertCircle, TrendingUp, Calendar, Eye, EyeOff } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { RepairTypeIcon } from '../RepairTypeIcon'
 
@@ -28,160 +29,137 @@ interface RepairCardProps {
     qualityLevel: number
     warrantyMonths: number
   }
+  modelId?: number
+  modelName?: string
+  brandName?: string
   onEdit?: () => void
   onAdd?: () => void
+  onBookRepair?: () => void
 }
 
-export function RepairCard({ repairType, pricing, partType, onEdit, onAdd }: RepairCardProps) {
+export const RepairCard = memo(function RepairCard({ repairType, pricing, partType, modelId, modelName, brandName, onEdit, onAdd, onBookRepair }: RepairCardProps) {
   const hasPricing = pricing !== null
+  const [showDetails, setShowDetails] = useState(false)
 
   return (
-    <div className="bg-white rounded-lg border-2 border-gray-200 p-5 hover:border-gray-300 transition-colors">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {/* Repair Icon */}
-          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-            <RepairTypeIcon repairType={repairType.name} size={24} />
-          </div>
+    <div className="bg-white rounded-lg border border-gray-200 p-3 hover:border-blue-300 hover:shadow-sm transition-all">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <h3 className="text-sm font-semibold text-gray-900 truncate flex-1">{repairType.name}</h3>
 
-          <div>
-            {/* Repair Name */}
-            <h3 className="text-lg font-bold text-gray-900">{repairType.name}</h3>
-
-            {/* Category */}
-            {repairType.category && (
-              <p className="text-xs text-gray-500">{repairType.category}</p>
-            )}
-          </div>
+        {/* Action Icons */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {hasPricing && (
+            <>
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+                title={showDetails ? "Hide details" : "Show details"}
+              >
+                {showDetails ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={onEdit}
+                className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
+                title="Edit pricing"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onBookRepair}
+                className="flex items-center gap-1 px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors font-medium"
+                title="Book this repair"
+              >
+                <Calendar className="w-3 h-3" />
+                <span>Book</span>
+              </button>
+            </>
+          )}
         </div>
-
-        {/* Edit/Add Button */}
-        {hasPricing ? (
-          <button
-            onClick={onEdit}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-blue-600 transition-colors"
-            title="Edit pricing"
-          >
-            <Edit2 className="w-5 h-5" />
-          </button>
-        ) : (
-          <button
-            onClick={onAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            Add Price
-          </button>
-        )}
       </div>
 
       {hasPricing ? (
         <>
-          {/* Pricing Info */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            {/* Price */}
-            <div>
-              <div className="text-xs text-gray-500 mb-1">Price</div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-green-600">
-                  {formatCurrency(pricing.price)}
+          {/* Price - Always Visible */}
+          <div className="mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-bold text-green-600">
+                {formatCurrency(pricing.price)}
+              </span>
+              {pricing.isEstimated ? (
+                <span title="AI Estimated">
+                  <HelpCircle className="w-3 h-3 text-yellow-500" />
                 </span>
-                {pricing.isEstimated ? (
-                  <div title="AI Estimated">
-                    <HelpCircle className="w-4 h-4 text-yellow-500" />
+              ) : (
+                <span title="Confirmed">
+                  <CheckCircle className="w-3 h-3 text-green-500" />
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Expandable Details */}
+          {showDetails && (
+            <div className="pt-2 border-t border-gray-100 space-y-2">
+              {/* Cost & Margin */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {pricing.cost !== null && (
+                  <div>
+                    <span className="text-gray-500">Cost: </span>
+                    <span className="font-semibold text-red-600">{formatCurrency(pricing.cost)}</span>
                   </div>
-                ) : (
-                  <div title="Confirmed">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
+                )}
+                {pricing.margin !== null && (
+                  <div>
+                    <span className="text-gray-500">Margin: </span>
+                    <span className={`font-semibold ${
+                      pricing.margin >= 40 ? 'text-green-600' :
+                      pricing.margin >= 25 ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`}>
+                      {pricing.margin.toFixed(1)}%
+                    </span>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Cost */}
-            {pricing.cost !== null && (
-              <div>
-                <div className="text-xs text-gray-500 mb-1">Cost</div>
-                <div className="text-lg font-semibold text-red-600">
-                  {formatCurrency(pricing.cost)}
-                </div>
-              </div>
-            )}
-
-            {/* Margin */}
-            {pricing.margin !== null && (
-              <div>
-                <div className="text-xs text-gray-500 mb-1">Margin</div>
+              {/* Additional Info */}
+              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                {repairType.estimatedDuration && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>{repairType.estimatedDuration} min</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
-                  <span className={`text-lg font-semibold ${
-                    pricing.margin >= 40 ? 'text-green-600' :
-                    pricing.margin >= 25 ? 'text-yellow-600' :
-                    'text-red-600'
-                  }`}>
-                    {pricing.margin.toFixed(1)}%
-                  </span>
-                  <TrendingUp className={`w-4 h-4 ${
-                    pricing.margin >= 40 ? 'text-green-600' :
-                    pricing.margin >= 25 ? 'text-yellow-600' :
-                    'text-red-600'
-                  }`} />
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <span>{partType.name}</span>
                 </div>
+                <span className="text-gray-500">{partType.warrantyMonths} mo</span>
               </div>
-            )}
-          </div>
 
-          {/* Additional Info */}
-          <div className="flex items-center gap-4 text-sm text-gray-600 pt-3 border-t border-gray-100">
-            {/* Duration */}
-            {repairType.estimatedDuration && (
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span>{repairType.estimatedDuration} min</span>
-              </div>
-            )}
-
-            {/* Part Quality */}
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span>{partType.name} Part</span>
-            </div>
-
-            {/* Warranty */}
-            <div className="text-xs text-gray-500">
-              {partType.warrantyMonths} mo warranty
-            </div>
-
-            {/* Confidence Score */}
-            {pricing.isEstimated && pricing.confidenceScore !== null && (
-              <div className="ml-auto">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  pricing.confidenceScore >= 0.8 ? 'bg-green-100 text-green-700' :
-                  pricing.confidenceScore >= 0.6 ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
-                  {Math.round(pricing.confidenceScore * 100)}% confidence
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Notes */}
-          {pricing.notes && (
-            <div className="mt-3 p-2 bg-gray-50 rounded text-sm text-gray-600">
-              <span className="font-medium">Note:</span> {pricing.notes}
+              {/* Notes */}
+              {pricing.notes && (
+                <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
+                  <span className="font-medium">Note:</span> {pricing.notes}
+                </div>
+              )}
             </div>
           )}
         </>
       ) : (
         /* No Pricing State */
-        <div className="py-6 text-center">
-          <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-500">No pricing set for this repair</p>
-          {repairType.description && (
-            <p className="text-xs text-gray-400 mt-1">{repairType.description}</p>
-          )}
+        <div className="py-3 text-center">
+          <AlertCircle className="w-8 h-8 text-gray-300 mx-auto mb-1" />
+          <p className="text-xs text-gray-500 mb-2">No pricing</p>
+          <button
+            onClick={onAdd}
+            className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors font-medium"
+          >
+            Add Price
+          </button>
         </div>
       )}
     </div>
   )
-}
+})

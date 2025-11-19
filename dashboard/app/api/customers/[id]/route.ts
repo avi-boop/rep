@@ -6,7 +6,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const resolvedParams = await params
+    const { id } = resolvedParams
+
+    if (!id) {
+      return NextResponse.json({ error: 'Customer ID is required' }, { status: 400 })
+    }
+
     const customer = await prisma.customer.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -41,7 +47,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const resolvedParams = await params
+    const { id } = resolvedParams
+
+    if (!id) {
+      return NextResponse.json({ error: 'Customer ID is required' }, { status: 400 })
+    }
+
     const body = await request.json()
 
     const customer = await prisma.customer.update({
@@ -71,7 +83,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const resolvedParams = await params
+    const { id } = resolvedParams
+
+    if (!id) {
+      return NextResponse.json({ error: 'Customer ID is required' }, { status: 400 })
+    }
+
     await prisma.customer.delete({
       where: { id: parseInt(id) }
     })

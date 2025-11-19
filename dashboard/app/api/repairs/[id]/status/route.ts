@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { notifyRepairStatus } from '@/lib/notifications'
 
 export async function PATCH(
   request: NextRequest,
@@ -48,8 +49,46 @@ export async function PATCH(
       })
     ])
 
-    // TODO: Trigger notification to customer
-    // await sendNotification(repair.customerId, 'status_update', { repair, newStatus: body.status })
+    // Send notification to customer based on new status
+    try {
+      let notificationStatus: 'created' | 'in_progress' | 'completed' | 'ready_for_pickup' | 'delayed' | null = null
+
+      if (body.status === 'in_progress') {
+        notificationStatus = 'in_progress'
+      } else if (body.status === 'completed') {
+        notificationStatus = 'completed'
+      } else if (body.status === 'ready_for_pickup') {
+        notificationStatus = 'ready_for_pickup'
+      } else if (body.status === 'waiting_for_parts' || body.status === 'delayed') {
+        notificationStatus = 'delayed'
+      }
+
+      if (notificationStatus) {
+        await notifyRepairStatus(
+          repair.customer.id,
+          {
+            firstName: repair.customer.firstName,
+            lastName: repair.customer.lastName,
+            email: repair.customer.email,
+            phone: repair.customer.phone,
+            notificationPreferences: repair.customer.notificationPreferences,
+          },
+          {
+            orderNumber: repair.orderNumber,
+            deviceModel: repair.deviceModel?.name,
+            deviceBrand: repair.deviceModel?.brand?.name,
+            status: body.status,
+            totalPrice: repair.totalPrice || undefined,
+            estimatedCompletion: repair.estimatedCompletion?.toLocaleDateString(),
+            actualCompletion: repair.actualCompletion?.toLocaleDateString(),
+          },
+          notificationStatus
+        )
+      }
+    } catch (notificationError) {
+      // Log error but don't fail the status update
+      console.error('Failed to send notification:', notificationError)
+    }
 
     return NextResponse.json(repair)
   } catch (error) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ModelCard } from './ModelCard'
 import { ArrowLeft, Search, Loader2, Smartphone, Tablet } from 'lucide-react'
 
@@ -31,15 +31,7 @@ export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: Mod
   const [searchTerm, setSearchTerm] = useState('')
   const [deviceTypeFilter, setDeviceTypeFilter] = useState<'all' | 'phone' | 'tablet'>('all')
 
-  useEffect(() => {
-    fetchModels()
-  }, [brandId])
-
-  useEffect(() => {
-    filterModels()
-  }, [models, searchTerm, deviceTypeFilter])
-
-  const fetchModels = async () => {
+  const fetchModels = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -57,9 +49,9 @@ export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: Mod
     } finally {
       setLoading(false)
     }
-  }
+  }, [brandId])
 
-  const filterModels = () => {
+  const filterModels = useCallback(() => {
     let filtered = models
 
     // Search filter
@@ -76,7 +68,15 @@ export function ModelSelector({ brandId, brandName, onSelectModel, onBack }: Mod
     }
 
     setFilteredModels(filtered)
-  }
+  }, [models, searchTerm, deviceTypeFilter])
+
+  useEffect(() => {
+    fetchModels()
+  }, [fetchModels])
+
+  useEffect(() => {
+    filterModels()
+  }, [filterModels])
 
   const phoneCount = models.filter(m => m.deviceType === 'phone').length
   const tabletCount = models.filter(m => m.deviceType === 'tablet').length

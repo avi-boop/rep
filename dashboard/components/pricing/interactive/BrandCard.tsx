@@ -1,5 +1,7 @@
 'use client'
 
+import { memo } from 'react'
+import Image from 'next/image'
 import { Smartphone, Package } from 'lucide-react'
 
 interface BrandCardProps {
@@ -11,7 +13,7 @@ interface BrandCardProps {
   onClick: () => void
 }
 
-export function BrandCard({ name, logoUrl, modelCount, pricingCount, onClick }: BrandCardProps) {
+export const BrandCard = memo(function BrandCard({ name, logoUrl, modelCount, pricingCount, onClick }: BrandCardProps) {
   return (
     <button
       onClick={onClick}
@@ -20,7 +22,15 @@ export function BrandCard({ name, logoUrl, modelCount, pricingCount, onClick }: 
       {/* Brand Icon/Logo */}
       <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors">
         {logoUrl ? (
-          <img src={logoUrl} alt={name} className="w-12 h-12 object-contain" />
+          <div className="relative w-12 h-12">
+            <Image
+              src={logoUrl}
+              alt={name}
+              fill
+              className="object-contain"
+              sizes="48px"
+            />
+          </div>
         ) : (
           <Smartphone className="w-8 h-8 text-blue-600" />
         )}
@@ -55,4 +65,4 @@ export function BrandCard({ name, logoUrl, modelCount, pricingCount, onClick }: 
       </div>
     </button>
   )
-}
+})

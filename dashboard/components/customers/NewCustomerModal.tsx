@@ -79,7 +79,7 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
     }
   }, [isOpen])
 
-  // Debounce phone number check
+  // Debounce phone number check using dedicated duplicate check endpoint
   useEffect(() => {
     if (!isOpen || !formData.phone) {
       setExistingCustomer(null)
@@ -95,11 +95,10 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
 
       setCheckingPhone(true)
       try {
-        const response = await fetch(`/api/customers?search=${encodeURIComponent(phone)}`)
+        const response = await fetch(`/api/customers/check-duplicate?phone=${encodeURIComponent(phone)}`)
         if (response.ok) {
-          const customers = await response.json()
-          const match = customers.find((c: Customer) => c.phone === phone.trim())
-          setExistingCustomer(match || null)
+          const data = await response.json()
+          setExistingCustomer(data.exists ? data.customer : null)
         }
       } catch (error) {
         console.error('Error checking for duplicate phone:', error)
@@ -183,6 +182,13 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
       const data = await response.json()
 
       if (!response.ok) {
+        // Handle duplicate customer (409 Conflict)
+        if (response.status === 409 && data.duplicate && data.customer) {
+          setExistingCustomer(data.customer)
+          toast.error('This phone number is already in use', { id: loadingToast })
+          return
+        }
+
         // Handle validation errors from server
         if (data.details) {
           const fieldErrors: Record<string, string> = {}
@@ -256,6 +262,13 @@ export function NewCustomerModal({ isOpen, onClose, onCustomerCreated }: Props) 
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Info message */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-800">
+              Please provide at least one of: phone number, email, or full name (first and last)
+            </p>
+          </div>
+
           {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

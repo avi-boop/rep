@@ -10,7 +10,57 @@ interface NotificationData {
   subject?: string
 }
 
-export async function sendNotification(data: NotificationData): Promise<boolean> {
+interface TemplateData {
+  customerName: string
+  customerEmail: string | null
+  customerPhone: string
+  orderNumber: string
+  deviceModel?: string
+  deviceBrand?: string
+  totalPrice: number
+  repairItems: string[]
+  trackingUrl: string
+  estimatedCompletion?: string
+  actualCompletion?: string
+}
+
+interface NotificationOptions {
+  sendSMS?: boolean
+  sendEmail?: boolean
+}
+
+// Main sendNotification function with template support
+export async function sendNotification(
+  template: string,
+  data: TemplateData,
+  options: NotificationOptions = {}
+): Promise<{ sms?: boolean; email?: boolean }> {
+  try {
+    const result: { sms?: boolean; email?: boolean } = {}
+
+    // Log notification (implement actual sending when credentials are available)
+    console.log('Notification queued:', { template, data, options })
+
+    // TODO: Implement actual sending with template rendering
+    if (options.sendSMS && data.customerPhone) {
+      // await sendSMS(data.customerPhone, renderSMSTemplate(template, data))
+      result.sms = true
+    }
+
+    if (options.sendEmail && data.customerEmail) {
+      // await sendEmail(data.customerEmail, renderEmailTemplate(template, data))
+      result.email = true
+    }
+
+    return result
+  } catch (error) {
+    console.error('Failed to send notification:', error)
+    return {}
+  }
+}
+
+// Legacy sendNotification for backward compatibility
+export async function sendBasicNotification(data: NotificationData): Promise<boolean> {
   try {
     // Log notification (implement actual sending when credentials are available)
     console.log('Notification queued:', data)
@@ -48,6 +98,56 @@ export const smsTemplates = {
 }
 
 // Email Templates
+// Notification status helper
+export async function getNotificationStatus(notificationId: number) {
+  // Placeholder - implement actual notification status checking
+  return { status: 'pending', deliveredAt: null }
+}
+
+interface CustomerNotificationData {
+  firstName: string
+  lastName: string
+  email: string | null
+  phone: string
+  notificationPreferences: any
+}
+
+interface RepairNotificationData {
+  orderNumber: string
+  deviceModel?: string
+  deviceBrand?: string
+  status: string
+  totalPrice?: number
+  estimatedCompletion?: string
+  actualCompletion?: string
+}
+
+// Repair status notification helper
+export async function notifyRepairStatus(
+  customerId: number,
+  customer: CustomerNotificationData,
+  repair: RepairNotificationData,
+  notificationStatus: string
+): Promise<boolean> {
+  try {
+    // Placeholder - implement actual repair status notification
+    console.log('Repair status notification:', {
+      customerId,
+      customer,
+      repair,
+      notificationStatus
+    })
+
+    // TODO: Send actual SMS/Email notifications based on customer preferences
+    // and notification status
+
+    return true
+  } catch (error) {
+    console.error('Failed to send repair status notification:', error)
+    return false
+  }
+}
+
 export const emailTemplates = {
   repair_received: (orderNumber: string, customerName: string, deviceName: string) => ({
     subject: `Repair Order Received - ${orderNumber}`,
@@ -111,7 +211,7 @@ export async function sendStatusChangeNotification(
   if (!notification) return
 
   // Send SMS
-  await sendNotification({
+  await sendBasicNotification({
     customerId: 0, // Get from repair order
     repairOrderId,
     type: 'sms',
@@ -121,7 +221,7 @@ export async function sendStatusChangeNotification(
 
   // Send Email if available
   if (customerEmail && notification.email) {
-    await sendNotification({
+    await sendBasicNotification({
       customerId: 0,
       repairOrderId,
       type: 'email',

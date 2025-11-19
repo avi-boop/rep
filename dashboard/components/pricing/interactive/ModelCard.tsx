@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { Smartphone, Tablet, Wrench, DollarSign, Calendar } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
@@ -14,7 +15,7 @@ interface ModelCardProps {
   onClick: () => void
 }
 
-export function ModelCard({
+export const ModelCard = memo(function ModelCard({
   name,
   modelNumber,
   releaseYear,
@@ -97,4 +98,4 @@ export function ModelCard({
       </div>
     </button>
   )
-}
+})

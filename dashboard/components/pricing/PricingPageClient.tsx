@@ -22,13 +22,9 @@ export function PricingPageClient({ brands, repairTypes, partTypes, pricing }: P
     const urlView = searchParams.get('view')
     if (urlView === 'matrix' || urlView === 'interactive') {
       setViewMode(urlView)
-    } else {
-      // Check localStorage for user preference
-      const savedView = localStorage.getItem('pricingViewMode')
-      if (savedView === 'matrix' || savedView === 'interactive') {
-        setViewMode(savedView)
-      }
     }
+    // Always default to interactive view, ignore localStorage for now
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Save preference to localStorage when changed

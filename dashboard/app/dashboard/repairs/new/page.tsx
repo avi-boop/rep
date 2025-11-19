@@ -1,6 +1,7 @@
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
 
+import { Suspense } from 'react'
 import { prisma } from '@/lib/db'
 import { NewRepairForm } from '@/components/repairs/NewRepairForm'
 
@@ -43,7 +44,13 @@ export default async function NewRepairPage() {
         <p className="text-gray-600 mt-1">Enter repair details and select services</p>
       </div>
 
-      <NewRepairForm {...data} />
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      }>
+        <NewRepairForm {...data} />
+      </Suspense>
     </div>
   )
 }

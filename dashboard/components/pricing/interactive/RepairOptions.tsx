@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { RepairCard } from './RepairCard'
 import { EditPricingModal } from '../EditPricingModal'
 import { AddPricingModal } from '../AddPricingModal'
-import { ArrowLeft, Loader2, TrendingUp, DollarSign, Package, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, TrendingUp, DollarSign, Package, CheckCircle, GripVertical } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
 interface ModelInfo {
@@ -64,6 +65,7 @@ interface RepairOptionsProps {
 }
 
 export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairOptionsProps) {
+  const router = useRouter()
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null)
   const [repairs, setRepairs] = useState<RepairOption[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -77,19 +79,39 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
   const [selectedRepairType, setSelectedRepairType] = useState<any>(null)
   const [allBrands, setAllBrands] = useState<any[]>([])
   const [allRepairTypes, setAllRepairTypes] = useState<any[]>([])
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [isReordering, setIsReordering] = useState(false)
+  const [sortOption, setSortOption] = useState<'popular' | 'alphabetical'>('popular')
 
-  useEffect(() => {
-    fetchPartTypes()
-    fetchBrandsAndRepairTypes()
-  }, [])
+  // Sort repairs based on selected option
+  const sortedRepairs = useMemo(() => {
+    const repairsCopy = [...repairs]
 
-  useEffect(() => {
-    if (selectedPartTypeId) {
-      fetchRepairs()
+    if (sortOption === 'alphabetical') {
+      return repairsCopy.sort((a, b) =>
+        a.repairType.name.localeCompare(b.repairType.name)
+      )
+    } else {
+      // Sort by popularity: repairs with pricing first, then by price
+      return repairsCopy.sort((a, b) => {
+        const aHasPricing = a.pricing !== null
+        const bHasPricing = b.pricing !== null
+
+        if (aHasPricing && !bHasPricing) return -1
+        if (!aHasPricing && bHasPricing) return 1
+
+        // Both have pricing or both don't - sort by price (higher first)
+        if (aHasPricing && bHasPricing) {
+          return (b.pricing?.price || 0) - (a.pricing?.price || 0)
+        }
+
+        // Both don't have pricing - sort alphabetically
+        return a.repairType.name.localeCompare(b.repairType.name)
+      })
     }
-  }, [modelId, selectedPartTypeId])
+  }, [repairs, sortOption])
 
-  const fetchPartTypes = async () => {
+  const fetchPartTypes = useCallback(async () => {
     try {
       const response = await fetch('/api/part-types')
       if (response.ok) {
@@ -106,9 +128,9 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
     } catch (err) {
       console.error('Error fetching part types:', err)
     }
-  }
+  }, [])
 
-  const fetchBrandsAndRepairTypes = async () => {
+  const fetchBrandsAndRepairTypes = useCallback(async () => {
     try {
       const [brandsRes, repairTypesRes] = await Promise.all([
         fetch('/api/brands'),
@@ -119,9 +141,9 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
     } catch (err) {
       console.error('Error fetching brands/repair types:', err)
     }
-  }
+  }, [])
 
-  const fetchRepairs = async () => {
+  const fetchRepairs = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -142,7 +164,18 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
     } finally {
       setLoading(false)
     }
-  }
+  }, [modelId, selectedPartTypeId])
+
+  useEffect(() => {
+    fetchPartTypes()
+    fetchBrandsAndRepairTypes()
+  }, [fetchPartTypes, fetchBrandsAndRepairTypes])
+
+  useEffect(() => {
+    if (selectedPartTypeId) {
+      fetchRepairs()
+    }
+  }, [fetchRepairs, selectedPartTypeId])
 
   const handleEditPricing = (repair: RepairOption) => {
     if (repair.pricing) {
@@ -166,6 +199,46 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
     setShowEditModal(false)
     setShowAddModal(false)
     fetchRepairs() // Refresh data
+  }
+
+  const handleBookRepair = (repair: RepairOption) => {
+    if (!modelInfo) return
+
+    // Encode repair data to pass to the repair form
+    const params = new URLSearchParams({
+      modelId: modelInfo.id.toString(),
+      modelName: modelInfo.name,
+      brandName: modelInfo.brand.name,
+      repairTypeId: repair.repairType.id.toString(),
+      repairTypeName: repair.repairType.name,
+      partTypeId: repair.partType.id.toString(),
+      price: repair.pricing?.price.toString() || '0'
+    })
+
+    // Navigate to new repair form with pre-filled data
+    router.push(`/dashboard/repairs/new?${params.toString()}`)
+  }
+
+  // Drag and drop handlers
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === index) return
+
+    const newRepairs = [...repairs]
+    const draggedItem = newRepairs[draggedIndex]
+    newRepairs.splice(draggedIndex, 1)
+    newRepairs.splice(index, 0, draggedItem)
+
+    setRepairs(newRepairs)
+    setDraggedIndex(index)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
   }
 
   if (loading) {
@@ -204,7 +277,7 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header with Back Button */}
       <div className="flex items-center justify-between">
         <button
@@ -214,93 +287,85 @@ export function RepairOptions({ modelId, modelName, brandName, onBack }: RepairO
           <ArrowLeft className="w-5 h-5" />
           <span>Back to {brandName} Models</span>
         </button>
+        <h2 className="text-xl font-semibold text-gray-900">{modelName}</h2>
       </div>
 
-      {/* Model Info Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-1">{modelName}</h2>
-            <p className="text-gray-600">
-              {brandName} {modelInfo?.deviceType}
-              {modelInfo?.modelNumber && ` • ${modelInfo.modelNumber}`}
-              {modelInfo?.releaseYear && ` • ${modelInfo.releaseYear}`}
-            </p>
+      {/* Part Quality Selector, Sort Option, and Reorder Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          {/* Part Quality */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-700">Part Quality:</label>
+            <select
+              value={selectedPartTypeId || ''}
+              onChange={(e) => setSelectedPartTypeId(Number(e.target.value))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {partTypes.map((pt) => (
+                <option key={pt.id} value={pt.id}>
+                  {pt.name} {pt.name === 'Standard' && '(Default)'}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort Option */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-700">Sort By:</label>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as 'popular' | 'alphabetical')}
+              disabled={isReordering}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option value="popular">Most Popular</option>
+              <option value="alphabetical">Alphabetical</option>
+            </select>
           </div>
         </div>
-      </div>
 
-      {/* Stats Dashboard */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-1">
-              <Package className="w-4 h-4" />
-              <span className="text-sm">Total Repairs</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalRepairs}</p>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-1">
-              <CheckCircle className="w-4 h-4" />
-              <span className="text-sm">With Pricing</span>
-            </div>
-            <p className="text-2xl font-bold text-green-600">{stats.priceCount}</p>
-            <p className="text-xs text-gray-500 mt-1">{stats.completionRate}% complete</p>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-1">
-              <DollarSign className="w-4 h-4" />
-              <span className="text-sm">Avg Price</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {stats.priceCount > 0 ? formatCurrency(stats.averagePrice) : '-'}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-1">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-sm">Avg Margin</span>
-            </div>
-            <p className={`text-2xl font-bold ${
-              stats.averageMargin >= 40 ? 'text-green-600' :
-              stats.averageMargin >= 25 ? 'text-yellow-600' :
-              'text-red-600'
-            }`}>
-              {stats.priceCount > 0 ? `${stats.averageMargin.toFixed(1)}%` : '-'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Part Quality Selector */}
-      <div className="flex items-center gap-3">
-        <label className="text-sm font-medium text-gray-700">Part Quality:</label>
-        <select
-          value={selectedPartTypeId || ''}
-          onChange={(e) => setSelectedPartTypeId(Number(e.target.value))}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        <button
+          onClick={() => setIsReordering(!isReordering)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+            isReordering
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+          }`}
         >
-          {partTypes.map((pt) => (
-            <option key={pt.id} value={pt.id}>
-              {pt.name} {pt.name === 'Standard' && '(Default)'}
-            </option>
-          ))}
-        </select>
+          <GripVertical className="w-4 h-4" />
+          <span>{isReordering ? 'Done Reordering' : 'Reorder Repairs'}</span>
+        </button>
       </div>
 
-      {/* Repair Options List */}
-      <div className="space-y-4">
-        {repairs.map((repair) => (
-          <RepairCard
+      {/* Repair Options List - Grid Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {(isReordering ? repairs : sortedRepairs).map((repair, index) => (
+          <div
             key={repair.repairType.id}
-            {...repair}
-            onEdit={() => handleEditPricing(repair)}
-            onAdd={() => handleAddPricing(repair)}
-          />
+            draggable={isReordering}
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnd={handleDragEnd}
+            className={`${isReordering ? 'cursor-move' : ''} ${
+              draggedIndex === index ? 'opacity-50' : ''
+            }`}
+          >
+            {isReordering && (
+              <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
+                <GripVertical className="w-4 h-4" />
+                <span>Drag to reorder</span>
+              </div>
+            )}
+            <RepairCard
+              {...repair}
+              modelId={modelId}
+              modelName={modelName}
+              brandName={brandName}
+              onEdit={() => handleEditPricing(repair)}
+              onAdd={() => handleAddPricing(repair)}
+              onBookRepair={() => handleBookRepair(repair)}
+            />
+          </div>
         ))}
       </div>
 

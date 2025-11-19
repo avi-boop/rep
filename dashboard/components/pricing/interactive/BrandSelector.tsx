@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BrandCard } from './BrandCard'
 import { Loader2 } from 'lucide-react'
 
@@ -21,11 +21,7 @@ export function BrandSelector({ onSelectBrand }: BrandSelectorProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchBrands()
-  }, [])
-
-  const fetchBrands = async () => {
+  const fetchBrands = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -43,7 +39,11 @@ export function BrandSelector({ onSelectBrand }: BrandSelectorProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchBrands()
+  }, [fetchBrands])
 
   if (loading) {
     return (

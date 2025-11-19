@@ -1,0 +1,593 @@
+================================================================================
+                 MOBILE REPAIR DASHBOARD - CODEBASE SUMMARY
+================================================================================
+
+PROJECT: Full-Stack Mobile Repair Shop Management System
+LOCATION: /home/avi/projects/mobile/dashboard
+STATUS: Production (Phase 0-1 complete, deployed to repair.theprofitplatform.com.au)
+
+================================================================================
+                              QUICK FACTS
+================================================================================
+
+Type:              Full-stack web application (SaaS)
+Framework:         Next.js 15 + React 19 + TypeScript
+Database:          PostgreSQL (Supabase) + Prisma ORM
+API Routes:        20 endpoints (~700 lines total)
+React Components:  25+ reusable components
+Service Modules:   8 (Gemini AI, Lightspeed POS, etc.)
+Database Tables:   11 normalized tables
+Documentation:     15+ markdown guides (100+ KB)
+Code Quality:      6-7/10 (solid MVP, architectural debt for scale)
+
+Active Development: Yes (commits through Nov 17, 2025)
+Git Branch:        develop
+Untracked:         Pricing API endpoints, customer modal, interactive pricing
+
+================================================================================
+                          TECHNOLOGY STACK
+================================================================================
+
+FRONTEND:
+  Next.js 15          - Server-side rendering + API routes
+  React 19            - UI components
+  TypeScript 5.7      - Type safety
+  Tailwind CSS 3.4    - Styling
+  React Hook Form     - Form state management
+  Zod 3.24            - Runtime validation
+  TanStack Query      - Server state caching (installed, minimal use)
+  Zustand 5.0         - Client state (installed, minimal use)
+  Lucide React        - Icon library
+
+BACKEND:
+  Node.js (Next.js)   - Runtime
+  Prisma 6.19         - ORM + migrations
+  PostgreSQL          - Relational database
+
+EXTERNAL INTEGRATIONS:
+  Google Gemini API   - AI-powered price estimation
+  Lightspeed POS      - Customer + pricing sync
+  Twilio              - SMS notifications
+  SendGrid            - Email notifications
+  Supabase            - Auth + storage (optional)
+
+INFRASTRUCTURE:
+  Docker              - Production containerization
+  VPS                 - Hosted on 31.97.222.218
+  Environment Vars    - .env configuration
+
+================================================================================
+                        DATABASE DESIGN (11 TABLES)
+================================================================================
+
+REFERENCE DATA:
+  • brands                - Device manufacturers (Apple, Samsung, etc.)
+  • device_models         - Specific devices (iPhone 15 Pro, Galaxy S24)
+  • repair_types          - Service categories (Screen, Battery, Water Damage)
+  • part_types            - Quality tiers (1-5 scale, OEM to Aftermarket)
+
+PRICING INTELLIGENCE:
+  • pricing               - Smart pricing with confidence scores
+  • price_history         - Audit trail of all price changes
+
+CUSTOMER & ORDERS:
+  • customers             - Customer info + Lightspeed sync marker
+  • repair_orders         - Main repair records with status tracking
+  • repair_order_items    - Line items per repair (repair + part + price)
+  • order_status_history  - Audit log of status changes
+
+COMMUNICATION:
+  • notifications         - SMS/Email tracking with retry logic
+  • photos                - Before/after repair documentation
+
+Key Features:
+  - Composite unique keys prevent duplicates
+  - Temporal validity (validFrom/Until) for pricing
+  - Soft deletes via isActive flags
+  - Cascade relationships for data integrity
+  - JSON columns for notification preferences
+
+================================================================================
+                          CORE FEATURES
+================================================================================
+
+1. SMART PRICING (AI-POWERED)
+   - Google Gemini AI estimates missing prices
+   - Tracks estimated vs confirmed prices
+   - Maintains price history with reasons
+   - Sydney market-specific pricing
+   - Confidence scores (0-100%)
+
+2. REPAIR MANAGEMENT
+   - Create + track repair orders
+   - 7 status types: pending → in_progress → completed → delivered
+   - Photo documentation (before/after/issue)
+   - Technician assignment + notes
+   - Priority levels (normal, urgent, express)
+   - Device info tracking (IMEI, serial, password)
+
+3. CUSTOMER MANAGEMENT
+   - Store customer info (name, email, phone)
+   - Lightspeed POS sync
+   - Repair history tracking
+   - Notification preferences (SMS, email, push)
+   - Duplicate prevention by phone number
+
+4. INVENTORY MANAGEMENT (PARTS)
+   - 5-level quality rating (1-5)
+   - Warranty periods (3-24 months)
+   - Link parts to repair types
+   - Track usage in repairs
+
+5. POS INTEGRATION (LIGHTSPEED)
+   - Auto-sync customers from Lightspeed
+   - Import product pricing
+   - Parse device variants (device × repair)
+   - Timestamp-based sync tracking
+   - Prevent duplicates
+
+6. NOTIFICATIONS (SMS/EMAIL)
+   - Track delivery status
+   - Retry logic (up to 5 retries)
+   - Error message logging
+   - External provider ID correlation
+   - Triggers: status changes, quotes, delivery
+
+================================================================================
+                            API ARCHITECTURE
+================================================================================
+
+BASE URL: /api/
+
+ENDPOINTS BY RESOURCE:
+
+Brands & Devices (Reference Data):
+  GET/POST     /brands
+  GET/POST     /device-models
+  GET          /devices
+  GET/POST     /repair-types
+  GET/POST     /part-types
+
+Customer Management:
+  GET/POST     /customers
+  GET/PUT/DELETE /customers/[id]
+
+Repair Orders:
+  GET/POST     /repairs
+  GET/PUT      /repairs/[id]
+  PATCH        /repairs/[id]/status
+
+Pricing (Core + Smart Features):
+  GET/POST/PUT /pricing                    (CRUD)
+  POST         /pricing/estimate           (Smart estimation)
+  POST         /pricing/sync               (Lightspeed sync)
+  GET          /pricing/stats              (Analytics)
+  GET          /pricing/brands             (Group by brand)
+  GET          /pricing/models             (Group by model)
+  GET          /pricing/repairs            (Group by repair)
+  POST         /pricing/analyze            (Analysis)
+
+Integrations (External):
+  GET/POST     /integrations/gemini/pricing (AI pricing)
+  POST         /integrations/lightspeed/customers (Sync)
+  POST         /integrations/lightspeed/pricing   (Sync)
+
+System:
+  GET          /health                     (Status check)
+  GET/PUT      /settings                   (Configuration)
+
+VALIDATION:
+  - Zod schemas in lib/validations/
+  - Covers: customers, pricing, repairs, common
+
+ERROR HANDLING:
+  - Inconsistent format (architectural gap)
+  - Try-catch in all routes
+  - NextResponse.json for responses
+  - Status codes: 200, 201, 400, 404, 500
+
+SECURITY GAPS (From Architecture Review):
+  - No authentication on endpoints
+  - No rate limiting
+  - No CSRF protection
+  - Inconsistent request validation
+  - Device passwords stored plain text
+  - No audit logging
+
+================================================================================
+                         PROJECT STRUCTURE
+================================================================================
+
+/home/avi/projects/mobile/dashboard/
+├── app/
+│   ├── api/                          # 20 REST API endpoints
+│   │   ├── brands/
+│   │   ├── customers/
+│   │   ├── device-models/
+│   │   ├── pricing/                  # Core + smart features
+│   │   ├── repairs/
+│   │   ├── integrations/
+│   │   │   ├── gemini/               # AI pricing
+│   │   │   └── lightspeed/           # POS sync
+│   │   ├── health/
+│   │   └── settings/
+│   │
+│   ├── dashboard/                    # Protected dashboard pages
+│   │   ├── page.tsx                  # Main dashboard
+│   │   ├── layout.tsx                # Dashboard layout
+│   │   ├── customers/                # Customer pages
+│   │   ├── pricing/                  # Pricing management
+│   │   └── repairs/                  # Repair management
+│   │
+│   ├── layout.tsx                    # Root layout
+│   ├── page.tsx                      # Landing page
+│   └── globals.css                   # Tailwind imports
+│
+├── components/                       # 25+ React components
+│   ├── layout/                       # Navigation components
+│   ├── customers/                    # Customer UI
+│   ├── pricing/                      # Pricing UI + wizards
+│   └── repairs/                      # Repair forms
+│
+├── lib/                              # 8 service modules
+│   ├── db.ts                         # Prisma singleton
+│   ├── gemini-ai.ts                  # AI service
+│   ├── lightspeed.ts                 # POS API client
+│   ├── pricing-estimator.ts          # Estimation algorithm
+│   ├── pricing-utils.ts              # Pricing helpers
+│   ├── notifications.ts              # SMS/Email service
+│   ├── api-helpers.ts                # API utilities
+│   ├── errors.ts                     # Error classes
+│   ├── error-handler.ts              # Error handling
+│   ├── utils.ts                      # General utilities
+│   └── validations/                  # Zod schemas
+│       ├── customers.ts
+│       ├── pricing.ts
+│       ├── repairs.ts
+│       └── common.ts
+│
+├── prisma/
+│   ├── schema.prisma                 # 248 lines, fully normalized
+│   ├── seed.ts                       # Sample data
+│   └── migrations/                   # Prisma migrations
+│
+├── public/                           # Static assets
+│
+├── DOCUMENTATION/
+│   ├── README.md                     # Setup guide
+│   ├── API_DOCUMENTATION.md          # 15KB API reference
+│   ├── ARCHITECTURE_REVIEW_*.md      # 54KB detailed review
+│   ├── INTELLIGENT_PRICING_SYSTEM.md # Feature guide
+│   └── ... (15+ more guides)
+│
+├── Dockerfile.production             # Docker build
+├── tsconfig.json
+├── tailwind.config.ts
+├── next.config.ts
+├── package.json
+└── .env.example                      # Config template
+
+================================================================================
+                          DEVELOPMENT STATUS
+================================================================================
+
+COMPLETED (Phase 0 - Nov 17):
+  ✅ Database schema (11 normalized tables)
+  ✅ Seeded test data (brands, devices, repairs, pricing)
+  ✅ API routes (20 endpoints for CRUD)
+  ✅ Smart pricing algorithm
+  ✅ Lightspeed POS integration
+  ✅ Gemini AI integration
+  ✅ UI components (25+ files)
+  ✅ Validation schemas (Zod)
+  ✅ Documentation (15+ files)
+  ✅ Docker setup
+  ✅ Production deployment
+
+IN PROGRESS (Phase 1):
+  🚧 Repair order management
+  🚧 Customer management UI
+  🚧 Pricing matrix visualization
+  🚧 Photo upload/display
+
+NOT YET IMPLEMENTED:
+  ❌ Authentication (NextAuth configured but not active)
+  ❌ Authorization (role-based access control)
+  ❌ Testing (no test suite)
+  ❌ Rate limiting
+  ❌ API versioning
+  ❌ Caching layer (Redis)
+  ❌ Background job queue
+  ❌ Structured logging
+  ❌ Error response standardization
+
+SECURITY GAPS:
+  ❌ All endpoints publicly accessible (no auth)
+  ❌ Some routes missing input validation
+  ❌ No CSRF protection
+  ❌ No request encryption
+  ❌ Device passwords in plain text
+  ❌ No audit logging
+
+RECENT COMMITS:
+  2f0fc09 - docs: add implementation progress report (Nov 17)
+  2111287 - feat: add comprehensive security and validation infrastructure
+  a736027 - fix: consolidate duplicate Prisma client instances
+  7420903 - feat: complete Phase 0 - Preparation & Setup
+
+CURRENT BRANCH: develop
+
+MODIFIED FILES:
+  - dashboard/components/repairs/NewRepairForm.tsx
+
+UNTRACKED FILES:
+  - dashboard/app/api/pricing/brands/
+  - dashboard/app/api/pricing/models/
+  - dashboard/app/api/pricing/repairs/
+  - dashboard/components/customers/NewCustomerModal.tsx
+  - dashboard/components/pricing/interactive/
+
+================================================================================
+                        AI/ML OPPORTUNITIES
+================================================================================
+
+CURRENTLY USING:
+  • Google Gemini AI for price estimation
+
+HIGHEST VALUE AI FEATURES:
+
+1. REPAIR DIAGNOSTICS (Vision LLM)
+   Impact: Auto-detect issue from photos
+   Model: Gemini Vision, Claude Vision
+   Implementation:
+   - Upload before photos
+   - AI identifies damage type
+   - Suggests most common repair
+   - Pre-fills technician notes
+
+2. PREDICTIVE INVENTORY (Time-Series)
+   Impact: Forecast parts needed
+   Model: ARIMA, Prophet
+   Implementation:
+   - Analyze repair history
+   - Predict popular repairs
+   - Auto-suggest parts to stock
+   - Forecast demand trends
+
+3. QUALITY ASSURANCE (Computer Vision)
+   Impact: Auto-review repair quality
+   Model: Object Detection, Image Classification
+   Implementation:
+   - Analyze before/after photos
+   - Detect incomplete repairs
+   - Flag quality issues
+   - Certify standards met
+
+4. WORKFLOW OPTIMIZATION (NLP + Regression)
+   Impact: Intelligent scheduling
+   Model: Duration prediction, Resource optimization
+   Implementation:
+   - Predict repair time from description
+   - Optimize technician assignments
+   - Minimize idle time
+   - Predict bottlenecks
+
+5. CUSTOMER ANALYTICS (Clustering + Classification)
+   Impact: Personalization + upselling
+   Model: Segmentation, Churn prediction
+   Implementation:
+   - Segment by repair patterns
+   - Predict churn risk
+   - Suggest services
+   - Personalize communication
+
+6. CUSTOMER INTENT DETECTION (NLP)
+   Impact: Smart customer support
+   Model: Text classification, Sentiment analysis
+   Implementation:
+   - Analyze messages/calls
+   - Detect sentiment + urgency
+   - Auto-route to team
+   - Generate responses
+
+================================================================================
+                        ARCHITECTURE STRENGTHS
+================================================================================
+
+✅ Well-Designed Database
+   - Normalized relational schema
+   - Composite keys prevent duplicates
+   - Audit trails (price_history, status_history)
+   - Temporal data support (validFrom/Until)
+   - Soft deletes for data retention
+   - Cascade relationships
+
+✅ Clean Separation of Concerns
+   - Presentation layer (components)
+   - API layer (routes)
+   - Service layer (lib modules)
+   - Data layer (Prisma ORM)
+   - Validation layer (Zod)
+
+✅ TypeScript Throughout
+   - Strong type safety
+   - Prisma type generation
+   - Component prop interfaces
+   - Runtime validation with Zod
+
+✅ Modern Tech Stack
+   - Next.js 15 (latest patterns)
+   - React 19 (latest features)
+   - Latest libraries (TanStack, Zod)
+
+✅ Comprehensive Documentation
+   - API reference (15KB)
+   - Architecture review (54KB)
+   - Feature guides
+   - Setup instructions
+   - Example code
+
+================================================================================
+                        ARCHITECTURE WEAKNESSES
+================================================================================
+
+⚠️ No Authentication/Authorization
+   - All endpoints publicly accessible
+   - No role-based access control
+   - NextAuth installed but not used
+
+⚠️ Inconsistent Error Handling
+   - Different error response formats
+   - No standardized error schema
+   - Needs proper error response class
+
+⚠️ Missing API Versioning
+   - Cannot evolve API without breaking clients
+   - Should implement /api/v1/ prefix
+
+⚠️ No Rate Limiting
+   - Risk of abuse
+   - DDoS vulnerability
+   - Needs middleware or service
+
+⚠️ Incomplete Input Validation
+   - Some routes validate with Zod
+   - Others missing validation
+   - Need comprehensive coverage
+
+⚠️ Limited Client-Side State Management
+   - TanStack Query installed but minimal use
+   - Zustand installed but unused
+   - Need better cache invalidation strategy
+
+⚠️ No Background Job Processing
+   - Notifications are synchronous
+   - Should use queue (Bull, RabbitMQ)
+   - Risk of blocking requests
+
+⚠️ No Caching Layer
+   - Every request hits database
+   - No Redis integration
+   - Missing cache strategy
+
+================================================================================
+                    DEPLOYMENT & INFRASTRUCTURE
+================================================================================
+
+CURRENT DEPLOYMENT:
+  URL:              https://repair.theprofitplatform.com.au
+  Status:           Production (Phase 0 complete)
+  Host:             VPS at 31.97.222.218
+  Database:         PostgreSQL (Supabase)
+  SSL:              Let's Encrypt via certbot
+
+DOCKER:
+  File:             Dockerfile.production
+  Approach:         Multi-stage build
+  Base:             Node.js Alpine (optimized)
+
+ENVIRONMENT:
+  Template:         .env.example
+  Production:       .env.production.example
+  Required:         DATABASE_URL, ENCRYPTION_KEY
+  Optional:         GEMINI_API_KEY, LIGHTSPEED_*, etc.
+
+BACKUP & RESTORE:
+  npm run db:backup   # Backup database
+  npm run db:restore  # Restore from backup
+
+COMMANDS:
+  npm run dev         # Development (http://localhost:3000)
+  npm run build       # Production build
+  npm run start       # Production server
+  npm run db:push     # Apply schema changes
+  npm run db:seed     # Populate sample data
+  npm run db:studio   # Visual explorer
+
+================================================================================
+                        RECOMMENDED NEXT STEPS
+================================================================================
+
+IMMEDIATE (This Sprint):
+  1. Implement NextAuth authentication
+  2. Add API rate limiting middleware
+  3. Standardize error response format
+  4. Add comprehensive input validation
+  5. Add CSRF protection
+
+SHORT TERM (Next 2-4 Weeks):
+  1. Background job queue for notifications
+  2. Redis caching layer
+  3. Structured logging (Winston/Pino)
+  4. Test suite (Jest + Testing Library)
+  5. Dashboard improvements (analytics, charts)
+
+MEDIUM TERM (Next 1-3 Months):
+  1. Mobile app (React Native)
+  2. Advanced reporting + exports
+  3. Multi-location support
+  4. Marketplace features
+  5. Advanced AI features (diagnostics, predictions)
+
+LONG TERM (3-6+ Months):
+  1. Technician mobile app
+  2. Advanced analytics
+  3. Automated workflow orchestration
+  4. Marketplace + technician ratings
+  5. Expansion to other repair categories
+
+================================================================================
+                              FILE LOCATIONS
+================================================================================
+
+Full Analysis:
+  /home/avi/projects/mobile/CODEBASE_ANALYSIS_2025-11-18.md (32KB)
+
+Quick Reference:
+  /home/avi/projects/mobile/QUICK_REFERENCE.md
+
+Project Documentation:
+  /home/avi/projects/mobile/dashboard/README.md
+  /home/avi/projects/mobile/dashboard/API_DOCUMENTATION.md
+  /home/avi/projects/mobile/dashboard/ARCHITECTURE_REVIEW_2025-11-17.md
+  /home/avi/projects/mobile/dashboard/INTELLIGENT_PRICING_SYSTEM.md
+  /home/avi/projects/mobile/dashboard/IMPLEMENTATION_PLAN_2025.md
+
+Key Source Files:
+  /home/avi/projects/mobile/dashboard/prisma/schema.prisma (Database)
+  /home/avi/projects/mobile/dashboard/lib/gemini-ai.ts (AI Service)
+  /home/avi/projects/mobile/dashboard/lib/lightspeed.ts (POS API)
+  /home/avi/projects/mobile/dashboard/lib/pricing-estimator.ts (Algorithm)
+
+================================================================================
+                                SUMMARY
+================================================================================
+
+This is a **production-ready mobile repair shop management system** with solid
+core functionality. The database design is excellent, the API is well-organized,
+and integration with Lightspeed POS and Gemini AI demonstrates modern
+architectural patterns.
+
+Main strengths:
+  • Well-normalized database design
+  • Clean separation of concerns
+  • Comprehensive documentation
+  • Production deployment working
+  • Modern tech stack
+
+Main weaknesses:
+  • Security gaps (no auth/validation)
+  • Inconsistent error handling
+  • Missing caching/rate limiting
+  • No test coverage
+  • Minimal AI usage (only pricing)
+
+Code Quality: 6-7/10 - Solid MVP with architectural debt to address for scale
+
+Recommended Action: Implement authentication and input validation before
+expansion. These are critical security issues that should be addressed soon.
+
+Most Valuable AI Features: Repair diagnostics (vision), predictive inventory,
+quality assurance, and workflow optimization.
+
+================================================================================

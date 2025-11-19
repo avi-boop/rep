@@ -1,0 +1,1055 @@
+{
+  "timestamp": "2025-11-19T00:07:05.770Z",
+  "duration": 1507,
+  "summary": {
+    "totalDuplicateGroups": 20,
+    "totalCustomersInDuplicates": 45,
+    "byConfidence": {
+      "high": 1,
+      "medium": 19,
+      "low": 0
+    },
+    "byDetectionMethod": {
+      "phone": 0,
+      "email": 1,
+      "name": 19
+    }
+  },
+  "duplicateGroups": [
+    {
+      "id": "email_no@mail.com",
+      "detectionMethod": "email",
+      "confidence": 100,
+      "customers": [
+        {
+          "id": 251,
+          "firstName": "JASMINA",
+          "lastName": "NOAR",
+          "email": "no@mail.com",
+          "phone": "0403771574",
+          "repairCount": 0,
+          "hasEmail": true,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.951Z",
+          "updatedAt": "2025-11-12T00:00:11.810Z",
+          "score": 55,
+          "scoreBreakdown": {
+            "dataCompleteness": 25,
+            "activityLevel": 0,
+            "dataQuality": 20,
+            "recency": 10
+          }
+        },
+        {
+          "id": 253,
+          "firstName": "DANNY",
+          "lastName": "KHALAF",
+          "email": "no@mail.com",
+          "phone": "0410435762",
+          "repairCount": 0,
+          "hasEmail": true,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.954Z",
+          "updatedAt": "2025-11-12T00:00:11.894Z",
+          "score": 55,
+          "scoreBreakdown": {
+            "dataCompleteness": 25,
+            "activityLevel": 0,
+            "dataQuality": 20,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 251,
+      "reason": "Same email: no@mail.com"
+    },
+    {
+      "id": "name_518",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 518,
+          "firstName": "ROSE",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0403785499",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.600Z",
+          "updatedAt": "2025-11-12T00:00:15.714Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 486,
+          "firstName": "ROGER",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0403767464",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.525Z",
+          "updatedAt": "2025-11-12T00:00:14.848Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 705,
+          "firstName": "ROSS",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0408703348",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.118Z",
+          "updatedAt": "2025-11-12T00:00:17.932Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 518,
+      "reason": "Similar names: \"rose customer\""
+    },
+    {
+      "id": "name_295",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 295,
+          "firstName": "NADIA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0420567474",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.076Z",
+          "updatedAt": "2025-11-12T00:00:12.793Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 505,
+          "firstName": "MARIA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0418254493",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.574Z",
+          "updatedAt": "2025-11-12T00:00:15.508Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 622,
+          "firstName": "KASIA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0411933383",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.873Z",
+          "updatedAt": "2025-11-12T00:00:17.092Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 487,
+          "firstName": "MARIA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0450180978",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.528Z",
+          "updatedAt": "2025-11-12T00:00:14.852Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 476,
+          "firstName": "NANA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0430887050",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.505Z",
+          "updatedAt": "2025-11-12T00:00:14.688Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 295,
+      "reason": "Similar names: \"nadia customer\""
+    },
+    {
+      "id": "name_228",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 536,
+          "firstName": "YENNY",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0433888811",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.639Z",
+          "updatedAt": "2025-11-12T00:00:16.122Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 228,
+          "firstName": "ZENNY",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "045729388",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.880Z",
+          "updatedAt": "2025-11-12T00:00:11.546Z",
+          "score": 25,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 0,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 536,
+      "reason": "Similar names: \"zenny customer\""
+    },
+    {
+      "id": "name_442",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 442,
+          "firstName": "PARRY",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0413860641",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.431Z",
+          "updatedAt": "2025-11-12T00:00:14.314Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 614,
+          "firstName": "Garry",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0422304532",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.848Z",
+          "updatedAt": "2025-11-12T00:00:17.016Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 442,
+      "reason": "Similar names: \"parry customer\""
+    },
+    {
+      "id": "name_324",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 324,
+          "firstName": "RANEH",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0405699152",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.156Z",
+          "updatedAt": "2025-11-12T00:00:13.251Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 145,
+          "firstName": "Rani",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0411259360",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.599Z",
+          "updatedAt": "2025-11-12T00:00:10.115Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 324,
+      "reason": "Similar names: \"raneh customer\""
+    },
+    {
+      "id": "name_458",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 458,
+          "firstName": "Zolzaya",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0414401107",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.464Z",
+          "updatedAt": "2025-11-12T00:00:14.506Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 730,
+          "firstName": "ZOLBAYAR",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0404602724",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.184Z",
+          "updatedAt": "2025-11-12T00:00:18.226Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 458,
+      "reason": "Similar names: \"zolzaya customer\""
+    },
+    {
+      "id": "name_696",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 696,
+          "firstName": "JENNIFER",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0420750443",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.089Z",
+          "updatedAt": "2025-11-12T00:00:17.886Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 546,
+          "firstName": "JENNIE",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0481953402",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.675Z",
+          "updatedAt": "2025-11-12T00:00:16.276Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 696,
+      "reason": "Similar names: \"jennifer customer\""
+    },
+    {
+      "id": "name_627",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 627,
+          "firstName": "CHARLES",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0475332918",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.886Z",
+          "updatedAt": "2025-11-12T00:00:17.129Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 114,
+          "firstName": "Charlie",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0433407841",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.503Z",
+          "updatedAt": "2025-11-12T00:00:09.778Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 627,
+      "reason": "Similar names: \"charles customer\""
+    },
+    {
+      "id": "name_77",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 77,
+          "firstName": "John",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0410608371",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.376Z",
+          "updatedAt": "2025-11-12T00:00:08.681Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 724,
+          "firstName": "JOHN",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0477971175",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.169Z",
+          "updatedAt": "2025-11-12T00:00:18.159Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 77,
+      "reason": "Similar names: \"john customer\""
+    },
+    {
+      "id": "name_182",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 182,
+          "firstName": "Sa",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0477998874",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.709Z",
+          "updatedAt": "2025-11-12T00:00:10.649Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 610,
+          "firstName": "SAM",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0414338846",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.836Z",
+          "updatedAt": "2025-11-12T00:00:16.976Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 182,
+      "reason": "Similar names: \"sa customer\""
+    },
+    {
+      "id": "name_590",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 590,
+          "firstName": "MANDKHAI",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0450870422",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.782Z",
+          "updatedAt": "2025-11-12T00:00:16.697Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 220,
+          "firstName": "MANDAKHAI",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0450636392",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.862Z",
+          "updatedAt": "2025-11-12T00:00:11.459Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 590,
+      "reason": "Similar names: \"mandkhai customer\""
+    },
+    {
+      "id": "name_547",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 376,
+          "firstName": "NINA",
+          "lastName": "MERHI",
+          "email": "nina.merhi@outlook.com",
+          "phone": "0450378390",
+          "repairCount": 0,
+          "hasEmail": true,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.274Z",
+          "updatedAt": "2025-11-12T00:00:13.719Z",
+          "score": 55,
+          "scoreBreakdown": {
+            "dataCompleteness": 25,
+            "activityLevel": 0,
+            "dataQuality": 20,
+            "recency": 10
+          }
+        },
+        {
+          "id": 547,
+          "firstName": "NINA",
+          "lastName": "MERHI",
+          "email": null,
+          "phone": " 0416033488",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.685Z",
+          "updatedAt": "2025-11-12T00:00:16.285Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 376,
+      "reason": "Similar names: \"nina merhi\""
+    },
+    {
+      "id": "name_695",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 695,
+          "firstName": "PATRICIA",
+          "lastName": "SEATAN",
+          "email": null,
+          "phone": "0412464293",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.086Z",
+          "updatedAt": "2025-11-12T00:00:17.883Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 694,
+          "firstName": "PATRICIA",
+          "lastName": "SEATEN",
+          "email": null,
+          "phone": "61412464293",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.083Z",
+          "updatedAt": "2025-11-12T00:00:17.879Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 695,
+      "reason": "Similar names: \"patricia seatan\""
+    },
+    {
+      "id": "name_719",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 719,
+          "firstName": "MATA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0406186226",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.157Z",
+          "updatedAt": "2025-11-12T00:00:18.109Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 111,
+          "firstName": "Maran",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0416132270",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.492Z",
+          "updatedAt": "2025-11-12T00:00:09.740Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 719,
+      "reason": "Similar names: \"mata customer\""
+    },
+    {
+      "id": "name_519",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 519,
+          "firstName": "ZORHA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0450025013",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.602Z",
+          "updatedAt": "2025-11-12T00:00:15.760Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 180,
+          "firstName": "DOREA",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0410340800",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.700Z",
+          "updatedAt": "2025-11-12T00:00:10.631Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 519,
+      "reason": "Similar names: \"zorha customer\""
+    },
+    {
+      "id": "name_318",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 318,
+          "firstName": "ANJI",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0452511533",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.135Z",
+          "updatedAt": "2025-11-12T00:00:13.155Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 903,
+          "firstName": "ANNIE",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0405327017",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:06.717Z",
+          "updatedAt": "2025-11-12T00:00:19.940Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 564,
+          "firstName": "RANJIT",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0415757441",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.719Z",
+          "updatedAt": "2025-11-12T00:00:16.479Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 318,
+      "reason": "Similar names: \"anji customer\""
+    },
+    {
+      "id": "name_409",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 409,
+          "firstName": "PETER",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0452494614",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.349Z",
+          "updatedAt": "2025-11-12T00:00:13.914Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 431,
+          "firstName": "PATER",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "61425233143",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.401Z",
+          "updatedAt": "2025-11-12T00:00:14.170Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 409,
+      "reason": "Similar names: \"peter customer\""
+    },
+    {
+      "id": "name_197",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 197,
+          "firstName": "HAMAD",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0452155105",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.785Z",
+          "updatedAt": "2025-11-12T00:00:10.834Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 378,
+          "firstName": "AMAL",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0414468612",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.278Z",
+          "updatedAt": "2025-11-12T00:00:13.735Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 197,
+      "reason": "Similar names: \"hamad customer\""
+    },
+    {
+      "id": "name_183",
+      "detectionMethod": "name",
+      "confidence": 70,
+      "customers": [
+        {
+          "id": 183,
+          "firstName": "George",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0488484824",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:04.718Z",
+          "updatedAt": "2025-11-12T00:00:10.656Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        },
+        {
+          "id": 548,
+          "firstName": "GEORGEO",
+          "lastName": "Customer",
+          "email": null,
+          "phone": "0422150444",
+          "repairCount": 0,
+          "hasEmail": false,
+          "hasNotes": false,
+          "createdAt": "2025-11-11T06:00:05.688Z",
+          "updatedAt": "2025-11-12T00:00:16.290Z",
+          "score": 35,
+          "scoreBreakdown": {
+            "dataCompleteness": 15,
+            "activityLevel": 0,
+            "dataQuality": 10,
+            "recency": 10
+          }
+        }
+      ],
+      "primaryCustomerId": 183,
+      "reason": "Similar names: \"george customer\""
+    }
+  ]
+}

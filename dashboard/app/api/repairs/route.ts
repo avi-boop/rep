@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { generateOrderNumber } from '@/lib/utils'
+import { notifyRepairStatus } from '@/lib/notifications'
 
 export async function GET(request: NextRequest) {
   try {
@@ -92,7 +93,37 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(repair, { status: 201 })
+    // Send notification to customer
+    let notificationResult = null
+    try {
+      notificationResult = await notifyRepairStatus(
+        repair.customer.id,
+        {
+          firstName: repair.customer.firstName,
+          lastName: repair.customer.lastName,
+          email: repair.customer.email,
+          phone: repair.customer.phone,
+          notificationPreferences: repair.customer.notificationPreferences,
+        },
+        {
+          orderNumber: repair.orderNumber,
+          deviceModel: repair.deviceModel?.name,
+          deviceBrand: repair.deviceModel?.brand?.name,
+          status: repair.status,
+          totalPrice: repair.totalPrice || undefined,
+          estimatedCompletion: repair.estimatedCompletion?.toLocaleDateString(),
+        },
+        'created'
+      )
+    } catch (notificationError) {
+      // Log error but don't fail the repair creation
+      console.error('Failed to send notification:', notificationError)
+    }
+
+    return NextResponse.json({
+      repair,
+      notifications: notificationResult || { sms: { sent: false }, email: { sent: false } }
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating repair:', error)
     return NextResponse.json({ error: 'Failed to create repair' }, { status: 500 })

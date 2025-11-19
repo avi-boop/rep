@@ -3,7 +3,7 @@
 // Force dynamic rendering for database access
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Save, Trash2, User, Phone, Mail, FileText, Calendar, Wrench, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -65,13 +65,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     params.then(p => setCustomerId(p.id))
   }, [params])
 
-  useEffect(() => {
-    if (customerId) {
-      fetchCustomer()
-    }
-  }, [customerId])
-
-  const fetchCustomer = async () => {
+  const fetchCustomer = useCallback(async () => {
     if (!customerId) return
 
     try {
@@ -103,7 +97,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     } finally {
       setLoading(false)
     }
-  }
+  }, [customerId])
+
+  useEffect(() => {
+    if (customerId) {
+      fetchCustomer()
+    }
+  }, [customerId, fetchCustomer])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
