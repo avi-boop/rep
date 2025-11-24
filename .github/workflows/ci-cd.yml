@@ -75,7 +75,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         if: hashFiles('./backend/coverage/lcov.info') != ''
         with:
           files: ./backend/coverage/lcov.info
@@ -122,7 +122,7 @@ jobs:
         run: npm run build
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         if: hashFiles('./dashboard/coverage/lcov.info') != ''
         with:
           files: ./dashboard/coverage/lcov.info
